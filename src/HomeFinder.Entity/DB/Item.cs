@@ -9,9 +9,11 @@ namespace HomeFinder.Entity.DB
 
         public List<string> Images { get; set; } = new List<string>();
 
-        public string JANCode { get; set; }
+        public string JANCode { get; set; } = string.Empty;
 
         public decimal Price { get; set; }
+
+        public Picture Picture { get; set; } = new Picture();
 
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
