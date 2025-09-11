@@ -1,0 +1,6 @@
+@HomeFinderAPI_HostAddress = http://localhost:5074
+
+GET {{HomeFinderAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
