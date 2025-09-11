@@ -1,5 +1,9 @@
 using HomeFinder.Entity;
 using Microsoft.EntityFrameworkCore;
+using HomeFinder.API.Repositories;
+using HomeFinder.API.Services;
+using HomeFinder.Entity.DB;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +30,9 @@ else
 {
     throw new Exception("Database type is not supported.");
 }
+
+builder.Services.AddScoped<CategoryRepository>();
+builder.Services.AddScoped<CategoryService>();
 
 var app = builder.Build();
 
