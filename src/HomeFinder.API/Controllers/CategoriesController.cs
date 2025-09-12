@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using HomeFinder.API.Models;
+using HomeFinder.API.Services;
 
 namespace HomeFinder.API.Controllers
 {
@@ -30,7 +31,7 @@ namespace HomeFinder.API.Controllers
         // 追加
         [HttpPost]
         public async Task<ActionResult<CategoryDTO>> AddCategoryDTO([FromBody] CategoryDTO categoryDTO)
-        {
+        {   
             if (categoryDTO == null || string.IsNullOrWhiteSpace(categoryDTO.Name))
                 return BadRequest();
 
