@@ -1,3 +1,4 @@
+using HomeFinder.API.Models.Repository;
 using HomeFinder.Entity;
 using HomeFinder.Entity.DB;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HomeFinder.API.Repositories
 {
-    public class CategoryRepository
+    public class CategoryRepository : ICategoryRepository
     {
         private readonly DatabaseContext _context;
 
@@ -28,6 +29,7 @@ namespace HomeFinder.API.Repositories
         public async Task<Category> AddAsync(Category category)
         {
             _context.Categories.Add(category);
+            category.CreatedAt = System.DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return category;
         }

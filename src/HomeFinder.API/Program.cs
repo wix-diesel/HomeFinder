@@ -4,6 +4,7 @@ using HomeFinder.API.Repositories;
 using HomeFinder.API.Services;
 using HomeFinder.Entity.DB;
 using System;
+using HomeFinder.API.Models.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +25,7 @@ if (dbType == "MySQL")
 else if (dbType == "SQLServer")
 {
     builder.Services.AddDbContext<DatabaseContext>(options =>
-        options.UseSqlServer(connectionString));
+        options.UseSqlServer(connectionString)); 
 }
 else
 {

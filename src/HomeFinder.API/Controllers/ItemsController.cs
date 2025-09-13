@@ -1,3 +1,4 @@
+using HomeFinder.API.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeFinderAPI.Controllers;
@@ -14,9 +15,9 @@ public class ItemsController : ControllerBase
     }
 
     [HttpGet(Name = "GetItems")]
-    public IEnumerable<Item> Get()
+    public IEnumerable<ItemDTO> Get()
     {
-        return Enumerable.Range(1, 5).Select(index => new Item
+        return Enumerable.Range(1, 5).Select(index => new ItemDTO
         {
             Id = index,
             Name = $"Item {index}",
