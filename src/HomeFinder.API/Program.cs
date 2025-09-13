@@ -1,10 +1,7 @@
-using HomeFinder.Entity;
-using Microsoft.EntityFrameworkCore;
+using HomeFinder.API.Models.Repository;
 using HomeFinder.API.Repositories;
 using HomeFinder.API.Services;
-using HomeFinder.Entity.DB;
-using System;
-using HomeFinder.API.Models.Repository;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
