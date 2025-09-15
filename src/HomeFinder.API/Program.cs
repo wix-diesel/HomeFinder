@@ -1,6 +1,9 @@
 using HomeFinder.API.Models.Repository;
+using HomeFinder.API.Models.Service;
 using HomeFinder.API.Repositories;
 using HomeFinder.API.Services;
+using HomeFinderAPI.Models.Repository;
+using HomeFinderAPI.Models.Service;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,8 +32,18 @@ else
     throw new Exception("Database type is not supported.");
 }
 
-builder.Services.AddScoped<CategoryRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<CategoryService>();
+
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<ItemService>();
+
+builder.Services.AddScoped<IAreaRepository, AreaRepository>();
+builder.Services.AddScoped<AreaService>();
+
+builder.Services.AddScoped<IPictureRepository, PictureRepository>();
+builder.Services.AddScoped<IPictureService, PictureService>();
+builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
 var app = builder.Build();
 
