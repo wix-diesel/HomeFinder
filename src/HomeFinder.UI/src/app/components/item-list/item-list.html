@@ -1,0 +1,15 @@
+<div class="toolbar">
+  <button mat-button (click)="viewMode = 'grid'">サムネイル</button>
+  <button mat-button (click)="viewMode = 'list'">リスト</button>
+</div>
+
+<div *ngIf="viewMode === 'grid'" class="grid">
+  <mat-card *ngFor="let item of items">
+    <img mat-card-image [src]="item.image" alt="{{item.name}}">
+    <mat-card-title>{{item.name}}</mat-card-title>
+  </mat-card>
+</div>
+
+<ul *ngIf="viewMode === 'list'" class="list">
+  <li *ngFor="let item of items">{{item.name}}</li>
+</ul>

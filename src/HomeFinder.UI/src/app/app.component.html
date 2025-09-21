@@ -1,0 +1,13 @@
+<mat-sidenav-container class="app-container">
+  <mat-sidenav mode="side" opened>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/items">一覧</a>
+      <a mat-list-item routerLink="/categories">カテゴリ</a>
+      <a mat-list-item routerLink="/admin">管理画面</a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,12 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+.list {
+  list-style: none;
+  padding: 0;
+}
+.toolbar {
+  margin-bottom: 16px;
+}
