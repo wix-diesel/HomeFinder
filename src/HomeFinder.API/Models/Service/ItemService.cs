@@ -7,9 +7,16 @@ namespace HomeFinder.API.Models.Service
     {
         private readonly ItemRepository _itemRepository;
 
-        public ItemService(ItemRepository itemRepository)
+        private readonly IPictureRepository _pictureRepository;
+
+        private readonly ILogger<ItemService> _logger;
+
+
+        public ItemService(ItemRepository itemRepository, IPictureRepository pictureRepository, ILogger<ItemService> logger)
         {
             _itemRepository = itemRepository;
+            _pictureRepository = pictureRepository;
+            _logger = logger;
         }
 
         public async Task<ItemDTO> AddItemAsync(ItemDTO itemDto)
@@ -44,6 +51,7 @@ namespace HomeFinder.API.Models.Service
         
         public async Task DeleteItemAsync(int id)
         {
+            await _pictureRepository.DeleteAsync(id);
             await _itemRepository.DeleteAsync(id);
         }
     }

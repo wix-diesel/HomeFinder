@@ -1,5 +1,6 @@
 
 using HomeFinder.Entity.DB;
+using HomeFinderAPI.Models;
 
 namespace HomeFinder.API.Models
 {
@@ -14,8 +15,8 @@ namespace HomeFinder.API.Models
 
         public decimal Price { get; set; }
 
-        public Picture? Picture { get; set; }
+        public PictureDTO? Picture { get; set; }
 
-        public Category? Category { get; set; }
+        public CategoryDTO? Category { get; set; }
     }
 }

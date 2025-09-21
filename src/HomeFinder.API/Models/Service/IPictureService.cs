@@ -14,5 +14,7 @@ namespace HomeFinderAPI.Models.Service
         public Task<PictureDTO> AddPictureAsync(PictureDTO dto, Stream stream);
 
         public Task<PictureDTO?> UpdatePictureAsync(int id, PictureDTO dto);
+
+        public Task<bool> DeletePictureAsync(int id);
     }
 }

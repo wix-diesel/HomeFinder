@@ -51,5 +51,10 @@ namespace HomeFinderAPI.Models.Service
             if (updated == null) return null;
             return updated.Adapt<PictureDTO>();
         }
+
+        public async Task<bool> DeletePictureAsync(int id)
+        {
+            return await _repository.DeleteAsync(id);
+        }
     }
 }

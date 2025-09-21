@@ -1,6 +1,9 @@
 using HomeFinder.API.Models;
 using HomeFinder.API.Models.Service;
+using HomeFinderAPI.Models;
+using HomeFinderAPI.Models.Service;
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
 
 namespace HomeFinderAPI.Controllers;
 
@@ -10,16 +13,28 @@ public class ItemsController : ControllerBase
 {
     private readonly ILogger<ItemsController> _logger;
     private readonly ItemService _itemService;
+    private readonly IPictureService _pictureService;
 
-    public ItemsController(ILogger<ItemsController> logger, ItemService itemService)
+    public ItemsController(ILogger<ItemsController> logger, ItemService itemService, IPictureService pictureService)
     {
         _logger = logger;
         _itemService = itemService;
+        _pictureService = pictureService;
     }
 
     [HttpPost]
-    public ActionResult<ItemDTO> AddItem([FromBody] ItemDTO itemDto)
+    public async Task<ActionResult<ItemDTO>> AddItemAsync([FromBody] ItemDTO itemDto, IFormFile picture)
     {
+        if (picture != null)
+        {
+            var stream = picture.OpenReadStream();
+            var pictureDTO = new PictureDTO
+            {
+                Description = itemDto.Description,
+            };
+            var addedPicture = await _pictureService.AddPictureAsync(pictureDTO, stream);
+            itemDto.Picture = addedPicture;
+        }
         var result = _itemService.AddItemAsync(itemDto);
         return CreatedAtAction(nameof(GetItem), new { id = result.Id }, result);
     }
