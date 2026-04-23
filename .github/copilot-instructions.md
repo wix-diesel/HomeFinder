@@ -1,4 +1,7 @@
-<!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
-<!-- SPECKIT END -->
+# GitHub Copilot 言語設定
+
+## 言語指定
+
+- コード内のコメントは**日本語**で記述してください。
+- PRの文章（タイトル・本文）は**日本語**で記述してください。
+- PRのコメントは**日本語**で記述してください。

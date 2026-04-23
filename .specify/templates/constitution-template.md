@@ -1,50 +1,99 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+## 目的（Purpose）
 
-## Core Principles
+本ドキュメントは、本プロジェクトにおける仕様（spec）の記述ルールを定義する。
+すべての仕様は本ルールに従って作成・更新されなければならない。
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+---
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+## 必須項目（Required Fields）
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+各specには必ず以下の項目を含めること：
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+* name（仕様名）
+* description（概要説明）
+* endpoints（API一覧）
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+---
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## 記述ルール（Writing Rules）
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+* 簡潔かつ明確に記述すること
+* 現在形で記述すること
+* 曖昧な表現（例：「適切に」「いい感じに」）は禁止
+* 実装の詳細（技術・ライブラリ・DB構造）は記述しない
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+---
+## Architecture Constraints
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- BackendはREST APIとして設計する
+- Backendはオニオンアーキテクチャを採用する。
+- BackendのDomainService、ApplicationService層ではResult型を採用する。
+- APIはOpenAPIに変換可能であること
+- Backend、FrontendともにLinuxコンテナで動作可能にできるようにする。
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+---
+## Language Constraints
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- BackendはC#(.NET 10)を前提とする。
+- Frontendはtypescripitを前提とし、Vue.jsをフレームワークとして使用する。
+- データベース: SQL Server
+- 型定義は静的型付けを前提とする
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+---
+
+## API設計ルール（API Design Rules）
+
+* RESTfulな設計に従うこと
+* リソース名は複数形（例：/users, /movies）を使用する
+* APIのバージョン情報(例：/v1/, /v2/)を必ず設定する
+* HTTPメソッドは意味に応じて正しく使用する
+
+  * GET：取得
+  * POST：作成
+  * PUT / PATCH：更新
+  * DELETE：削除
+* ステータスコードは標準に従うこと（200, 201, 400, 404, 500 など）
+
+---
+
+## エンドポイント定義ルール
+
+各endpointは以下の項目を必ず含めること：
+
+* method（HTTPメソッド）
+* path（URLパス）
+* description（処理内容の説明）
+
+---
+
+## 命名規則（Naming Conventions）
+
+* ファイル名はkebab-case（例：user-api.yaml）
+* フィールド名はcamelCase
+* IDフィールドは "id" で統一する
+
+---
+
+## 禁止事項（Anti-Patterns）
+
+以下の内容をspecに含めてはならない：
+
+* データベース設計（テーブル定義など）
+* UI仕様
+* フレームワークやライブラリへの依存記述（例：EF Core, Blazorなど）
+* ビジネスロジックの詳細実装
+
+---
+
+## データ設計ルール（任意）
+
+* 不要なnullableは避ける
+* 必須項目は明示する
+* 日付はISO8601形式を使用する
+
+---
+
+## 運用ルール（Optional）
+
+* specの変更は必ずレビューを行う
+* 本ドキュメントに違反するspecは受け入れない
