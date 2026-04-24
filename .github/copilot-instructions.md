@@ -5,3 +5,9 @@
 - コード内のコメントは**日本語**で記述してください。
 - PRの文章（タイトル・本文）は**日本語**で記述してください。
 - PRのコメントは**日本語**で記述してください。
+
+<!-- SPECKIT START -->
+## Speckit Plan Context
+
+- 現在の計画: `/specs/001-item-inventory/plan.md`
+<!-- SPECKIT END -->
