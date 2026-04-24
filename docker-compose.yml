@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: src/backend/Dockerfile
+    container_name: homefinder-backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: ${HOMEFINDER_SQLSERVER_CONNECTION_STRING:-Server=host.docker.internal,1433;Database=HomeFinderDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True}
+    ports:
+      - "5000:8080"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: src/frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5000}
+    container_name: homefinder-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"

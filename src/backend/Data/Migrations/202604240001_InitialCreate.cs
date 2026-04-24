@@ -1,10 +1,14 @@
 using System;
+using HomeFinder.Api.src.Data;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace HomeFinder.Api.src.Data.Migrations;
 
+[DbContext(typeof(ItemDbContext))]
+[Migration("202604240001_InitialCreate")]
 public partial class InitialCreate : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)

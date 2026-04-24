@@ -3,6 +3,7 @@ using HomeFinder.Api.src.Common.Errors;
 using HomeFinder.Api.src.Data;
 using HomeFinder.Api.src.Repositories;
 using HomeFinder.Api.src.Services;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -49,6 +50,33 @@ builder.Services.AddCors(options =>
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("StartupMigration");
+    if (dbContext.Database.IsRelational())
+    {
+        // コンテナ起動直後のDB待機を考慮して、マイグレーションをリトライする。
+        const int maxRetryCount = 10;
+        for (var attempt = 1; attempt <= maxRetryCount; attempt++)
+        {
+            try
+            {
+                logger.LogInformation("Applying EF Core migrations (attempt {Attempt}/{MaxRetryCount})", attempt, maxRetryCount);
+                dbContext.Database.Migrate();
+                logger.LogInformation("EF Core migrations applied successfully");
+                break;
+            }
+            catch (Exception ex) when (attempt < maxRetryCount)
+            {
+                logger.LogWarning(ex, "Failed to apply migrations on attempt {Attempt}. Retrying...", attempt);
+                Thread.Sleep(TimeSpan.FromSeconds(3));
+            }
+        }
+
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

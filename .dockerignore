@@ -1,0 +1,12 @@
+.git
+.gitignore
+.vscode
+.specify
+
+**/bin
+**/obj
+**/node_modules
+**/dist
+
+**/.env*
+**/*.log
