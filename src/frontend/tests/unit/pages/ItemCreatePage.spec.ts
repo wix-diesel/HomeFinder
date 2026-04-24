@@ -45,6 +45,7 @@ describe('ItemCreatePage', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain('同じ名称の物品がすでに登録されています。');
+    expect(wrapper.text()).toContain('再試行');
   });
 
   it('登録成功時に一覧画面へ遷移する', async () => {
@@ -62,6 +63,6 @@ describe('ItemCreatePage', () => {
     await wrapper.find('form').trigger('submit.prevent');
     await flushPromises();
 
-    expect(pushMock).toHaveBeenCalledWith('/items');
+    expect(pushMock).toHaveBeenCalledWith({ path: '/items', query: { created: '1' } });
   });
 });

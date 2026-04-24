@@ -1,5 +1,7 @@
 import type { Item } from '../models/item';
 import type { CreateItemRequest } from '../models/createItemRequest';
+import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
+import { toCreateItemRequest } from './itemPayloadMapper';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
 
@@ -35,13 +37,14 @@ export async function getItemById(id: string): Promise<Item> {
   return (await response.json()) as Item;
 }
 
-export async function createItem(request: CreateItemRequest): Promise<Item> {
+export async function createItem(request: CreateItemRequest | ItemRegistrationFormState): Promise<Item> {
+  const payload: CreateItemRequest = 'fieldErrors' in request ? toCreateItemRequest(request) : request;
   const response = await fetch(`${API_BASE_URL}/api/items`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(request),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
