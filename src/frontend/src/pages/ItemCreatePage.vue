@@ -2,37 +2,54 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import ItemForm from '../components/ItemForm.vue';
+import { PageSectionHeader } from '../components/common';
+import { uiText } from '../constants/uiText';
+import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
 import { createItem, ItemServiceError } from '../services/itemService';
 
 const router = useRouter();
 const errorMessage = ref('');
+const isSubmitting = ref(false);
 
-async function handleSubmit(payload: { name: string; quantity: number }) {
+async function handleSubmit(formState: ItemRegistrationFormState) {
   errorMessage.value = '';
+  isSubmitting.value = true;
 
   try {
-    await createItem(payload);
-    await router.push('/items');
+    await createItem(formState);
+    await router.push({ path: '/items', query: { created: '1' } });
   } catch (error) {
     if (error instanceof ItemServiceError && error.code === 'ITEM_NAME_CONFLICT') {
-      errorMessage.value = '同じ名称の物品がすでに登録されています。';
+      errorMessage.value = uiText.errors.itemConflict;
       return;
     }
 
     if (error instanceof ItemServiceError && error.code === 'VALIDATION_ERROR') {
-      errorMessage.value = '入力内容に誤りがあります。';
+      errorMessage.value = uiText.errors.validationSummary;
       return;
     }
 
-    errorMessage.value = '物品登録に失敗しました。';
+    errorMessage.value = uiText.errors.submitFailed;
+  } finally {
+    isSubmitting.value = false;
   }
+}
+
+function handleRetry() {
+  errorMessage.value = '';
 }
 </script>
 
 <template>
-  <section>
-    <h1>物品登録</h1>
-    <p v-if="errorMessage">{{ errorMessage }}</p>
-    <ItemForm @submit="handleSubmit" />
+  <section class="item-create-page">
+    <PageSectionHeader :title="uiText.create.title" :description="uiText.create.subtitle" />
+    <ItemForm :submit-error="errorMessage" :is-submitting="isSubmitting" @submit="handleSubmit" @retry="handleRetry" />
   </section>
 </template>
+
+<style scoped>
+.item-create-page {
+  display: grid;
+  gap: 16px;
+}
+</style>
