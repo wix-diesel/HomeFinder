@@ -226,6 +226,12 @@ PublishScripts/
 csx/
 *.build.csdef
 
+# Node.js / Web artifacts
+node_modules/
+dist/
+build/
+.env*
+
 # Microsoft Azure Emulator
 ecf/
 rcf/
