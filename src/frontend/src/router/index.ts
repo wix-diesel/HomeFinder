@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import ItemListPage from '../pages/ItemListPage.vue';
 import ItemDetailPage from '../pages/ItemDetailPage.vue';
 import ItemCreatePage from '../pages/ItemCreatePage.vue';
+import SettingsPage from '../pages/SettingsPage.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -24,6 +25,11 @@ const router = createRouter({
       path: '/items/new',
       name: 'item-create',
       component: ItemCreatePage,
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsPage,
     },
   ],
 });

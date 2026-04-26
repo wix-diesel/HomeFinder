@@ -75,6 +75,48 @@ export const uiText = {
       },
     },
   },
+  settings: {
+    pageTitle: '設定',
+    backToList: '一覧へ戻る',
+    navButtonLabel: '設定画面へ移動',
+    profileSectionHeading: 'プロフィール',
+    profileName: '山田 太郎',
+    profileRole: '在庫管理者・プレミアムプラン',
+    generalSectionHeading: '一般設定',
+    items: {
+      notifications: {
+        label: 'プッシュ通知',
+        description: '在庫不足・移動アラートを受け取る',
+      },
+      appearance: {
+        label: '外観',
+        description: '現在: ライトモード',
+      },
+      language: {
+        label: '言語',
+        description: '日本語',
+      },
+    },
+    dataSectionHeading: 'データ管理',
+    dataItems: {
+      category: {
+        label: 'カテゴリ管理',
+        description: 'カテゴリの追加・編集・削除',
+      },
+      location: {
+        label: '場所（部屋）管理',
+        description: '倉庫・部屋・棚を設定する',
+      },
+      export: {
+        label: '在庫エクスポート',
+        description: 'CSVまたはExcel形式でダウンロード',
+      },
+    },
+    dangerSectionHeading: '危険ゾーン',
+    dangerPurgeLabel: '全在庫データを削除',
+    footerVersion: 'v2.4.0 • エンタープライズ版',
+    footerCopyright: '© 2024 HomeFinder',
+  },
   errors: {
     nameRequired: '物品名称は必須です。',
     quantityInvalid: '数量は1以上の整数で入力してください。',

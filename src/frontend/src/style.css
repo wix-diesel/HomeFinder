@@ -23,3 +23,9 @@ body {
 a {
   color: inherit;
 }
+
+/* FR-005: キーボードフォーカス可視化の共通スタイル（WCAG 2.1 SC 1.4.11 準拠）*/
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
