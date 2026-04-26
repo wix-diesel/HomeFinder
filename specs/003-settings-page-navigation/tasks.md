@@ -11,7 +11,7 @@
 
 **目的**: 設定画面導入に必要な表示モデルとテスト土台を準備する
 
-- [ ] T001 設定画面表示用の日本語定数を新規作成する in src/frontend/src/constants/settingsPageJa.ts
+- [ ] T001 設定画面表示用の日本語定数を uiText.ts へ追加する in src/frontend/src/constants/uiText.ts
 - [ ] T002 [P] 設定画面表示モデルを新規作成する in src/frontend/src/models/settingsPageViewModel.ts
 - [ ] T003 [P] 設定画面のユニットテスト雛形を追加する in src/frontend/tests/unit/pages/SettingsPage.spec.ts
 
@@ -69,8 +69,7 @@
 ### ユーザーストーリー2の実装
 
 - [ ] T017 [US2] 設定画面本体を新規実装する in src/frontend/src/pages/SettingsPage.vue
-- [ ] T018 [US2] 設定画面の日本語文言を追加する in src/frontend/src/constants/uiText.ts
-- [ ] T019 [US2] 設定画面表示モデルと定数を適用する in src/frontend/src/pages/SettingsPage.vue
+- [ ] T019 [US2] 設定画面表示モデルと定数 (uiText.ts) を適用する in src/frontend/src/pages/SettingsPage.vue
 - [ ] T020 [US2] 一覧画面と設定画面の構成差分を参照デザインに合わせて調整する in src/frontend/src/pages/ItemListPage.vue
 - [ ] T030 [US2] 設定画面に一覧へ戻る導線を追加する in src/frontend/src/pages/SettingsPage.vue
 
@@ -139,6 +138,7 @@
 
 - T004 -> T011 -> T012 -> T014
 - T001/T002 -> T017 -> T019
+- T001 は T018 を統合済み（日本語定数は uiText.ts に一元化）
 - T017 -> T030
 - T012 -> T023 -> T024
 - T014/T020/T024/T030 -> T028 -> T029
