@@ -5,10 +5,9 @@
         <span class="material-symbols-outlined brand-icon" aria-hidden="true">inventory_2</span>
         <h1>{{ uiText.app.title }}</h1>
       </div>
-      <div class="header-actions" aria-hidden="true">
-        <button type="button" class="icon-btn" aria-label="検索">
-          <span class="material-symbols-outlined">search</span>
-        </button>
+      <div class="header-actions">
+        <!-- FR-001/FR-008: 歯車アイコンは常時表示される設定遷移導線 -->
+        <SettingsNavigationButton />
         <button type="button" class="avatar-btn" aria-label="プロフィール">
           <span class="material-symbols-outlined">person</span>
         </button>
@@ -38,6 +37,7 @@
 
 <script setup lang="ts">
 import { uiText } from '../constants/uiText';
+import SettingsNavigationButton from '../components/common/SettingsNavigationButton.vue';
 </script>
 
 <style scoped>

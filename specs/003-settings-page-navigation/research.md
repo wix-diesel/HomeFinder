@@ -42,6 +42,31 @@
 - 設定画面内リンクは本機能では遷移実装しない方針を確定した。
 - Technical Context の NEEDS CLARIFICATION は 0 件。
 
+## Regression Test Results
+
+### フロントエンド回帰実行結果 (T028)
+
+**実行日**: 2026-04-26  
+**コマンド**: `cd src/frontend && npm run test:run`  
+**結果**: ✅ PASS
+
+```
+Test Files  17 passed (17)
+      Tests  44 passed (44)
+   Duration  5.69s
+```
+
+**新規追加テストファイル**:
+- `tests/unit/layouts/AppLayoutSettingsNavigation.spec.ts` (3 tests) ✅
+- `tests/unit/layouts/AppLayoutSettingsKeyboard.spec.ts` (3 tests) ✅
+- `tests/unit/layouts/AppLayoutSettingsA11y.spec.ts` (4 tests) ✅
+- `tests/unit/pages/ItemListToSettingsFlow.spec.ts` (3 tests) ✅
+- `tests/unit/pages/SettingsPage.spec.ts` (6 tests) ✅
+- `tests/unit/pages/SettingsPageDisplayOnly.spec.ts` (2 tests) ✅
+- `tests/unit/components/SettingsNavigationButtonFallback.spec.ts` (3 tests) ✅
+
+**既存テスト回帰**: 全件維持（API 契約に変更なし）
+
 ## Measurement Protocol
 
 ### SC-001: 導線認識率

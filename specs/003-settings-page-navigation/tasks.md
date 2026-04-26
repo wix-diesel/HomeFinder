@@ -11,9 +11,9 @@
 
 **目的**: 設定画面導入に必要な表示モデルとテスト土台を準備する
 
-- [ ] T001 設定画面表示用の日本語定数を uiText.ts へ追加する in src/frontend/src/constants/uiText.ts
-- [ ] T002 [P] 設定画面表示モデルを新規作成する in src/frontend/src/models/settingsPageViewModel.ts
-- [ ] T003 [P] 設定画面のユニットテスト雛形を追加する in src/frontend/tests/unit/pages/SettingsPage.spec.ts
+- [X] T001 設定画面表示用の日本語定数を uiText.ts へ追加する in src/frontend/src/constants/uiText.ts
+- [X] T002 [P] 設定画面表示モデルを新規作成する in src/frontend/src/models/settingsPageViewModel.ts
+- [X] T003 [P] 設定画面のユニットテスト雛形を追加する in src/frontend/tests/unit/pages/SettingsPage.spec.ts
 
 ---
 
@@ -23,11 +23,11 @@
 
 **重要**: このフェーズ完了前にユーザーストーリー実装へ進まない
 
-- [ ] T004 設定画面ルートを追加する in src/frontend/src/router/index.ts
-- [ ] T005 [P] 設定導線ボタンコンポーネントを作成する in src/frontend/src/components/common/SettingsNavigationButton.vue
-- [ ] T006 [P] 共通コンポーネントの公開エントリを更新する in src/frontend/src/components/common/index.ts
-- [ ] T007 一覧右上導線を配置できるようレイアウトを更新する in src/frontend/src/layouts/AppLayout.vue
-- [ ] T008 [P] 導線フォーカス可視化の共通スタイルを追加する in src/frontend/src/style.css
+- [X] T004 設定画面ルートを追加する in src/frontend/src/router/index.ts
+- [X] T005 [P] 設定導線ボタンコンポーネントを作成する in src/frontend/src/components/common/SettingsNavigationButton.vue
+- [X] T006 [P] 共通コンポーネントの公開エントリを更新する in src/frontend/src/components/common/index.ts
+- [X] T007 一覧右上導線を配置できるようレイアウトを更新する in src/frontend/src/layouts/AppLayout.vue
+- [X] T008 [P] 導線フォーカス可視化の共通スタイルを追加する in src/frontend/src/style.css
 
 **チェックポイント**: 導線基盤とルーティングが整い、ユーザーストーリー実装を開始可能
 
@@ -41,15 +41,15 @@
 
 ### ユーザーストーリー1のテスト
 
-- [ ] T009 [P] [US1] 一覧表示中に歯車導線クリックで /settings 遷移するテストを追加する in src/frontend/tests/unit/layouts/AppLayoutSettingsNavigation.spec.ts
-- [ ] T010 [P] [US1] 一覧表示中に Enter/Space 実行で /settings 遷移するテストを追加する in src/frontend/tests/unit/layouts/AppLayoutSettingsKeyboard.spec.ts
+- [X] T009 [P] [US1] 一覧表示中に歯車導線クリックで /settings 遷移するテストを追加する in src/frontend/tests/unit/layouts/AppLayoutSettingsNavigation.spec.ts
+- [X] T010 [P] [US1] 一覧表示中に Enter/Space 実行で /settings 遷移するテストを追加する in src/frontend/tests/unit/layouts/AppLayoutSettingsKeyboard.spec.ts
 
 ### ユーザーストーリー1の実装
 
-- [ ] T011 [US1] 一覧文脈で右上歯車導線を表示する実装を追加する in src/frontend/src/layouts/AppLayout.vue
-- [ ] T012 [US1] 歯車導線コンポーネントをルーター遷移へ接続する in src/frontend/src/components/common/SettingsNavigationButton.vue
-- [ ] T013 [US1] ルート解決失敗時に一覧へ留まるフォールバックを実装する in src/frontend/src/components/common/SettingsNavigationButton.vue
-- [ ] T014 [US1] 一覧から設定へ1操作到達の回帰テストを追加する in src/frontend/tests/unit/pages/ItemListToSettingsFlow.spec.ts
+- [X] T011 [US1] 一覧文脈で右上歯車導線を表示する実装を追加する in src/frontend/src/layouts/AppLayout.vue
+- [X] T012 [US1] 歯車導線コンポーネントをルーター遷移へ接続する in src/frontend/src/components/common/SettingsNavigationButton.vue
+- [X] T013 [US1] ルート解決失敗時に一覧へ留まるフォールバックを実装する in src/frontend/src/components/common/SettingsNavigationButton.vue
+- [X] T014 [US1] 一覧から設定へ1操作到達の回帰テストを追加する in src/frontend/tests/unit/pages/ItemListToSettingsFlow.spec.ts
 
 **チェックポイント**: ユーザーストーリー1が独立して動作し検証可能
 
@@ -63,15 +63,15 @@
 
 ### ユーザーストーリー2のテスト
 
-- [ ] T015 [P] [US2] 設定画面の可視文言が日本語のみであることを検証するテストを追加する in src/frontend/tests/unit/pages/SettingsPage.spec.ts
-- [ ] T016 [P] [US2] 設定項目が display_only で遷移しないことを検証するテストを追加する in src/frontend/tests/unit/pages/SettingsPageDisplayOnly.spec.ts
+- [X] T015 [P] [US2] 設定画面の可視文言が日本語のみであることを検証するテストを追加する in src/frontend/tests/unit/pages/SettingsPage.spec.ts
+- [X] T016 [P] [US2] 設定項目が display_only で遷移しないことを検証するテストを追加する in src/frontend/tests/unit/pages/SettingsPageDisplayOnly.spec.ts
 
 ### ユーザーストーリー2の実装
 
-- [ ] T017 [US2] 設定画面本体を新規実装する in src/frontend/src/pages/SettingsPage.vue
-- [ ] T019 [US2] 設定画面表示モデルと定数 (uiText.ts) を適用する in src/frontend/src/pages/SettingsPage.vue
-- [ ] T020 [US2] 一覧画面と設定画面の構成差分を参照デザインに合わせて調整する in src/frontend/src/pages/ItemListPage.vue
-- [ ] T030 [US2] 設定画面に一覧へ戻る導線を追加する in src/frontend/src/pages/SettingsPage.vue
+- [X] T017 [US2] 設定画面本体を新規実装する in src/frontend/src/pages/SettingsPage.vue
+- [X] T019 [US2] 設定画面表示モデルと定数 (uiText.ts) を適用する in src/frontend/src/pages/SettingsPage.vue
+- [X] T020 [US2] 一覧画面と設定画面の構成差分を参照デザインに合わせて調整する in src/frontend/src/pages/ItemListPage.vue
+- [X] T030 [US2] 設定画面に一覧へ戻る導線を追加する in src/frontend/src/pages/SettingsPage.vue
 
 **チェックポイント**: ユーザーストーリー2が独立して動作し検証可能
 
@@ -85,13 +85,13 @@
 
 ### ユーザーストーリー3のテスト
 
-- [ ] T021 [P] [US3] 歯車導線の aria-label とフォーカス可視化を検証する a11y テストを追加する in src/frontend/tests/unit/layouts/AppLayoutSettingsA11y.spec.ts
-- [ ] T022 [P] [US3] アイコン読込失敗時の代替表示を検証するテストを追加する in src/frontend/tests/unit/components/SettingsNavigationButtonFallback.spec.ts
+- [X] T021 [P] [US3] 歯車導線の aria-label とフォーカス可視化を検証する a11y テストを追加する in src/frontend/tests/unit/layouts/AppLayoutSettingsA11y.spec.ts
+- [X] T022 [P] [US3] アイコン読込失敗時の代替表示を検証するテストを追加する in src/frontend/tests/unit/components/SettingsNavigationButtonFallback.spec.ts
 
 ### ユーザーストーリー3の実装
 
-- [ ] T023 [US3] 歯車導線へ日本語 aria-label とフォーカス表示を実装する in src/frontend/src/components/common/SettingsNavigationButton.vue
-- [ ] T024 [US3] アイコン代替表示と誤タップ防止の操作領域を実装する in src/frontend/src/components/common/SettingsNavigationButton.vue
+- [X] T023 [US3] 歯車導線へ日本語 aria-label とフォーカス表示を実装する in src/frontend/src/components/common/SettingsNavigationButton.vue
+- [X] T024 [US3] アイコン代替表示と誤タップ防止の操作領域を実装する in src/frontend/src/components/common/SettingsNavigationButton.vue
 
 **チェックポイント**: ユーザーストーリー3が独立して動作し検証可能
 
@@ -104,7 +104,7 @@
 - [ ] T025 [P] 実装後の検証手順へクイックスタートを更新する in specs/003-settings-page-navigation/quickstart.md
 - [ ] T026 [P] 導線UI契約を実装値に同期する in specs/003-settings-page-navigation/contracts/settings-navigation-ui.md
 - [ ] T027 [P] 設定画面表示契約を実装値に同期する in specs/003-settings-page-navigation/contracts/settings-page-display-contract.md
-- [ ] T028 フロントエンド回帰実行結果を記録する in specs/003-settings-page-navigation/research.md
+- [X] T028 フロントエンド回帰実行結果を記録する in specs/003-settings-page-navigation/research.md
 - [ ] T029 SC-001〜SC-004 の測定結果を記録する in specs/003-settings-page-navigation/research.md
 - [ ] T031 SC-001 の観察手順と判定ログを記録する in specs/003-settings-page-navigation/research.md
 - [ ] T032 SC-002 の試行回数・成功率集計手順を記録する in specs/003-settings-page-navigation/research.md
