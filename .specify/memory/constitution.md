@@ -1,6 +1,6 @@
 # HomeFinder 憲章
 
-**Feature**: 001-item-inventory (個人用物品管理) | **Version**: 1.0 | **Ratified**: 2026-04-24
+**Feature**: 001-item-inventory (個人用物品管理) | **Version**: 1.1 | **Ratified**: 2026-04-26
 
 ## Core Principles
 
@@ -8,7 +8,8 @@
 - フロントエンド・バックエンドは Web API で通信する
 - すべてのビジネスロジックはバックエンド (ASP.NET Core) に実装する
 - フロントエンド (Vue.js) は UI とデータ表示のみに責務を限定する
-- API 仕様は `contracts/items-api.md` にて定義・維持する
+- API 仕様は機能単位で分割した契約 Markdown で定義・維持してよい
+- 例: `contracts/items-api.md`, `specs/<feature>/contracts/categories-api.md`
 
 ### II. UTC 内部・JST 表示 (MUST)
 - データベース・API 応答内のすべてのタイムスタンプは UTC (ISO 8601 with Z suffix) で統一する
@@ -18,7 +19,7 @@
 ### III. 入力値検証の二重防御 (MUST)
 - API レイヤーでバリデーション (400 Bad Request を返す)
 - データベース レイヤーでも制約 (UNIQUE, NOT NULL, CHECK) を実装する
-- エラーレスポンスは `contracts/items-api.md` に記載のコード (400, 404, 409) を遵守する
+- エラーレスポンスは対象機能の API 契約に記載のコード (400, 404, 409) を遵守する
 
 ### IV. テスト駆動開発 (MUST)
 - 機能実装前に受け入れテストシナリオを定義する
@@ -32,7 +33,7 @@
 - 各 SC に対応する検証タスクを Phase 6 に記載する
 
 ### VI. ドキュメント・コード同期 (SHOULD)
-- API 契約の変更は同時に `items-api.md` と契約テストを更新する
+- API 契約の変更は同時に該当契約 Markdown と契約テストを更新する
 - ディレクトリ構造はすべての計画ドキュメント (spec/plan/tasks) で統一する
 - 仕様変更は Clarifications セクションに記録する
 
