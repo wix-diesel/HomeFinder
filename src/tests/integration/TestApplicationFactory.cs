@@ -1,6 +1,6 @@
-using HomeFinder.Api.src.Data;
-using HomeFinder.Api.src.Models;
-using HomeFinder.Api.Models;
+using HomeFinder.Infrastructure.Data;
+using HomeFinder.Core.Entities;
+using HomeFinder.Core.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;

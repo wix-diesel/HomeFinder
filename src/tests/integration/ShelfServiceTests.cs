@@ -1,8 +1,8 @@
-using HomeFinder.Api.src.Common.Errors;
-using HomeFinder.Api.src.Data;
-using HomeFinder.Api.src.Models;
-using HomeFinder.Api.src.Repositories;
-using HomeFinder.Api.src.Services;
+using HomeFinder.Core.Errors;
+using HomeFinder.Infrastructure.Data;
+using HomeFinder.Core.Entities;
+using HomeFinder.Infrastructure.Repositories;
+using HomeFinder.Application.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace IntegrationTests;

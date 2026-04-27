@@ -1,7 +1,7 @@
 using System.Net;
-using HomeFinder.Api.Models;
-using HomeFinder.Api.src.Data;
-using HomeFinder.Api.src.Models;
+using HomeFinder.Core.Entities;
+using HomeFinder.Infrastructure.Data;
+using HomeFinder.Core.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IntegrationTests;
