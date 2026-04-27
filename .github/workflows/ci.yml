@@ -1,0 +1,74 @@
+name: CI
+
+# mainブランチへのPR発行時に自動でビルドとテストを実行する
+on:
+  pull_request:
+    branches:
+      - main
+
+# デフォルトの権限を最小限に制限する
+permissions:
+  contents: read
+
+jobs:
+  # ----------------------------------------
+  # バックエンド: ビルドとテスト
+  # ----------------------------------------
+  backend:
+    name: Backend (Build & Test)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: .NET SDK セットアップ
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 依存パッケージの復元
+        working-directory: src
+        run: dotnet restore HomeFinder.sln
+
+      - name: ビルド
+        working-directory: src
+        run: dotnet build HomeFinder.sln --no-restore --configuration Release
+
+      - name: コントラクトテスト実行
+        working-directory: src
+        run: dotnet test tests/contract/contract.csproj --no-build --configuration Release --logger "console;verbosity=minimal"
+
+      - name: インテグレーションテスト実行
+        working-directory: src
+        run: dotnet test tests/integration/integration.csproj --no-build --configuration Release --logger "console;verbosity=minimal"
+
+  # ----------------------------------------
+  # フロントエンド: ビルドとテスト
+  # ----------------------------------------
+  frontend:
+    name: Frontend (Build & Test)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: src/HomeFinder.UI/package-lock.json
+
+      - name: 依存パッケージのインストール
+        working-directory: src/HomeFinder.UI
+        run: npm ci
+
+      - name: ビルド
+        working-directory: src/HomeFinder.UI
+        run: npm run build
+
+      - name: テスト実行
+        working-directory: src/HomeFinder.UI
+        run: npm run test:run
