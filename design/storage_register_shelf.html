@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Storage Manager - Shelf Management</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2d3133",
+                        "surface-dim": "#d8dadc",
+                        "on-surface": "#191c1e",
+                        "on-background": "#191c1e",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#b4c5ff",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#434655",
+                        "background": "#f7f9fb",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#00174b",
+                        "outline": "#737686",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#bc4800",
+                        "primary-container": "#2563eb",
+                        "secondary": "#505f76",
+                        "outline-variant": "#c3c6d7",
+                        "surface-container-high": "#e6e8ea",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-tint": "#0053db",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#eeefff",
+                        "surface-bright": "#f7f9fb",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-secondary-container": "#54647a",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary-fixed": "#d3e4fe",
+                        "surface": "#f7f9fb",
+                        "tertiary": "#943700",
+                        "on-primary": "#ffffff",
+                        "primary": "#004ac6",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-container": "#eceef0",
+                        "inverse-on-surface": "#eff1f3",
+                        "tertiary-fixed": "#ffdbcd",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#0b1c30",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-tertiary-container": "#ffede6",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#d0e1fb",
+                        "on-tertiary-fixed-variant": "#7d2d00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "gutter": "20px",
+                        "container-max": "1280px",
+                        "base": "4px",
+                        "xl": "40px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Manrope"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "code-sm": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "26px", "fontWeight": "600" }],
+                        "code-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .scrim {
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-surface font-body-md">
+    <!-- Top App Bar -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
+        <div class="flex justify-between items-center w-full px-6 py-4 max-w-[1280px] mx-auto">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-blue-600 dark:text-blue-500 text-xl"
+                    data-icon="inventory_2">inventory_2</span>
+                <h1 class="font-manrope text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">Storage
+                    Manager</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <button
+                    class="p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:opacity-80 transition-opacity">
+                    <span class="material-symbols-outlined text-slate-500 dark:text-slate-400"
+                        data-icon="search">search</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="flex max-w-[1280px] mx-auto min-h-[calc(100vh-73px)] relative">
+        <!-- Sidebar Navigation -->
+        <aside
+            class="hidden md:flex flex-col w-64 border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 pt-4 h-[calc(100vh-73px)] sticky top-[73px]">
+            <div class="px-6 mb-6">
+                <span class="text-lg font-bold text-slate-900 dark:text-slate-100 font-manrope">System Admin</span>
+            </div>
+            <nav class="flex-1 space-y-1 px-3">
+                <a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out font-manrope text-sm font-medium"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                    Dashboard
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-semibold transition-all duration-200 ease-in-out font-manrope text-sm"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="meeting_room">meeting_room</span>
+                    Rooms
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out font-manrope text-sm font-medium"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="shelves">shelves</span>
+                    Inventory
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out font-manrope text-sm font-medium"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="settings">settings</span>
+                    Settings
+                </a>
+            </nav>
+        </aside>
+        <!-- Main Content Area (Background Screen) -->
+        <main class="flex-1 p-lg bg-surface">
+            <header class="mb-lg flex justify-between items-end">
+                <div>
+                    <h2 class="font-headline-lg text-headline-lg text-on-surface">Location Management</h2>
+                    <p class="text-on-surface-variant font-body-md">Organize and manage your storage spaces</p>
+                </div>
+                <button
+                    class="bg-primary text-on-primary px-lg py-sm rounded-lg font-semibold flex items-center gap-2 shadow-sm hover:opacity-90">
+                    <span class="material-symbols-outlined" data-icon="add">add</span>
+                    New Shelf
+                </button>
+            </header>
+            <!-- Location Grid -->
+            <div class="grid grid-cols-12 gap-gutter">
+                <!-- Zone A -->
+                <div class="col-span-12 lg:col-span-8 space-y-md">
+                    <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl">
+                        <div class="flex justify-between items-center mb-md">
+                            <h3 class="font-headline-sm text-headline-sm flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary"
+                                    data-icon="warehouse">warehouse</span>
+                                Main Warehouse
+                            </h3>
+                            <span
+                                class="bg-secondary-container text-on-secondary-container px-sm py-xs rounded-full text-label-md">Active</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md">
+                            <div class="border border-outline-variant p-sm rounded-lg bg-white flex flex-col gap-sm">
+                                <div class="h-32 bg-slate-100 rounded overflow-hidden">
+                                    <img alt="Warehouse shelf" class="w-full h-full object-cover"
+                                        data-alt="close-up of industrial metal shelving unit in a clean organized warehouse with bright overhead lighting"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMeltw1EhRD24VKGD_5UyjqDTnKLFlgdROqAEe8eNvzwzzSSS5uTaL9Cg6APJ4sS83IbVK6dLJEqPabx2qsAQqsjWM8RBDlsWRrVVG4jtmXuvRAP3965_4IK8exWgLNiLh-EwHKGwlOQXrq4D0KeP6V76vals4Swl4a6BegPzbeItA6ToiFBKSyXB1VQ3G9w7nO72RhXtjLOBNNwYUiS0J_bH4k9K6YEgsImKhwhrVdYDMkRVlfPUO8zbiE2YTMT-AORBMIWH-qmc" />
+                                </div>
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-semibold text-body-md">Shelf A-101</p>
+                                        <p class="text-on-surface-variant text-label-md">Capacity: 85%</p>
+                                    </div>
+                                    <button class="text-slate-400 hover:text-primary"><span
+                                            class="material-symbols-outlined" data-icon="edit">edit</span></button>
+                                </div>
+                            </div>
+                            <!-- Placeholder cards for depth -->
+                            <div class="border border-outline-variant p-sm rounded-lg bg-white flex flex-col gap-sm">
+                                <div class="h-32 bg-slate-100 rounded overflow-hidden">
+                                    <img alt="Warehouse boxes" class="w-full h-full object-cover"
+                                        data-alt="neatly stacked cardboard boxes on industrial metal racks under bright industrial lighting"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEgwQBPwr-_GjsdMxPOP4yuam_l6zW5OcwoiXLpU6-4Zs7Ce_7LhmIw8YcPKnSx6KHiYiuKtVCxGSDv1i3JUSLFvBoou5k4u02BBYbeP3BQlcObRHZusMrMBExVrYwhuz4DzbKdEqN2T45sd8B6FB3OWdI-sxIFBZnxMTlYxmqEYPmwBUAUo1a76t_EKQPtIadsmm2OMJrzWoUxsWJcoS2yi_snH4FhPRL85B8WnPu7ZBdQ9Jw0S4hBaOWm6xrlIRQIZvyo_pGwGw" />
+                                </div>
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-semibold text-body-md">Shelf B-202</p>
+                                        <p class="text-on-surface-variant text-label-md">Capacity: 40%</p>
+                                    </div>
+                                    <button class="text-slate-400 hover:text-primary"><span
+                                            class="material-symbols-outlined" data-icon="edit">edit</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Metadata Sidebar -->
+                <div class="col-span-12 lg:col-span-4 space-y-md">
+                    <div class="bg-surface-container-low border border-outline-variant p-md rounded-xl">
+                        <h4 class="font-headline-sm text-headline-sm mb-sm">Quick Stats</h4>
+                        <div class="space-y-sm">
+                            <div class="flex justify-between py-xs border-b border-outline-variant">
+                                <span class="text-on-surface-variant text-body-md">Total Rooms</span>
+                                <span class="font-semibold">12</span>
+                            </div>
+                            <div class="flex justify-between py-xs border-b border-outline-variant">
+                                <span class="text-on-surface-variant text-body-md">Total Shelves</span>
+                                <span class="font-semibold">148</span>
+                            </div>
+                            <div class="flex justify-between py-xs">
+                                <span class="text-on-surface-variant text-body-md">Utilization</span>
+                                <span class="text-primary font-bold">72%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Dialog Overlay (The Modal) -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-md scrim">
+        <div
+            class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-xl shadow-2xl overflow-hidden border border-outline-variant">
+            <!-- Modal Header -->
+            <div
+                class="px-lg py-md border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+                <div>
+                    <h3 class="font-headline-md text-headline-md text-on-surface">Add New Shelf</h3>
+                    <p class="text-on-surface-variant text-body-md">Configure storage unit details</p>
+                </div>
+                <button class="p-2 hover:bg-slate-100 rounded-full text-on-surface-variant">
+                    <span class="material-symbols-outlined" data-icon="close">close</span>
+                </button>
+            </div>
+            <!-- Modal Content -->
+            <form class="p-lg space-y-md">
+                <!-- Room Select -->
+                <div class="space-y-xs">
+                    <label class="block font-label-md text-on-surface-variant" for="room-select">Select Room</label>
+                    <div class="relative">
+                        <select
+                            class="w-full bg-white border border-outline px-md py-sm rounded-lg appearance-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            id="room-select">
+                            <option value="">Choose a room...</option>
+                            <option value="main">Main Warehouse</option>
+                            <option value="cold">Cold Storage A</option>
+                            <option value="hazmat">Hazardous Materials Lab</option>
+                            <option value="shipping">Shipping &amp; Receiving</option>
+                        </select>
+                        <div
+                            class="absolute inset-y-0 right-0 flex items-center px-md pointer-events-none text-on-surface-variant">
+                            <span class="material-symbols-outlined text-sm" data-icon="expand_more">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Shelf Name Input -->
+                <div class="space-y-xs">
+                    <label class="block font-label-md text-on-surface-variant" for="shelf-name">Shelf Name</label>
+                    <input
+                        class="w-full border border-outline px-md py-sm rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        id="shelf-name" placeholder="e.g. North Rack 04" type="text" />
+                </div>
+                <!-- Notes Field -->
+                <div class="space-y-xs">
+                    <label class="block font-label-md text-on-surface-variant" for="notes">Notes</label>
+                    <textarea
+                        class="w-full border border-outline px-md py-sm rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                        id="notes" placeholder="Special handling instructions or maintenance history..."
+                        rows="3"></textarea>
+                </div>
+                <!-- Visual Cue (Helpful metadata) -->
+                <div class="p-sm bg-blue-50/50 rounded-lg border border-blue-100 flex items-start gap-3">
+                    <span class="material-symbols-outlined text-primary text-sm mt-1" data-icon="info">info</span>
+                    <p class="text-xs text-on-secondary-container leading-relaxed">
+                        Shelves added to <strong>Main Warehouse</strong> will automatically inherit the global safety
+                        compliance policy (v2.4).
+                    </p>
+                </div>
+            </form>
+            <!-- Modal Footer -->
+            <div class="px-lg py-md border-t border-outline-variant bg-surface-container-low flex justify-end gap-sm">
+                <button
+                    class="px-lg py-sm rounded-lg font-semibold text-secondary hover:bg-slate-100 transition-colors">
+                    Cancel
+                </button>
+                <button
+                    class="px-lg py-sm rounded-lg font-semibold bg-primary text-on-primary hover:bg-primary-container transition-all shadow-md active:scale-95">
+                    Save Shelf
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Bottom Nav (Mobile) -->
+    <nav
+        class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-white/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800">
+        <button
+            class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 py-1 transition-transform active:scale-90">
+            <span class="material-symbols-outlined" data-icon="home">home</span>
+            <span class="font-manrope text-[10px] font-medium">Home</span>
+        </button>
+        <button
+            class="flex flex-col items-center justify-center text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg py-1 transition-transform active:scale-90">
+            <span class="material-symbols-outlined" data-icon="door_front">door_front</span>
+            <span class="font-manrope text-[10px] font-medium">Rooms</span>
+        </button>
+        <button
+            class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 py-1 transition-transform active:scale-90">
+            <span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+            <span class="font-manrope text-[10px] font-medium">Shelves</span>
+        </button>
+        <button
+            class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 py-1 transition-transform active:scale-90">
+            <span class="material-symbols-outlined" data-icon="menu">menu</span>
+            <span class="font-manrope text-[10px] font-medium">More</span>
+        </button>
+    </nav>
+</body>
+
+</html>

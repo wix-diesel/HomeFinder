@@ -30,4 +30,26 @@ public class Item
     /// 遅延読み込み用
     /// </summary>
     public Category? Category { get; set; }
+
+    /// <summary>
+    /// このアイテムが属する部屋の ID
+    /// NULL 許容（部屋未指定）
+    /// </summary>
+    public Guid? RoomId { get; set; }
+
+    /// <summary>
+    /// このアイテムが属する棚の ID
+    /// NULL 許容（棚未指定）
+    /// </summary>
+    public Guid? ShelfId { get; set; }
+
+    /// <summary>
+    /// このアイテムが属する部屋の参照
+    /// </summary>
+    public Room? Room { get; set; }
+
+    /// <summary>
+    /// このアイテムが属する棚の参照
+    /// </summary>
+    public Shelf? Shelf { get; set; }
 }

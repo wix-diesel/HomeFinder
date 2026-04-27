@@ -57,8 +57,9 @@ const viewModel: SettingsPageViewModel = {
           labelJa: uiText.settings.dataItems.location.label,
           descriptionJa: uiText.settings.dataItems.location.description,
           iconName: 'location_on',
-          actionType: 'display_only',
-          isInteractive: false,
+          actionType: 'navigation',
+          isInteractive: true,
+          navigationRoute: '/storage-locations',
         },
         {
           itemId: 'export',
@@ -82,6 +83,10 @@ function goBackToList() {
 // 004-item-category-management: カテゴリー管理へ遷移
 function handleCategoryNavigation() {
   router.push({ name: 'category-management' });
+}
+
+function handleLocationNavigation() {
+  router.push({ name: 'storage-management' });
 }
 </script>
 
@@ -133,7 +138,7 @@ function handleCategoryNavigation() {
               v-if="item.isInteractive"
               type="button"
               class="settings-item settings-item-button"
-              @click="item.itemId === 'category' ? handleCategoryNavigation() : undefined"
+              @click="item.itemId === 'category' ? handleCategoryNavigation() : item.itemId === 'location' ? handleLocationNavigation() : undefined"
             >
               <span class="material-symbols-outlined settings-item-icon" aria-hidden="true">{{ item.iconName }}</span>
               <div class="settings-item-text">
