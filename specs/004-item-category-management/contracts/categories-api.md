@@ -89,6 +89,12 @@
 - Response `400 Bad Request` (`VALIDATION_ERROR`)
 - Response `409 Conflict` (`CATEGORY_NAME_DUPLICATE`)
 
+#### リクエストバリデーション
+
+- `name`: 必須、1-50 文字
+- `icon`: 必須
+- `color`: 必須
+
 ### 4. 更新
 
 - Method: `PUT`
