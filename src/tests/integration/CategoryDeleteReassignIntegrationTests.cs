@@ -1,7 +1,6 @@
 using System.Net;
 using HomeFinder.Core.Entities;
 using HomeFinder.Infrastructure.Data;
-using HomeFinder.Core.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IntegrationTests;
