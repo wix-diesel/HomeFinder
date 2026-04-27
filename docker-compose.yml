@@ -2,7 +2,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: src/backend/Dockerfile
+      dockerfile: src/HomeFinder.Api/Dockerfile
     container_name: homefinder-backend
     environment:
       ASPNETCORE_ENVIRONMENT: Development
