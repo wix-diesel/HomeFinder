@@ -8,7 +8,11 @@
     },
     "chat.tools.terminal.autoApprove": {
         ".specify/scripts/bash/": true,
-        ".specify/scripts/powershell/": true
+        ".specify/scripts/powershell/": true,
+        "/^Set-Location C:/repo/HomeFinder/src; dotnet test tests/contract/contract\\.csproj --filter \"FullyQualifiedName~CategoriesApiContractTests\" -v minimal$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }
 

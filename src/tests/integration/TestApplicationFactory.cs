@@ -1,5 +1,6 @@
 using HomeFinder.Api.src.Data;
 using HomeFinder.Api.src.Models;
+using HomeFinder.Api.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,8 @@ namespace IntegrationTests;
 
 public class TestApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly string _databaseName = $"HomeFinderTestDb-{Guid.NewGuid()}";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
@@ -33,7 +36,7 @@ public class TestApplicationFactory : WebApplicationFactory<Program>
             }
 
             services.AddDbContext<ItemDbContext>(options =>
-                options.UseInMemoryDatabase("HomeFinderTestDb"));
+                options.UseInMemoryDatabase(_databaseName));
 
             using var scope = services.BuildServiceProvider().CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
@@ -57,6 +60,35 @@ public class TestApplicationFactory : WebApplicationFactory<Program>
                         Quantity = 1,
                         CreatedAtUtc = DateTime.UtcNow,
                         UpdatedAtUtc = DateTime.UtcNow
+                    });
+
+                db.SaveChanges();
+            }
+
+            if (!db.Categories.Any())
+            {
+                db.Categories.AddRange(
+                    new Category
+                    {
+                        Id = Category.Reserved.UnclassifiedId,
+                        Name = Category.Reserved.UnclassifiedName,
+                        NormalizedName = Category.Reserved.UnclassifiedName,
+                        Icon = null,
+                        Color = null,
+                        IsReserved = true,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                    },
+                    new Category
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "食器",
+                        NormalizedName = "食器",
+                        Icon = "restaurant",
+                        Color = "#FF6B6B",
+                        IsReserved = false,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
                     });
 
                 db.SaveChanges();

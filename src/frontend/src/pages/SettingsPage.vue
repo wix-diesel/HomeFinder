@@ -48,8 +48,9 @@ const viewModel: SettingsPageViewModel = {
           labelJa: uiText.settings.dataItems.category.label,
           descriptionJa: uiText.settings.dataItems.category.description,
           iconName: 'category',
-          actionType: 'display_only',
-          isInteractive: false,
+          actionType: 'navigation',
+          isInteractive: true,
+          navigationRoute: '/categories',
         },
         {
           itemId: 'location',
@@ -76,6 +77,11 @@ const viewModel: SettingsPageViewModel = {
 // FR-010: 一覧へ戻る導線
 function goBackToList() {
   router.push({ name: 'item-list' });
+}
+
+// 004-item-category-management: カテゴリー管理へ遷移
+function handleCategoryNavigation() {
+  router.push({ name: 'category-management' });
 }
 </script>
 
@@ -116,19 +122,35 @@ function goBackToList() {
           {{ section.headingJa }}
         </h2>
         <div class="settings-items-list">
-          <!-- FR-007: 各項目は表示のみ。クリックしても遷移しない -->
+          <!-- カテゴリー項目のみ遷移可能。他項目は表示のみ。 -->
           <div
             v-for="item in section.items"
             :key="item.itemId"
-            class="settings-item"
             :data-action-type="item.actionType"
+            :data-testid="`settings-item-${item.itemId}`"
           >
-            <span class="material-symbols-outlined settings-item-icon" aria-hidden="true">{{ item.iconName }}</span>
-            <div class="settings-item-text">
-              <p class="settings-item-label">{{ item.labelJa }}</p>
-              <p v-if="item.descriptionJa" class="settings-item-description">{{ item.descriptionJa }}</p>
+            <button
+              v-if="item.isInteractive"
+              type="button"
+              class="settings-item settings-item-button"
+              @click="item.itemId === 'category' ? handleCategoryNavigation() : undefined"
+            >
+              <span class="material-symbols-outlined settings-item-icon" aria-hidden="true">{{ item.iconName }}</span>
+              <div class="settings-item-text">
+                <p class="settings-item-label">{{ item.labelJa }}</p>
+                <p v-if="item.descriptionJa" class="settings-item-description">{{ item.descriptionJa }}</p>
+              </div>
+              <span class="material-symbols-outlined settings-item-chevron" aria-hidden="true">chevron_right</span>
+            </button>
+
+            <div v-else class="settings-item">
+              <span class="material-symbols-outlined settings-item-icon" aria-hidden="true">{{ item.iconName }}</span>
+              <div class="settings-item-text">
+                <p class="settings-item-label">{{ item.labelJa }}</p>
+                <p v-if="item.descriptionJa" class="settings-item-description">{{ item.descriptionJa }}</p>
+              </div>
+              <span class="material-symbols-outlined settings-item-chevron" aria-hidden="true">chevron_right</span>
             </div>
-            <span class="material-symbols-outlined settings-item-chevron" aria-hidden="true">chevron_right</span>
           </div>
         </div>
       </section>
@@ -258,6 +280,23 @@ function goBackToList() {
   border-bottom: 1px solid #f1f5f9;
   /* FR-007: display_only なのでポインターイベントなし（見た目のみ） */
   cursor: default;
+}
+
+.settings-item-button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-item-button:hover {
+  background: #f8fafc;
+}
+
+.settings-item-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
 }
 
 .settings-item:last-child {

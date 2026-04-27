@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-container": "#bc4800",
+                        "primary-container": "#2563eb",
+                        "on-error-container": "#93000a",
+                        "on-background": "#191c1e",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary-fixed": "#360f00",
+                        "tertiary-fixed": "#ffdbcd",
+                        "surface-dim": "#d8dadc",
+                        "secondary": "#505f76",
+                        "tertiary": "#943700",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-surface": "#191c1e",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-primary-container": "#eeefff",
+                        "secondary-container": "#d0e1fb",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#0053db",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "outline": "#737686",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface-variant": "#434655",
+                        "surface-container": "#eceef0",
+                        "on-secondary-fixed": "#0b1c30",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#00174b",
+                        "primary-fixed": "#dbe1ff",
+                        "on-tertiary-container": "#ffede6",
+                        "surface": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e0e3e5",
+                        "outline-variant": "#c3c6d7",
+                        "primary": "#004ac6",
+                        "on-secondary-container": "#54647a",
+                        "background": "#f7f9fb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "container-max": "1280px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "xl": "40px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "code-sm": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-sm": ["18px", {"lineHeight": "26px", "fontWeight": "600"}],
+                        "code-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f7f9fb;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 w-full">
+<div class="flex items-center justify-between px-4 h-16 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-4">
+<button class="hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors p-2 rounded-full active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-['Manrope'] font-bold text-lg tracking-tight text-on-surface">管理設定</h1>
+</div>
+<button class="hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors p-2 rounded-full active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400" data-icon="settings">settings</span>
+</button>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 pt-6 pb-32">
+<!-- Header Section -->
+<div class="mb-8">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-2">カテゴリー管理</h2>
+<p class="font-body-md text-on-surface-variant">アイテムの整理に使用するカテゴリーをカスタマイズできます。</p>
+</div>
+<!-- Search Bar (Power User UI) -->
+<div class="mb-6 max-w-2xl">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full pl-12 pr-16 py-3 bg-white border border-outline-variant rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-body-md" placeholder="カテゴリーを検索..." type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 border border-outline-variant rounded px-1.5 py-0.5 bg-surface-container-low">
+<span class="text-[10px] font-medium text-outline">⌘</span>
+<span class="text-[10px] font-medium text-outline">K</span>
+</div>
+</div>
+</div>
+<!-- Categories Bento-style / High-end Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<!-- Category Item 1 -->
+<div class="bg-white border border-slate-200 p-4 rounded-xl hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-600" data-icon="devices">devices</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-on-surface">家電</p>
+<p class="text-label-md font-label-md text-outline">24 アイテム</p>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-low rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 hover:bg-error-container hover:text-on-error-container rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Category Item 2 -->
+<div class="bg-white border border-slate-200 p-4 rounded-xl hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary" data-icon="chair">chair</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-on-surface">家具</p>
+<p class="text-label-md font-label-md text-outline">12 アイテム</p>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-low rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 hover:bg-error-container hover:text-on-error-container rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Category Item 3 -->
+<div class="bg-white border border-slate-200 p-4 rounded-xl hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="inventory_2">inventory_2</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-on-surface">事務用品</p>
+<p class="text-label-md font-label-md text-outline">56 アイテム</p>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-low rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 hover:bg-error-container hover:text-on-error-container rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Category Item 4 -->
+<div class="bg-white border border-slate-200 p-4 rounded-xl hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-emerald-600" data-icon="build">build</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-on-surface">工具</p>
+<p class="text-label-md font-label-md text-outline">8 アイテム</p>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-low rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 hover:bg-error-container hover:text-on-error-container rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Category Item 5 -->
+<div class="bg-white border border-slate-200 p-4 rounded-xl hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-purple-600" data-icon="science">science</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-on-surface">試薬・化学品</p>
+<p class="text-label-md font-label-md text-outline">15 アイテム</p>
+</div>
+</div>
+<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-container-low rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 hover:bg-error-container hover:text-on-error-container rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+<!-- Empty / Add State (Integrated into Grid) -->
+<button class="border-2 border-dashed border-outline-variant p-4 rounded-xl hover:border-primary hover:bg-primary/5 transition-all group flex items-center justify-center gap-3">
+<span class="material-symbols-outlined text-outline group-hover:text-primary" data-icon="add_circle">add_circle</span>
+<span class="font-label-md text-label-md text-outline group-hover:text-primary">新規カテゴリーを追加</span>
+</button>
+</div>
+<!-- Floating Action Button (Mobile Context) -->
+<button class="md:hidden fixed bottom-24 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-50">
+<span class="material-symbols-outlined text-2xl" data-icon="add">add</span>
+</button>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 bg-white dark:bg-slate-900 px-6 pb-safe border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center text-blue-600 dark:text-blue-400 active:opacity-70 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="category" data-weight="fill" style="font-variation-settings: 'FILL' 1;">category</span>
+<span class="font-['Manrope'] text-[10px] font-medium">カテゴリー</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-300 active:opacity-70 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="location_on">location_on</span>
+<span class="font-['Manrope'] text-[10px] font-medium">保管場所</span>
+</a>
+</nav>
+</body></html>

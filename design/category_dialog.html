@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Category - Category Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .font-manrope { font-family: 'Manrope', sans-serif; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-primary": "#b4c5ff",
+                      "on-secondary-fixed": "#0b1c30",
+                      "secondary": "#505f76",
+                      "surface-container": "#eceef0",
+                      "secondary-fixed": "#d3e4fe",
+                      "background": "#f7f9fb",
+                      "surface-bright": "#f7f9fb",
+                      "outline-variant": "#c3c6d7",
+                      "outline": "#737686",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed-dim": "#ffb596",
+                      "surface-variant": "#e0e3e5",
+                      "on-secondary-container": "#54647a",
+                      "on-primary-container": "#eeefff",
+                      "tertiary-fixed": "#ffdbcd",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "inverse-surface": "#2d3133",
+                      "primary-container": "#2563eb",
+                      "surface": "#f7f9fb",
+                      "on-error": "#ffffff",
+                      "tertiary-container": "#bc4800",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-tertiary-fixed-variant": "#7d2d00",
+                      "on-background": "#191c1e",
+                      "tertiary": "#943700",
+                      "surface-container-high": "#e6e8ea",
+                      "on-secondary-fixed-variant": "#38485d",
+                      "on-tertiary-container": "#ffede6",
+                      "surface-dim": "#d8dadc",
+                      "primary": "#004ac6",
+                      "surface-container-low": "#f2f4f6",
+                      "error": "#ba1a1a",
+                      "on-secondary": "#ffffff",
+                      "secondary-container": "#d0e1fb",
+                      "on-tertiary-fixed": "#360f00",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-tint": "#0053db",
+                      "primary-fixed": "#dbe1ff",
+                      "inverse-on-surface": "#eff1f3",
+                      "on-tertiary": "#ffffff",
+                      "on-surface-variant": "#434655",
+                      "surface-container-highest": "#e0e3e5",
+                      "secondary-fixed-dim": "#b7c8e1",
+                      "on-error-container": "#93000a",
+                      "on-surface": "#191c1e",
+                      "on-primary-fixed": "#00174b"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "gutter": "20px",
+                      "sm": "8px",
+                      "base": "4px",
+                      "xs": "4px",
+                      "md": "16px",
+                      "xl": "40px",
+                      "container-max": "1280px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "headline-sm": ["Manrope"],
+                      "code-sm": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-md": ["Manrope"],
+                      "body-lg": ["Inter"],
+                      "headline-lg": ["Manrope"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-sm": ["18px", {"lineHeight": "26px", "fontWeight": "600"}],
+                      "code-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Header (Shared Component: TopAppBar) -->
+<header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
+<div class="flex justify-between items-center w-full px-4 h-16 max-w-[1280px] mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400" data-icon="category">category</span>
+<h1 class="font-manrope font-semibold text-lg text-on-surface">Category Manager</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="transition-colors duration-200 active:opacity-70 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400" data-icon="search">search</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content (Background Page - Categories List) -->
+<main class="p-4 max-w-[1280px] mx-auto pb-24 opacity-40 pointer-events-none">
+<div class="mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-2">Inventory Categories</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage and organize your item classifications.</p>
+</div>
+<!-- Category Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+<!-- Mock Category Cards -->
+<div class="bg-white border border-outline-variant p-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-blue-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-600" data-icon="inventory_2">inventory_2</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm">General Stock</p>
+<p class="font-body-md text-body-md text-on-surface-variant">124 items</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="bg-white border border-outline-variant p-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-orange-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-orange-600" data-icon="bolt">bolt</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm">Electronics</p>
+<p class="font-body-md text-body-md text-on-surface-variant">45 items</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="bg-white border border-outline-variant p-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-green-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-green-600" data-icon="chair">chair</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm">Furniture</p>
+<p class="font-body-md text-body-md text-on-surface-variant">12 items</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</main>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40 backdrop-blur-[2px]">
+<!-- Dialog Shell -->
+<div class="bg-white w-full max-w-md shadow-lg overflow-hidden flex flex-col">
+<!-- Modal Header -->
+<div class="px-6 pt-6 pb-4">
+<h3 class="font-manrope font-bold text-xl text-on-surface">Add New Category</h3>
+</div>
+<!-- Modal Content -->
+<div class="px-6 py-2 flex flex-col gap-6">
+<!-- Category Name Input -->
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Category Name</label>
+<input class="w-full h-11 px-4 border border-outline-variant focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none font-body-md transition-all" placeholder="e.g. Heavy Machinery" type="text"/>
+</div>
+<!-- Icon Picker -->
+<div class="flex flex-col gap-3">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Select Icon</label>
+<div class="grid grid-cols-5 gap-3"><button class="w-12 h-12 flex items-center justify-center border border-primary-container bg-primary-container/10 text-primary-container">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:bg-slate-50 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:bg-slate-50 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="medical_services">medical_services</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:bg-slate-50 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:bg-slate-50 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="devices">devices</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:bg-slate-50 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:bg-slate-50 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="sports_soccer">sports_soccer</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:bg-slate-50 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:bg-slate-50 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="chair">chair</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:bg-slate-50 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+</button></div>
+</div>
+<!-- Color Selection -->
+<div class="flex flex-col gap-3">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Theme Color</label>
+<div class="flex gap-4">
+<button class="w-8 h-8 rounded-full bg-blue-600 ring-2 ring-offset-2 ring-blue-600"></button>
+<button class="w-8 h-8 rounded-full bg-orange-500"></button>
+<button class="w-8 h-8 rounded-full bg-emerald-600"></button>
+<button class="w-8 h-8 rounded-full bg-purple-600"></button>
+<button class="w-8 h-8 rounded-full bg-rose-600"></button>
+<button class="w-8 h-8 rounded-full bg-slate-700"></button>
+</div>
+</div>
+</div>
+<!-- Modal Actions -->
+<div class="p-6 mt-4 flex gap-3">
+<button class="flex-1 h-11 border border-outline-variant font-manrope font-semibold text-on-surface-variant hover:bg-slate-50 transition-colors">
+                    Cancel
+                </button>
+<button class="flex-1 h-11 bg-primary text-on-primary font-manrope font-semibold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all">
+                    Add Category
+                </button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation (Shared Component: BottomNavBar) -->
+<!-- Suppressed due to modal task-focused context, but included for screen structure visualization if needed -->
+<nav class="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center px-4 py-2 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none pointer-events-none opacity-40">
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 font-manrope text-[10px] font-medium">
+<span class="material-symbols-outlined mb-1" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center text-blue-600 dark:text-blue-400 font-bold font-manrope text-[10px] font-medium">
+<span class="material-symbols-outlined mb-1" data-icon="folder_open">folder_open</span>
+<span>Categories</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 font-manrope text-[10px] font-medium">
+<span class="material-symbols-outlined mb-1" data-icon="history">history</span>
+<span>History</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 font-manrope text-[10px] font-medium">
+<span class="material-symbols-outlined mb-1" data-icon="settings">settings</span>
+<span>Settings</span>
+</div>
+</nav>
+</body></html>
