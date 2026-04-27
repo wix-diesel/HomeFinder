@@ -19,7 +19,7 @@ describe('StorageLocationList (US1)', () => {
       },
     });
 
-    expect(wrapper.text()).toContain('Storage Management');
+    expect(wrapper.text()).toContain('保管場所管理');
     expect(wrapper.text()).toContain('倉庫A');
 
     await wrapper.find('.add-btn').trigger('click');

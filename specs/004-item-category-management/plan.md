@@ -119,16 +119,24 @@ specs/004-item-category-management/
 
 ```text
 src/
-├── backend/
+├── HomeFinder.Core/          # エンティティ・ドメイン例外（外部依存なし）
+│   ├── Entities/
+│   └── Errors/
+├── HomeFinder.Application/   # サービス・リポジトリIF・DTO（Core のみに依存）
 │   ├── Contracts/
-│   ├── Controllers/
-│   ├── Data/
-│   ├── Models/
 │   ├── Repositories/
-│   ├── Services/
-│   └── tests/
-│       ├── contract/
-│       └── integration/
+│   └── Services/             # Result<T> 返り値を使用
+├── HomeFinder.Infrastructure/ # DbContext・リポジトリ実装（Application に依存）
+│   ├── Data/
+│   │   └── Migrations/
+│   └── Repositories/
+├── HomeFinder.Api/           # コントローラー・起動設定（Application + Infrastructure に依存）
+│   ├── Controllers/
+│   ├── Errors/
+│   └── Program.cs
+├── tests/
+│   ├── contract/
+│   └── integration/
 └── frontend/
     ├── src/
     │   ├── components/
@@ -142,7 +150,7 @@ src/
         └── unit/
 ```
 
-**構成方針**: 既存の Web application 構成を維持し、バックエンドは `Items` 実装と同じ Controller/Service/Repository パターンを踏襲して `Categories` 系を追加する。フロントエンドは `src/frontend/src/pages` にカテゴリ管理ページ、`src/frontend/src/components` にダイアログ/一覧カード、`src/frontend/src/services` に category API クライアントを追加し、`src/frontend/src/router` と `SettingsPage.vue` を最小差分で改修する。
+**構成方針**: バックエンドはオニオンアーキテクチャ（Core / Application / Infrastructure / Api）に分割し、Application 層のサービスは `Result<T>` 返り値を使用する。フロントエンドは `src/frontend/src/pages` にカテゴリ管理ページ、`src/frontend/src/components` にダイアログ/一覧カード、`src/frontend/src/services` に category API クライアントを追加し、`src/frontend/src/router` と `SettingsPage.vue` を最小差分で改修する。
 
 ## 複雑性トラッキング
 

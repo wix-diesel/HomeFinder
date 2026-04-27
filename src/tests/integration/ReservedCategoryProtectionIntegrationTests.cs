@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using HomeFinder.Api.Models;
+using HomeFinder.Core.Entities;
 
 namespace IntegrationTests;
 
