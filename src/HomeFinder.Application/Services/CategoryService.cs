@@ -100,7 +100,7 @@ namespace HomeFinder.Application.Services
                 };
 
                 var created = await _categoryRepository.AddAsync(category);
-                _logger.LogInformation("Category created: {Id} - {Name}", created.Id, created.Name);
+                _logger.LogInformation("Category created: {Id} - {Name}", created.Id, created.Name.Replace(Environment.NewLine, " "));
 
                 return MapToDto(created);
             }
@@ -138,7 +138,7 @@ namespace HomeFinder.Application.Services
                 category.UpdatedAt = DateTime.UtcNow;
 
                 var updated = await _categoryRepository.UpdateAsync(category);
-                _logger.LogInformation("Category updated: {Id} - {Name}", updated.Id, updated.Name);
+                _logger.LogInformation("Category updated: {Id} - {Name}", updated.Id, updated.Name.Replace(Environment.NewLine, " "));
 
                 return MapToDto(updated);
             }

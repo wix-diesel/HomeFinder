@@ -88,7 +88,7 @@ namespace HomeFinder.Api.Controllers
 
             if (result.Error is CategoryNameDuplicateException cnde)
             {
-                _logger.LogWarning(cnde, "Category name duplicate: {Name}", request.Name);
+                _logger.LogWarning(cnde, "Category name duplicate: {Name}", request.Name.Replace(Environment.NewLine, " "));
                 return Conflict(new CategoryApiError { Code = "CATEGORY_NAME_DUPLICATE", Message = cnde.Message });
             }
 
@@ -142,7 +142,7 @@ namespace HomeFinder.Api.Controllers
 
             if (result.Error is CategoryNameDuplicateException cnde)
             {
-                _logger.LogWarning(cnde, "Category name duplicate during update: {Name}", request.Name);
+                _logger.LogWarning(cnde, "Category name duplicate during update: {Name}", request.Name.Replace(Environment.NewLine, " "));
                 return Conflict(new CategoryApiError { Code = "CATEGORY_NAME_DUPLICATE", Message = cnde.Message });
             }
 
