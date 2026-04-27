@@ -1,6 +1,6 @@
 # HomeFinder 憲章
 
-**Feature**: 001-item-inventory (個人用物品管理) | **Version**: 1.1 | **Ratified**: 2026-04-26
+**Feature**: 001-item-inventory (個人用物品管理) | **Version**: 1.2 | **Ratified**: 2026-04-27
 
 ## Core Principles
 
@@ -37,12 +37,32 @@
 - ディレクトリ構造はすべての計画ドキュメント (spec/plan/tasks) で統一する
 - 仕様変更は Clarifications セクションに記録する
 
+### VII. バックエンド オニオンアーキテクチャ (MUST)
+- バックエンドは以下の 4 プロジェクトに分離したオニオンアーキテクチャを採用する:
+  - `HomeFinder.Core`: エンティティ（Entity）とドメイン例外のみを含む。外部依存なし
+  - `HomeFinder.Application`: サービスインターフェース・実装、リポジトリインターフェース、DTO/コントラクト。`HomeFinder.Core` のみに依存する
+  - `HomeFinder.Infrastructure`: DbContext・EF Core マイグレーション・リポジトリ実装。`HomeFinder.Application` に依存する
+  - `HomeFinder.Api`: コントローラーと起動設定のみ。`HomeFinder.Application` および `HomeFinder.Infrastructure` に依存する
+- Application 層のサービスクラスは、返り値に必ず `DotNext.Result<T>` 型を使用する
+- コントローラーは例外を catch してはならない。必ず `Result<T>` の値または `Error` を検査してレスポンスを返す
+- リポジトリインターフェース (`I*Repository`) は `HomeFinder.Application` に属する
+- リポジトリ実装は `HomeFinder.Infrastructure` に属する
+- .NET バージョンと NuGet パッケージバージョンは `src/Directory.Build.props` および `src/Directory.Packages.props` で一元管理する
+
+### VIII. ドキュメント言語 (MUST)
+- GitHub Copilot が生成するすべての Markdown ファイル（spec, plan, tasks, research, data-model, quickstart, contracts）は**日本語**で記述する
+- コード内コメントも日本語で記述する
+- PR タイトル・本文・コメントも日本語で記述する
+
 ## 設計上の制約
 
 ### 技術スタック
 - Backend: .NET 10 with ASP.NET Core + Entity Framework Core + SQL Server
+  - アーキテクチャ: オニオンアーキテクチャ（Core / Application / Infrastructure / Api）
+  - エラー処理: Application 層は `DotNext.Result<T>` を返す
 - Frontend: Vue 3 + Vite + TypeScript
 - Testing: Vitest (frontend), xUnit (backend), Contract tests
+- バージョン管理: `src/Directory.Build.props` (フレームワーク) / `src/Directory.Packages.props` (NuGet)
 
 ### スコープ
 - ログイン機能: なし
@@ -60,6 +80,9 @@
 3. バリデーション規則の二重防御実装
 4. SC-001 ～ SC-004 の測定タスク存在確認
 5. ディレクトリ構造の統一性
+6. Application 層のサービスが `Result<T>` 返り値を使用しているか
+7. オニオンアーキテクチャの層間依存が正しい方向を向いているか（外 → 内のみ）
+8. Markdown ファイルが日本語で記述されているか
 
 **修正方針**: 憲章違反が検出された場合、優先度 CRITICAL として `/speckit.analyze` 出力に明示する。
 
