@@ -1,8 +1,9 @@
 // バックエンド: カテゴリー Controller
 
-using HomeFinder.Api.Contracts;
-using HomeFinder.Api.Common.Errors;
-using HomeFinder.Api.Services;
+using HomeFinder.Application.Contracts;
+using HomeFinder.Core.Errors;
+using HomeFinder.Application.Services;
+using HomeFinder.Api.Errors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeFinder.Api.Controllers
@@ -32,17 +33,13 @@ namespace HomeFinder.Api.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories()
         {
-            try
-            {
-                var categories = await _categoryService.GetAllCategoriesAsync();
-                return Ok(categories);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting categories");
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    CategoryApiError.FromException(ex));
-            }
+            var result = await _categoryService.GetAllCategoriesAsync();
+            if (result.IsSuccessful)
+                return Ok(result.Value);
+
+            _logger.LogError(result.Error, "Error getting categories");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                CategoryApiError.FromException(result.Error!));
         }
 
         /// <summary>
@@ -54,26 +51,16 @@ namespace HomeFinder.Api.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CategoryDto>> GetCategory(Guid id)
         {
-            try
-            {
-                var category = await _categoryService.GetCategoryByIdAsync(id);
-                if (category == null)
-                {
-                    return NotFound(new CategoryApiError
-                    {
-                        Code = "CATEGORY_NOT_FOUND",
-                        Message = "指定されたカテゴリーは存在しません。"
-                    });
-                }
+            var result = await _categoryService.GetCategoryByIdAsync(id);
+            if (result.IsSuccessful)
+                return Ok(result.Value);
 
-                return Ok(category);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting category {Id}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    CategoryApiError.FromException(ex));
-            }
+            if (result.Error is CategoryNotFoundException ex)
+                return NotFound(new CategoryApiError { Code = "CATEGORY_NOT_FOUND", Message = ex.Message });
+
+            _logger.LogError(result.Error, "Error getting category {Id}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                CategoryApiError.FromException(result.Error!));
         }
 
         /// <summary>
@@ -95,36 +82,25 @@ namespace HomeFinder.Api.Controllers
                 });
             }
 
-            try
+            var result = await _categoryService.CreateCategoryAsync(request);
+            if (result.IsSuccessful)
+                return CreatedAtAction(nameof(GetCategory), new { id = result.Value.Id }, result.Value);
+
+            if (result.Error is CategoryNameDuplicateException cnde)
             {
-                var category = await _categoryService.CreateCategoryAsync(request);
-                return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
+                _logger.LogWarning(cnde, "Category name duplicate: {Name}", request.Name);
+                return Conflict(new CategoryApiError { Code = "CATEGORY_NAME_DUPLICATE", Message = cnde.Message });
             }
-            catch (CategoryNameDuplicateException ex)
+
+            if (result.Error is CategoryValidationException cve)
             {
-                _logger.LogWarning(ex, "Category name duplicate: {Name}", request.Name);
-                return Conflict(new CategoryApiError
-                {
-                    Code = "CATEGORY_NAME_DUPLICATE",
-                    Message = ex.Message
-                });
+                _logger.LogWarning(cve, "Category validation error");
+                return BadRequest(new CategoryApiError { Code = "VALIDATION_ERROR", Message = cve.Message, Details = cve.Details });
             }
-            catch (CategoryValidationException ex)
-            {
-                _logger.LogWarning(ex, "Category validation error");
-                return BadRequest(new CategoryApiError
-                {
-                    Code = "VALIDATION_ERROR",
-                    Message = ex.Message,
-                    Details = ex.Details
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating category");
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    CategoryApiError.FromException(ex));
-            }
+
+            _logger.LogError(result.Error, "Error creating category");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                CategoryApiError.FromException(result.Error!));
         }
 
         /// <summary>
@@ -148,54 +124,37 @@ namespace HomeFinder.Api.Controllers
                 });
             }
 
-            try
+            var result = await _categoryService.UpdateCategoryAsync(id, request);
+            if (result.IsSuccessful)
+                return Ok(result.Value);
+
+            if (result.Error is CategoryNotFoundException cnf)
             {
-                var category = await _categoryService.UpdateCategoryAsync(id, request);
-                return Ok(category);
+                _logger.LogWarning(cnf, "Category not found: {Id}", id);
+                return NotFound(new CategoryApiError { Code = "CATEGORY_NOT_FOUND", Message = cnf.Message });
             }
-            catch (CategoryNotFoundException ex)
+
+            if (result.Error is ReservedCategoryProtectedException rcpe)
             {
-                _logger.LogWarning(ex, "Category not found: {Id}", id);
-                return NotFound(new CategoryApiError
-                {
-                    Code = "CATEGORY_NOT_FOUND",
-                    Message = ex.Message
-                });
+                _logger.LogWarning(rcpe, "Attempt to edit reserved category: {Id}", id);
+                return StatusCode(StatusCodes.Status403Forbidden, new CategoryApiError { Code = "RESERVED_CATEGORY_PROTECTED", Message = rcpe.Message });
             }
-            catch (ReservedCategoryProtectedException ex)
+
+            if (result.Error is CategoryNameDuplicateException cnde)
             {
-                _logger.LogWarning(ex, "Attempt to edit reserved category: {Id}", id);
-                return StatusCode(StatusCodes.Status403Forbidden, new CategoryApiError
-                {
-                    Code = "RESERVED_CATEGORY_PROTECTED",
-                    Message = ex.Message
-                });
+                _logger.LogWarning(cnde, "Category name duplicate during update: {Name}", request.Name);
+                return Conflict(new CategoryApiError { Code = "CATEGORY_NAME_DUPLICATE", Message = cnde.Message });
             }
-            catch (CategoryNameDuplicateException ex)
+
+            if (result.Error is CategoryValidationException cve)
             {
-                _logger.LogWarning(ex, "Category name duplicate during update: {Name}", request.Name);
-                return Conflict(new CategoryApiError
-                {
-                    Code = "CATEGORY_NAME_DUPLICATE",
-                    Message = ex.Message
-                });
+                _logger.LogWarning(cve, "Category validation error");
+                return BadRequest(new CategoryApiError { Code = "VALIDATION_ERROR", Message = cve.Message, Details = cve.Details });
             }
-            catch (CategoryValidationException ex)
-            {
-                _logger.LogWarning(ex, "Category validation error");
-                return BadRequest(new CategoryApiError
-                {
-                    Code = "VALIDATION_ERROR",
-                    Message = ex.Message,
-                    Details = ex.Details
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating category {Id}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    CategoryApiError.FromException(ex));
-            }
+
+            _logger.LogError(result.Error, "Error updating category {Id}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                CategoryApiError.FromException(result.Error!));
         }
 
         /// <summary>
@@ -210,35 +169,25 @@ namespace HomeFinder.Api.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteCategory(Guid id)
         {
-            try
-            {
-                await _categoryService.DeleteCategoryAsync(id);
+            var result = await _categoryService.DeleteCategoryAsync(id);
+            if (result.IsSuccessful)
                 return NoContent();
-            }
-            catch (CategoryNotFoundException ex)
+
+            if (result.Error is CategoryNotFoundException cnf)
             {
-                _logger.LogWarning(ex, "Category not found: {Id}", id);
-                return NotFound(new CategoryApiError
-                {
-                    Code = "CATEGORY_NOT_FOUND",
-                    Message = ex.Message
-                });
+                _logger.LogWarning(cnf, "Category not found: {Id}", id);
+                return NotFound(new CategoryApiError { Code = "CATEGORY_NOT_FOUND", Message = cnf.Message });
             }
-            catch (ReservedCategoryProtectedException ex)
+
+            if (result.Error is ReservedCategoryProtectedException rcpe)
             {
-                _logger.LogWarning(ex, "Attempt to delete reserved category: {Id}", id);
-                return StatusCode(StatusCodes.Status403Forbidden, new CategoryApiError
-                {
-                    Code = "RESERVED_CATEGORY_PROTECTED",
-                    Message = ex.Message
-                });
+                _logger.LogWarning(rcpe, "Attempt to delete reserved category: {Id}", id);
+                return StatusCode(StatusCodes.Status403Forbidden, new CategoryApiError { Code = "RESERVED_CATEGORY_PROTECTED", Message = rcpe.Message });
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting category {Id}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    CategoryApiError.FromException(ex));
-            }
+
+            _logger.LogError(result.Error, "Error deleting category {Id}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                CategoryApiError.FromException(result.Error!));
         }
     }
 }
