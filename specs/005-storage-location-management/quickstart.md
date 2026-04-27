@@ -224,7 +224,7 @@ dotnet test --verbosity detailed
 ### Backend Contract Tests
 
 ```bash
-cd src/backend/tests/contract
+cd src/tests/contract
 
 # Run contract tests
 dotnet test

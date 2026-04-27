@@ -15,6 +15,14 @@
 **Testing**: xUnit (backend unit/integration), Contract tests (API validation), Vitest (frontend)
 **Target Platform**: Web application (desktop browser)
 **Project Type**: Feature enhancement to existing web service
+**Design Baseline (Must Reproduce)**:
+- List page: `design/storage_list.html`
+- Room create/edit dialog: `design/storage_register_room.html`
+- Shelf create/edit dialog: `design/storage_register_shelf.html`
+**Design Reproduction Policy**:
+- Above HTML files are visual source of truth for layout, spacing, typography, icon usage, color tokens, and component states.
+- Implementation must preserve top navigation, sidebar, main content composition, dialog structure, and mobile bottom navigation behavior defined in baseline HTML.
+- Differences are allowed only for data binding, accessibility attributes, and framework integration details.
 **Backend Architecture**: Onion Architecture with Dependency Inversion
   - **Service Layer**: Implements business logic, returns `Result<T>` type for explicit error handling
   - **Repository Layer**: Data access abstraction with dependency injection
@@ -109,7 +117,7 @@ src/frontend/src/
     └── storageStore.ts              # State management (Pinia)
 
 # Testing
-src/backend/tests/
+src/tests/
 ├── contract/
 │   ├── StorageLocationsApiContract.cs  # Contract tests for API
 │   └── StorageDataModelContract.cs     # Contract tests for data model
@@ -315,6 +323,18 @@ This will create `tasks.md` with:
   - Service methods: `Task<Result<RoomDto>> CreateRoomAsync(CreateRoomRequest request)`
   - Error codes: VALIDATION_ERROR (400), DUPLICATE_NAME (409), NOT_FOUND (404), CONFLICT (409)
   - Controller maps: `result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error)`
+
+### ADR-007: Design Fidelity to Baseline HTML
+- **Decision**: Frontend UI must reproduce the baseline design HTML for list and dialog screens.
+- **Rationale**:
+  - Prevent drift between approved design artifacts and implementation output
+  - Reduce review ambiguity by using explicit source HTML mapping
+  - Maintain consistent information architecture and visual language across pages
+- **Implementation**:
+  - `StorageManagement.vue` / `StorageLocationList.vue` are implemented against `design/storage_list.html`
+  - `RoomDialog.vue` is implemented against `design/storage_register_room.html`
+  - `ShelfDialog.vue` is implemented against `design/storage_register_shelf.html`
+  - Add visual parity checklist and screenshot-based verification in test/polish tasks
 
 ---
 

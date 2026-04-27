@@ -3,6 +3,23 @@
 **Version**: 1.0 | **Date**: 2026-04-27  
 **Purpose**: Define UI/UX requirements for room and shelf list display
 
+## Baseline Design Source
+
+- Source of truth HTML: `design/storage_list.html`
+- This contract requires visual and structural reproduction of the baseline HTML for:
+  - Top navigation and sidebar composition
+  - Main content header, action area, and room/shelf list hierarchy
+  - Mobile bottom navigation shell
+  - Loading/Error/Empty states
+
+## Design Fidelity Acceptance Criteria
+
+- Layout structure matches baseline HTML (header, sidebar, content, list hierarchy, mobile nav)
+- Typography family and scale follow baseline tokens (Manrope/Inter and mapped sizes)
+- Color, border radius, spacing, and icon placement follow baseline tokens and composition intent
+- Interaction states match baseline intent (hover/focus/disabled/expanded)
+- No unapproved redesign of component arrangement or information hierarchy
+
 ---
 
 ## List View Component

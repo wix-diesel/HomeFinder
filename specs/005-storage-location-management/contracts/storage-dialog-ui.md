@@ -3,6 +3,23 @@
 **Version**: 1.0 | **Date**: 2026-04-27  
 **Purpose**: Define UI/UX requirements for room and shelf creation/editing dialogs
 
+## Baseline Design Source
+
+- Room dialog source of truth HTML: `design/storage_register_room.html`
+- Shelf dialog source of truth HTML: `design/storage_register_shelf.html`
+- Dialog implementation must reproduce baseline composition including:
+  - Scrim/backdrop treatment and centered dialog container
+  - Header/content/footer block structure
+  - Form field grouping, helper/info blocks, and action button alignment
+
+## Design Fidelity Acceptance Criteria
+
+- Dialog width, spacing rhythm, and section order follow baseline HTML
+- Typography and icon usage follow baseline tokens and visual hierarchy
+- Form controls reproduce baseline visual states (default/focus/error/disabled/loading)
+- Footer actions keep baseline hierarchy (secondary cancel, primary save)
+- Any deviation must be documented as intentional and approved
+
 ---
 
 ## Room Dialog Component

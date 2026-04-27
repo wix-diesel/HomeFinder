@@ -3,6 +3,7 @@ import ItemListPage from '../pages/ItemListPage.vue';
 import ItemDetailPage from '../pages/ItemDetailPage.vue';
 import ItemCreatePage from '../pages/ItemCreatePage.vue';
 import SettingsPage from '../pages/SettingsPage.vue';
+import StorageManagementPage from '../pages/StorageManagement.vue';
 // CategoryManagementPage は Phase 3 (T028) で実装予定
 // import CategoryManagementPage from '../pages/CategoryManagementPage.vue';
 
@@ -40,6 +41,15 @@ const router = createRouter({
       component: () => import('../pages/CategoryManagementPage.vue'), // 動的インポート
       meta: {
         title: 'カテゴリー管理',
+        requiresAuth: false,
+      },
+    },
+    {
+      path: '/storage-locations',
+      name: 'storage-management',
+      component: StorageManagementPage,
+      meta: {
+        title: '場所管理',
         requiresAuth: false,
       },
     },
