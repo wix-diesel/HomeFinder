@@ -4,14 +4,14 @@
 
 ```bash
 cd src/frontend
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## テスト
 
 ```bash
-npm run test:run
+pnpm test:run
 ```
 
 ## 共通コンポーネントの使い方

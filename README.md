@@ -18,8 +18,8 @@ dotnet run
 
 ```bash
 cd src/frontend
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## Docker で起動（Linux コンテナ）
