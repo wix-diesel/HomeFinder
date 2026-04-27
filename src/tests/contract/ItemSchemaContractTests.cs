@@ -22,7 +22,7 @@ public class ItemSchemaContractTests
 
     private static string LoadContract(string filename)
     {
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "..", "specs", "001-item-inventory", "contracts", filename));
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "specs", "001-item-inventory", "contracts", filename));
         return File.ReadAllText(path);
     }
 }
