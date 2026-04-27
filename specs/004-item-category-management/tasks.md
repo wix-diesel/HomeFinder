@@ -11,15 +11,15 @@
 
 **目的**: カテゴリー管理機能に必要な設計成果物とフロントエンド/バックエンドの共通定義を準備する
 
-- [ ] T001 カテゴリー API 契約を作成する in specs/004-item-category-management/contracts/categories-api.md
-- [ ] T002 [P] 設定画面からカテゴリー管理へ遷移する UI 契約を作成する in specs/004-item-category-management/contracts/settings-category-navigation-ui.md
-- [ ] T003 [P] カテゴリー追加・編集ダイアログ UI 契約を作成する in specs/004-item-category-management/contracts/category-dialog-ui.md
-- [ ] T004 [P] カテゴリードメインのデータモデルを定義する in specs/004-item-category-management/data-model.md
-- [ ] T005 [P] 実装・確認手順をまとめた quickstart を作成する in specs/004-item-category-management/quickstart.md
-- [ ] T006 [P] 既存 UI/ロジック再利用の監査を実施し、再利用可否の判定結果を記録する in specs/004-item-category-management/research.md
-- [ ] T007 フロントエンドで使用するカテゴリー型と候補定義の雛形を追加する in src/frontend/src/models/category.ts
-- [ ] T008 [P] フロントエンドのカテゴリー API サービス雛形を追加する in src/frontend/src/services/categoryService.ts
-- [ ] T009 [P] バックエンドのカテゴリー応答 DTO 雛形と UTC 日時フィールド定義を追加する in src/backend/Contracts/CategoryDto.cs
+- [x] T001 カテゴリー API 契約を作成する in specs/004-item-category-management/contracts/categories-api.md
+- [x] T002 [P] 設定画面からカテゴリー管理へ遷移する UI 契約を作成する in specs/004-item-category-management/contracts/settings-category-navigation-ui.md
+- [x] T003 [P] カテゴリー追加・編集ダイアログ UI 契約を作成する in specs/004-item-category-management/contracts/category-dialog-ui.md
+- [x] T004 [P] カテゴリードメインのデータモデルを定義する in specs/004-item-category-management/data-model.md
+- [x] T005 [P] 実装・確認手順をまとめた quickstart を作成する in specs/004-item-category-management/quickstart.md
+- [x] T006 [P] 既存 UI/ロジック再利用の監査を実施し、再利用可否の判定結果を記録する in specs/004-item-category-management/research.md
+- [x] T007 フロントエンドで使用するカテゴリー型と候補定義の雛形を追加する in src/frontend/src/models/category.ts
+- [x] T008 [P] フロントエンドのカテゴリー API サービス雛形を追加する in src/frontend/src/services/categoryService.ts
+- [x] T009 [P] バックエンドのカテゴリー応答 DTO 雛形と UTC 日時フィールド定義を追加する in src/backend/Contracts/CategoryDto.cs
 
 ---
 
@@ -29,46 +29,38 @@
 
 **重要**: このフェーズ完了前にユーザーストーリー実装へ進まない
 
-- [ ] T010 カテゴリーエンティティと未分類予約カテゴリの表現を追加する in src/backend/Models/Category.cs
-- [ ] T011 [P] 既存 Item モデルへ Category 関連を追加する in src/backend/Models/Item.cs
-- [ ] T012 [P] ItemDbContext に Category セット・制約定義・UTC 時刻カラム定義を追加する in src/backend/Data/ItemDbContext.cs
-- [ ] T013 カテゴリー用マイグレーションを追加する in src/backend/Data/Migrations/202604260002_AddCategories.cs
-- [ ] T014 [P] カテゴリー Repository インターフェイスを追加する in src/backend/Repositories/ICategoryRepository.cs
-- [ ] T015 [P] カテゴリー Repository 実装を追加する in src/backend/Repositories/CategoryRepository.cs
-- [ ] T016 [P] カテゴリー用例外と API エラー生成を追加する in src/backend/Common/Errors/CategoryExceptions.cs
-- [ ] T017 カテゴリー Service インターフェイスを追加する in src/backend/Services/ICategoryService.cs
-- [ ] T018 カテゴリー Service 実装を追加し、正規化名一意制約・候補値検証・予約カテゴリ制約・UTC 時刻更新を実装する in src/backend/Services/CategoryService.cs
-- [ ] T019 カテゴリー Controller を追加して CRUD API のルーティングを公開する in src/backend/Controllers/CategoriesController.cs
-- [ ] T020 設定画面のカテゴリー項目を遷移可能にするための表示モデルを更新する in src/frontend/src/models/settingsPageViewModel.ts
-- [ ] T021 [P] 設定文言へカテゴリー管理導線の文言を追加する in src/frontend/src/constants/uiText.ts
-- [ ] T022 [P] フロントエンドのルーターにカテゴリー管理ページのルートを追加する in src/frontend/src/router/index.ts
+- [x] T010 カテゴリーエンティティと未分類予約カテゴリの表現を追加する in src/backend/Models/Category.cs
+- [x] T011 [P] 既存 Item モデルへ Category 関連を追加する in src/backend/Models/Item.cs
+- [x] T012 [P] ItemDbContext に Category セット・制約定義・UTC 時刻カラム定義を追加する in src/backend/Data/ItemDbContext.cs
+- [x] T013 カテゴリー用マイグレーションを追加する in src/backend/Data/Migrations/202604260002_AddCategories.cs
+- [x] T014 [P] カテゴリー Repository インターフェイスを追加する in src/backend/Repositories/ICategoryRepository.cs
+- [x] T015 [P] カテゴリー Repository 実装を追加する in src/backend/Repositories/CategoryRepository.cs
+- [x] T016 [P] カテゴリー用例外と API エラー生成を追加する in src/backend/Common/Errors/CategoryExceptions.cs
+- [x] T017 カテゴリー Service インターフェイスを追加する in src/backend/Services/ICategoryService.cs
+- [x] T018 カテゴリー Service 実装を追加し、正規化名一意制約・候補値検証・予約カテゴリ制約・UTC 時刻更新を実装する in src/backend/Services/CategoryService.cs
+- [x] T019 カテゴリー Controller を追加して CRUD API のルーティングを公開する in src/backend/Controllers/CategoriesController.cs
+- [x] T020 設定画面のカテゴリー項目を遷移可能にするための表示モデルを更新する in src/frontend/src/models/settingsPageViewModel.ts
+- [x] T021 [P] 設定文言へカテゴリー管理導線の文言を追加する in src/frontend/src/constants/uiText.ts
+- [x] T022 [P] フロントエンドのルーターにカテゴリー管理ページのルートを追加する in src/frontend/src/router/index.ts
 
 **チェックポイント**: カテゴリードメイン、永続化、API 公開面、ルーティング基盤が整い、各ユーザーストーリー実装を開始できる
 
----
-
-## Phase 3: ユーザーストーリー1 - カテゴリー一覧を確認する (Priority: P1) 🎯 MVP
-
-**ゴール**: 設定画面からカテゴリー管理ページへ遷移し、カテゴリー一覧を名称昇順で確認できるようにする
-
-**独立テスト**: 設定画面のカテゴリー項目からカテゴリー管理ページへ移動し、空状態または登録済みカテゴリー一覧が名称・アイコン・カラー付きで表示されることを確認する
-
 ### ユーザーストーリー1のテスト
 
-- [ ] T023 [P] [US1] 設定画面からカテゴリー管理ページへ遷移するユニットテストを追加する in src/frontend/tests/unit/pages/SettingsPageCategoryNavigation.spec.ts
-- [ ] T024 [P] [US1] カテゴリー一覧取得 API の契約テストを追加し UTC 日時応答を検証する in src/backend/tests/contract/CategoriesApiContractTests.cs
-- [ ] T025 [P] [US1] カテゴリー一覧の昇順表示と空状態表示を検証する画面テストを追加する in src/frontend/tests/unit/pages/CategoryManagementPage.spec.ts
-- [ ] T026 [P] [US1] カテゴリー一覧取得の統合テストを追加し UTC 日時応答を検証する in src/backend/tests/integration/CategoriesListIntegrationTests.cs
+- [x] T023 [P] [US1] 設定画面からカテゴリー管理ページへ遷移するユニットテストを追加する in src/frontend/tests/unit/pages/SettingsPageCategoryNavigation.spec.ts
+- [x] T024 [P] [US1] カテゴリー一覧取得 API の契約テストを追加し UTC 日時応答を検証する in src/backend/tests/contract/CategoriesApiContractTests.cs
+- [x] T025 [P] [US1] カテゴリー一覧の昇順表示と空状態表示を検証する画面テストを追加する in src/frontend/tests/unit/pages/CategoryManagementPage.spec.ts
+- [x] T026 [P] [US1] カテゴリー一覧取得の統合テストを追加し UTC 日時応答を検証する in src/backend/tests/integration/CategoriesListIntegrationTests.cs
 
 ### ユーザーストーリー1の実装
 
-- [ ] T027 [US1] 設定画面のカテゴリー項目を操作可能な導線へ更新する in src/frontend/src/pages/SettingsPage.vue
-- [ ] T028 [US1] カテゴリー管理ページを新規作成する in src/frontend/src/pages/CategoryManagementPage.vue
-- [ ] T029 [P] [US1] カテゴリー一覧カードコンポーネントを追加する in src/frontend/src/components/categories/CategoryCard.vue
-- [ ] T030 [P] [US1] カテゴリー一覧の空状態と読み込み状態コンポーネントを追加する in src/frontend/src/components/categories/CategoryListState.vue
-- [ ] T031 [US1] カテゴリー API サービスに一覧取得処理を実装する in src/frontend/src/services/categoryService.ts
-- [ ] T032 [US1] カテゴリー一覧画面で名称昇順・エラー表示・再取得を制御する in src/frontend/src/pages/CategoryManagementPage.vue
-- [ ] T033 [US1] デザイン参照に合わせてカテゴリー一覧画面のスタイルを追加する in src/frontend/src/pages/CategoryManagementPage.vue
+- [x] T027 [US1] 設定画面のカテゴリー項目を操作可能な導線へ更新する in src/frontend/src/pages/SettingsPage.vue
+- [x] T028 [US1] カテゴリー管理ページを新規作成する in src/frontend/src/pages/CategoryManagementPage.vue
+- [x] T029 [P] [US1] カテゴリー一覧カードコンポーネントを追加する in src/frontend/src/components/categories/CategoryCard.vue
+- [x] T030 [P] [US1] カテゴリー一覧の空状態と読み込み状態コンポーネントを追加する in src/frontend/src/components/categories/CategoryListState.vue
+- [x] T031 [US1] カテゴリー API サービスに一覧取得処理を実装する in src/frontend/src/services/categoryService.ts
+- [x] T032 [US1] カテゴリー一覧画面で名称昇順・エラー表示・再取得を制御する in src/frontend/src/pages/CategoryManagementPage.vue
+- [x] T033 [US1] デザイン参照に合わせてカテゴリー一覧画面のスタイルを追加する in src/frontend/src/pages/CategoryManagementPage.vue
 
 **チェックポイント**: 設定画面からカテゴリー管理ページに到達でき、一覧表示が独立して動作する
 
@@ -82,20 +74,20 @@
 
 ### ユーザーストーリー2のテスト
 
-- [ ] T034 [P] [US2] カテゴリー作成 API の契約テストを追加し UTC 日時応答を検証する in src/backend/tests/contract/CategoriesCreateContractTests.cs
-- [ ] T035 [P] [US2] 重複カテゴリー名の作成競合テストを追加する in src/backend/tests/integration/CategoriesCreateConflictIntegrationTests.cs
-- [ ] T036 [P] [US2] 追加ダイアログの入力・候補選択・保存成功を検証する画面テストを追加する in src/frontend/tests/unit/components/CategoryDialogCreate.spec.ts
-- [ ] T037 [P] [US2] 重複名エラーと通信失敗時の再試行表示を検証する画面テストを追加する in src/frontend/tests/unit/pages/CategoryCreateErrorState.spec.ts
+- [x] T034 [P] [US2] カテゴリー作成 API の契約テストを追加し UTC 日時応答を検証する in src/backend/tests/contract/CategoriesCreateContractTests.cs
+- [x] T035 [P] [US2] 重複カテゴリー名の作成競合テストを追加する in src/backend/tests/integration/CategoriesCreateConflictIntegrationTests.cs
+- [x] T036 [P] [US2] 追加ダイアログの入力・候補選択・保存成功を検証する画面テストを追加する in src/frontend/tests/unit/components/CategoryDialogCreate.spec.ts
+- [x] T037 [P] [US2] 重複名エラーと通信失敗時の再試行表示を検証する画面テストを追加する in src/frontend/tests/unit/pages/CategoryCreateErrorState.spec.ts
 
 ### ユーザーストーリー2の実装
 
-- [ ] T038 [P] [US2] カテゴリー追加・編集共通ダイアログを追加する in src/frontend/src/components/categories/CategoryDialog.vue
-- [ ] T039 [P] [US2] アイコン候補・カラー候補の定義を追加する in src/frontend/src/constants/categoryOptions.ts
-- [ ] T040 [US2] カテゴリー API サービスに作成処理とエラー変換を実装する in src/frontend/src/services/categoryService.ts
-- [ ] T041 [US2] カテゴリー管理ページへ新規追加導線と作成完了時の一覧更新処理を実装する in src/frontend/src/pages/CategoryManagementPage.vue
-- [ ] T042 [US2] バックエンドへカテゴリー作成リクエスト契約を追加する in src/backend/Contracts/CreateCategoryRequest.cs
-- [ ] T043 [US2] CategoryService にカテゴリー作成処理を実装し createdAt/updatedAt を UTC で設定する in src/backend/Services/CategoryService.cs
-- [ ] T044 [US2] CategoriesController に作成 API を実装する in src/backend/Controllers/CategoriesController.cs
+- [x] T038 [P] [US2] カテゴリー追加・編集共通ダイアログを追加する in src/frontend/src/components/categories/CategoryDialog.vue
+- [x] T039 [P] [US2] アイコン候補・カラー候補の定義を追加する in src/frontend/src/constants/categoryOptions.ts
+- [x] T040 [US2] カテゴリー API サービスに作成処理とエラー変換を実装する in src/frontend/src/services/categoryService.ts
+- [x] T041 [US2] カテゴリー管理ページへ新規追加導線と作成完了時の一覧更新処理を実装する in src/frontend/src/pages/CategoryManagementPage.vue
+- [x] T042 [US2] バックエンドへカテゴリー作成リクエスト契約を追加する in src/backend/Contracts/CreateCategoryRequest.cs
+- [x] T043 [US2] CategoryService にカテゴリー作成処理を実装し createdAt/updatedAt を UTC で設定する in src/backend/Services/CategoryService.cs
+- [x] T044 [US2] CategoriesController に作成 API を実装する in src/backend/Controllers/CategoriesController.cs
 
 **チェックポイント**: カテゴリー追加が独立して動作し、重複名拒否と候補値選択制約が成立する
 
@@ -109,23 +101,23 @@
 
 ### ユーザーストーリー3のテスト
 
-- [ ] T045 [P] [US3] カテゴリー更新 API の契約テストを追加し重複名更新の競合と UTC 日時応答を検証する in src/backend/tests/contract/CategoriesUpdateContractTests.cs
-- [ ] T046 [P] [US3] カテゴリー削除 API の契約テストを追加し UTC 日時応答を検証する in src/backend/tests/contract/CategoriesDeleteContractTests.cs
-- [ ] T047 [P] [US3] 編集ダイアログ初期表示・更新成功・重複名更新拒否を検証する画面テストを追加する in src/frontend/tests/unit/components/CategoryDialogEdit.spec.ts
-- [ ] T048 [P] [US3] 削除確認と一覧反映を検証する画面テストを追加する in src/frontend/tests/unit/pages/CategoryDeleteFlow.spec.ts
-- [ ] T049 [P] [US3] 削除時の未分類再割り当て統合テストを追加する in src/backend/tests/integration/CategoryDeleteReassignIntegrationTests.cs
-- [ ] T050 [P] [US3] 予約カテゴリの編集・削除拒否を検証する統合テストを追加する in src/backend/tests/integration/ReservedCategoryProtectionIntegrationTests.cs
+- [x] T045 [P] [US3] カテゴリー更新 API の契約テストを追加し重複名更新の競合と UTC 日時応答を検証する in src/backend/tests/contract/CategoriesUpdateContractTests.cs
+- [x] T046 [P] [US3] カテゴリー削除 API の契約テストを追加し UTC 日時応答を検証する in src/backend/tests/contract/CategoriesDeleteContractTests.cs
+- [x] T047 [P] [US3] 編集ダイアログ初期表示・更新成功・重複名更新拒否を検証する画面テストを追加する in src/frontend/tests/unit/components/CategoryDialogEdit.spec.ts
+- [x] T048 [P] [US3] 削除確認と一覧反映を検証する画面テストを追加する in src/frontend/tests/unit/pages/CategoryDeleteFlow.spec.ts
+- [x] T049 [P] [US3] 削除時の未分類再割り当て統合テストを追加する in src/backend/tests/integration/CategoryDeleteReassignIntegrationTests.cs
+- [x] T050 [P] [US3] 予約カテゴリの編集・削除拒否を検証する統合テストを追加する in src/backend/tests/integration/ReservedCategoryProtectionIntegrationTests.cs
 
 ### ユーザーストーリー3の実装
 
-- [ ] T051 [US3] バックエンドへカテゴリー更新リクエスト契約を追加する in src/backend/Contracts/UpdateCategoryRequest.cs
-- [ ] T052 [US3] CategoryService にカテゴリー更新処理を実装し重複名更新拒否と updatedAt の UTC 更新を行う in src/backend/Services/CategoryService.cs
-- [ ] T053 [US3] CategoryService に削除時の未分類再割り当て処理を実装する in src/backend/Services/CategoryService.cs
-- [ ] T054 [US3] CategoriesController に更新 API と削除 API を実装する in src/backend/Controllers/CategoriesController.cs
-- [ ] T055 [US3] カテゴリー API サービスに更新・削除処理を実装する in src/frontend/src/services/categoryService.ts
-- [ ] T056 [US3] カテゴリー一覧へ編集導線・削除導線・確認 UI を実装する in src/frontend/src/pages/CategoryManagementPage.vue
-- [ ] T057 [US3] 予約カテゴリの編集/削除非活性表示を実装する in src/frontend/src/components/categories/CategoryCard.vue
-- [ ] T058 [US3] 編集保存・削除成功後の昇順維持と未分類除外制御を実装する in src/frontend/src/pages/CategoryManagementPage.vue
+- [x] T051 [US3] バックエンドへカテゴリー更新リクエスト契約を追加する in src/backend/Contracts/UpdateCategoryRequest.cs
+- [x] T052 [US3] CategoryService にカテゴリー更新処理を実装し重複名更新拒否と updatedAt の UTC 更新を行う in src/backend/Services/CategoryService.cs
+- [x] T053 [US3] CategoryService に削除時の未分類再割り当て処理を実装する in src/backend/Services/CategoryService.cs
+- [x] T054 [US3] CategoriesController に更新 API と削除 API を実装する in src/backend/Controllers/CategoriesController.cs
+- [x] T055 [US3] カテゴリー API サービスに更新・削除処理を実装する in src/frontend/src/services/categoryService.ts
+- [x] T056 [US3] カテゴリー一覧へ編集導線・削除導線・確認 UI を実装する in src/frontend/src/pages/CategoryManagementPage.vue
+- [x] T057 [US3] 予約カテゴリの編集/削除非活性表示を実装する in src/frontend/src/components/categories/CategoryCard.vue
+- [x] T058 [US3] 編集保存・削除成功後の昇順維持と未分類除外制御を実装する in src/frontend/src/pages/CategoryManagementPage.vue
 
 **チェックポイント**: 編集と削除が独立して動作し、未分類再割り当てと予約カテゴリ保護が成立する
 
@@ -135,14 +127,14 @@
 
 **目的**: ドキュメント同期、成功基準記録、最終回帰を完了する
 
-- [ ] T059 [P] categories API 契約を実装結果に同期する in specs/004-item-category-management/contracts/categories-api.md
-- [ ] T060 [P] 設定画面導線 UI 契約を実装結果に同期する in specs/004-item-category-management/contracts/settings-category-navigation-ui.md
-- [ ] T061 [P] カテゴリーダイアログ UI 契約を実装結果に同期する in specs/004-item-category-management/contracts/category-dialog-ui.md
-- [ ] T062 [P] quickstart に検証手順と起動手順を同期する in specs/004-item-category-management/quickstart.md
-- [ ] T063 [P] research に実装判断と未分類運用ルールを記録する in specs/004-item-category-management/research.md
-- [ ] T064 フロントエンドの回帰テスト実行結果を記録する in specs/004-item-category-management/research.md
-- [ ] T065 バックエンドの契約/統合テスト実行結果を記録する in specs/004-item-category-management/research.md
-- [ ] T066 SC-001〜SC-009 の測定結果と確認手順を記録し、SC-009 が一覧・作成・更新・削除の全エンドポイントで成立することを明記する in specs/004-item-category-management/research.md
+- [x] T059 [P] categories API 契約を実装結果に同期する in specs/004-item-category-management/contracts/categories-api.md
+- [x] T060 [P] 設定画面導線 UI 契約を実装結果に同期する in specs/004-item-category-management/contracts/settings-category-navigation-ui.md
+- [x] T061 [P] カテゴリーダイアログ UI 契約を実装結果に同期する in specs/004-item-category-management/contracts/category-dialog-ui.md
+- [x] T062 [P] quickstart に検証手順と起動手順を同期する in specs/004-item-category-management/quickstart.md
+- [x] T063 [P] research に実装判断と未分類運用ルールを記録する in specs/004-item-category-management/research.md
+- [x] T064 フロントエンドの回帰テスト実行結果を記録する in specs/004-item-category-management/research.md
+- [x] T065 バックエンドの契約/統合テスト実行結果を記録する in specs/004-item-category-management/research.md
+- [x] T066 SC-001〜SC-009 の測定結果と確認手順を記録し、SC-009 が一覧・作成・更新・削除の全エンドポイントで成立することを明記する in specs/004-item-category-management/research.md
 
 ---
 

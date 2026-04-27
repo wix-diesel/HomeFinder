@@ -100,8 +100,8 @@ export const uiText = {
     dataSectionHeading: 'データ管理',
     dataItems: {
       category: {
-        label: 'カテゴリ管理',
-        description: 'カテゴリの追加・編集・削除',
+        label: 'カテゴリー管理',
+        description: '物品のカテゴリーを追加・編集・削除します',
       },
       location: {
         label: '場所（部屋）管理',

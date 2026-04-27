@@ -3,6 +3,8 @@ using HomeFinder.Api.src.Common.Errors;
 using HomeFinder.Api.src.Data;
 using HomeFinder.Api.src.Repositories;
 using HomeFinder.Api.src.Services;
+using HomeFinder.Api.Repositories;
+using HomeFinder.Api.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,8 @@ builder.Services.AddDbContext<ItemDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IItemService, ItemService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
