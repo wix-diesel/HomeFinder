@@ -1,0 +1,43 @@
+# OSSアップデートPR自動発行設定
+# - 週に1回（月曜日）実施
+# - マイナー・パッチアップデートは全パッケージを1つのPRにまとめる
+# - メジャーアップデートは1パッケージにつき1つのPRを発行する
+# - NuGetパッケージとnpmパッケージは別々のPRにする
+version: 2
+
+updates:
+  # ----------------------------------------
+  # NuGet パッケージ（バックエンド）
+  # ----------------------------------------
+  - package-ecosystem: "nuget"
+    directory: "/src"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      # マイナー・パッチアップデートは全パッケージを1つのPRにまとめる
+      # メジャーアップデートはグループ対象外のため、1パッケージにつき1PRが自動発行される
+      nuget-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ----------------------------------------
+  # npm パッケージ（フロントエンド）
+  # ----------------------------------------
+  - package-ecosystem: "npm"
+    directory: "/src/HomeFinder.UI"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      # マイナー・パッチアップデートは全パッケージを1つのPRにまとめる
+      # メジャーアップデートはグループ対象外のため、1パッケージにつき1PRが自動発行される
+      npm-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
