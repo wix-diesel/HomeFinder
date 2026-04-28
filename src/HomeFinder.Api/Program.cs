@@ -88,6 +88,11 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    // デバッグ起動時に Swagger UI を有効化する（NSwag）
+    app.UseSwaggerUi(settings =>
+    {
+        settings.DocumentPath = "/openapi/v1.json";
+    });
 }
 
 app.UseExceptionHandler(handler =>
