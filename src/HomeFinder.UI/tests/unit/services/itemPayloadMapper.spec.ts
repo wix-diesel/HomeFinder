@@ -89,4 +89,22 @@ describe('itemPayloadMapper', () => {
 
     expect(Object.prototype.hasOwnProperty.call(request, 'price')).toBe(false);
   });
+
+  it('負の価格値はpayloadに含めない', () => {
+    const request = toCreateItemRequest({
+      name: '卓上ライト',
+      quantity: 2,
+      categoryId: '',
+      manufacturer: '',
+      priceInput: '-100',
+      note: '',
+      barcode: '',
+      description: '',
+      isSubmitting: false,
+      fieldErrors: {},
+      submitError: null,
+    });
+
+    expect(Object.prototype.hasOwnProperty.call(request, 'price')).toBe(false);
+  });
 });

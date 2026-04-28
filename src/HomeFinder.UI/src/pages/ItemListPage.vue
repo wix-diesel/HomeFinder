@@ -18,10 +18,13 @@ const desktopViewMode = ref<'card' | 'table'>('card');
 const route = useRoute();
 const router = useRouter();
 
+// カテゴリ未設定アイテムのフォールバック識別子
+const UNCLASSIFIED_ID = 'unclassified';
+
 const categories = computed(() => {
   const seen = new Map<string, string>();
   for (const item of items.value) {
-    const id = item.categoryId ?? 'unclassified';
+    const id = item.categoryId ?? UNCLASSIFIED_ID;
     const name = item.categoryName ?? '未分類';
     if (!seen.has(id)) seen.set(id, name);
   }
@@ -33,7 +36,7 @@ const hasInvalidSearch = computed(() => searchKeyword.value.length > 0 && search
 const filteredItems = computed(() => {
   return items.value.filter((item) => {
     const keywordMatch = item.name.toLowerCase().includes(searchKeyword.value.trim().toLowerCase());
-    const itemCategoryId = item.categoryId ?? 'unclassified';
+    const itemCategoryId = item.categoryId ?? UNCLASSIFIED_ID;
     const categoryMatch = selectedCategory.value === 'all' || itemCategoryId === selectedCategory.value;
     return keywordMatch && categoryMatch;
   });
