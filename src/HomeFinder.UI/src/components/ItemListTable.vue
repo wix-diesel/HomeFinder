@@ -27,7 +27,7 @@ function toPrice(item: Item): string {
     <tbody>
       <tr v-for="item in items" :key="item.id">
         <td>{{ item.name }}</td>
-        <td>{{ item.category ?? '未分類' }}</td>
+        <td>{{ item.categoryName ?? '未分類' }}</td>
         <td>{{ item.quantity }}</td>
         <td><StockStatusBadge :quantity="item.quantity" /></td>
         <td>{{ toPrice(item) }}</td>

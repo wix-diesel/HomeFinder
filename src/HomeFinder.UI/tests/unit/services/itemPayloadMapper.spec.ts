@@ -71,4 +71,22 @@ describe('itemPayloadMapper', () => {
     expect(Object.prototype.hasOwnProperty.call(request, 'barcode')).toBe(false);
     expect(Object.prototype.hasOwnProperty.call(request, 'description')).toBe(false);
   });
+
+  it('Infinityや不正な価格値はpayloadに含めない', () => {
+    const request = toCreateItemRequest({
+      name: '卓上ライト',
+      quantity: 2,
+      categoryId: '',
+      manufacturer: '',
+      priceInput: 'Infinity',
+      note: '',
+      barcode: '',
+      description: '',
+      isSubmitting: false,
+      fieldErrors: {},
+      submitError: null,
+    });
+
+    expect(Object.prototype.hasOwnProperty.call(request, 'price')).toBe(false);
+  });
 });

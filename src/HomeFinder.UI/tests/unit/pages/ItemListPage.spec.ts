@@ -24,7 +24,8 @@ describe('ItemListPage', () => {
       Array.from({ length: 100 }, (_, index) => ({
         id: String(index + 1),
         name: index % 10 === 0 ? `計測ライト${index}` : `計測アイテム${index}`,
-        category: index % 2 === 0 ? '家電' : '日用品',
+        categoryId: index % 2 === 0 ? 'cat-kaiden' : 'cat-nichiyohin',
+        categoryName: index % 2 === 0 ? '家電' : '日用品',
         quantity: (index % 5) + 1,
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
@@ -36,7 +37,7 @@ describe('ItemListPage', () => {
 
     const startedAt = performance.now();
     await wrapper.find('input[type="search"]').setValue('ライト');
-    await wrapper.find('select').setValue('家電');
+    await wrapper.find('select').setValue('cat-kaiden');
     const toggleButtons = wrapper.findAll('.view-mode-toggle button');
     await toggleButtons[1].trigger('click');
     await flushPromises();
@@ -53,7 +54,8 @@ describe('ItemListPage', () => {
       {
         id: '1',
         name: '歯ブラシ',
-        category: '日用品',
+        categoryId: 'cat-nichiyohin',
+        categoryName: '日用品',
         quantity: 2,
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
@@ -61,7 +63,8 @@ describe('ItemListPage', () => {
       {
         id: '2',
         name: '卓上ライト',
-        category: '家電',
+        categoryId: 'cat-kaiden',
+        categoryName: '家電',
         quantity: 1,
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
@@ -82,7 +85,8 @@ describe('ItemListPage', () => {
       {
         id: '1',
         name: '歯ブラシ',
-        category: '日用品',
+        categoryId: 'cat-nichiyohin',
+        categoryName: '日用品',
         quantity: 2,
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
@@ -90,7 +94,8 @@ describe('ItemListPage', () => {
       {
         id: '2',
         name: '卓上ライト',
-        category: '家電',
+        categoryId: 'cat-kaiden',
+        categoryName: '家電',
         quantity: 1,
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
@@ -99,7 +104,7 @@ describe('ItemListPage', () => {
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
-    await wrapper.find('select').setValue('家電');
+    await wrapper.find('select').setValue('cat-kaiden');
 
     expect(wrapper.text()).toContain('卓上ライト');
     expect(wrapper.text()).not.toContain('歯ブラシ');

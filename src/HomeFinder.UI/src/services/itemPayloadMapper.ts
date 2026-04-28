@@ -24,7 +24,7 @@ export function toCreateItemRequest(formState: ItemRegistrationFormState): Creat
   }
 
   const priceValue = Number(formState.priceInput);
-  if (formState.priceInput.trim() && !Number.isNaN(priceValue)) {
+  if (formState.priceInput.trim() && Number.isFinite(priceValue) && priceValue >= 0) {
     payload.price = priceValue;
   }
 

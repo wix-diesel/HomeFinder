@@ -39,7 +39,7 @@ onMounted(async () => {
       <p>数量: {{ item.quantity }}</p>
       <p v-if="item.categoryName">カテゴリ: {{ item.categoryName }}</p>
       <p v-if="item.manufacturer">メーカー: {{ item.manufacturer }}</p>
-      <p v-if="item.price !== undefined">価格: {{ item.price }}</p>
+      <p v-if="item.price != null">価格: {{ item.price }}</p>
       <p v-if="item.barcode">バーコード: {{ item.barcode }}</p>
       <p v-if="item.description">説明: {{ item.description }}</p>
       <p v-if="item.note">メモ: {{ item.note }}</p>

@@ -19,8 +19,13 @@ const route = useRoute();
 const router = useRouter();
 
 const categories = computed(() => {
-  const values = new Set(items.value.map((item) => item.category ?? '未分類'));
-  return ['all', ...Array.from(values)];
+  const seen = new Map<string, string>();
+  for (const item of items.value) {
+    const id = item.categoryId ?? 'unclassified';
+    const name = item.categoryName ?? '未分類';
+    if (!seen.has(id)) seen.set(id, name);
+  }
+  return [{ id: 'all', name: 'すべて' }, ...Array.from(seen.entries()).map(([id, name]) => ({ id, name }))];
 });
 
 const hasInvalidSearch = computed(() => searchKeyword.value.length > 0 && searchKeyword.value.trim().length === 0);
@@ -28,15 +33,15 @@ const hasInvalidSearch = computed(() => searchKeyword.value.length > 0 && search
 const filteredItems = computed(() => {
   return items.value.filter((item) => {
     const keywordMatch = item.name.toLowerCase().includes(searchKeyword.value.trim().toLowerCase());
-    const categoryName = item.category ?? '未分類';
-    const categoryMatch = selectedCategory.value === 'all' || categoryName === selectedCategory.value;
+    const itemCategoryId = item.categoryId ?? 'unclassified';
+    const categoryMatch = selectedCategory.value === 'all' || itemCategoryId === selectedCategory.value;
     return keywordMatch && categoryMatch;
   });
 });
 
 const toastMessage = computed(() => (route.query.created === '1' ? uiText.create.successToast : ''));
 
-const visibleCategories = computed(() => categories.value.filter((value) => value !== 'all'));
+const visibleCategories = computed(() => categories.value.filter((c) => c.id !== 'all'));
 
 async function loadItems() {
   loading.value = true;
@@ -77,8 +82,8 @@ onMounted(async () => {
       {{ uiText.list.categoryLabel }}
       <select v-model="selectedCategory">
         <option value="all">すべて</option>
-        <option v-for="category in visibleCategories" :key="category" :value="category">
-          {{ category }}
+        <option v-for="category in visibleCategories" :key="category.id" :value="category.id">
+          {{ category.name }}
         </option>
       </select>
     </label>
@@ -95,13 +100,13 @@ onMounted(async () => {
         </button>
         <button
           v-for="category in visibleCategories"
-          :key="category"
+          :key="category.id"
           type="button"
           class="chip"
-          :class="{ active: selectedCategory === category }"
-          @click="selectedCategory = category"
+          :class="{ active: selectedCategory === category.id }"
+          @click="selectedCategory = category.id"
         >
-          {{ category }}
+          {{ category.name }}
         </button>
       </div>
 
