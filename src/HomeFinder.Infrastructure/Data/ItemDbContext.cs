@@ -34,6 +34,11 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
             entity.Property(x => x.Name).IsRequired().HasMaxLength(200);
             entity.HasIndex(x => x.Name).IsUnique();
             entity.Property(x => x.Quantity).IsRequired();
+            entity.Property(x => x.Manufacturer).HasMaxLength(200);
+            entity.Property(x => x.Description);
+            entity.Property(x => x.Note);
+            entity.Property(x => x.Barcode).HasMaxLength(200);
+            entity.Property(x => x.Price).HasColumnType("decimal(18,2)");
             entity.Property(x => x.CreatedAtUtc).IsRequired();
             entity.Property(x => x.UpdatedAtUtc).IsRequired();
 

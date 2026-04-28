@@ -62,6 +62,12 @@ public class ItemService(IItemRepository itemRepository) : IItemService
                 Id = Guid.NewGuid(),
                 Name = normalizedName,
                 Quantity = request.Quantity,
+                Manufacturer = request.Manufacturer?.Trim(),
+                Description = request.Description?.Trim(),
+                Note = request.Note?.Trim(),
+                Barcode = request.Barcode?.Trim(),
+                Price = request.Price,
+                CategoryId = request.CategoryId,
                 CreatedAtUtc = now,
                 UpdatedAtUtc = now,
             };
@@ -78,6 +84,18 @@ public class ItemService(IItemRepository itemRepository) : IItemService
 
     private static ItemDto MapToDto(Item item)
     {
-        return new ItemDto(item.Id, item.Name, item.Quantity, item.CreatedAtUtc, item.UpdatedAtUtc);
+        return new ItemDto(
+            item.Id,
+            item.Name,
+            item.Quantity,
+            item.Manufacturer,
+            item.Description,
+            item.Note,
+            item.Barcode,
+            item.Price,
+            item.CategoryId,
+            item.Category?.Name,
+            item.CreatedAtUtc,
+            item.UpdatedAtUtc);
     }
 }

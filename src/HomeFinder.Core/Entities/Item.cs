@@ -14,6 +14,33 @@ public class Item
     [Range(1, int.MaxValue)]
     public int Quantity { get; set; }
 
+    /// <summary>
+    /// メーカー名（任意）
+    /// </summary>
+    [MaxLength(200)]
+    public string? Manufacturer { get; set; }
+
+    /// <summary>
+    /// 物品の説明（任意）
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// メモ（任意）
+    /// </summary>
+    public string? Note { get; set; }
+
+    /// <summary>
+    /// バーコード（任意）
+    /// </summary>
+    [MaxLength(200)]
+    public string? Barcode { get; set; }
+
+    /// <summary>
+    /// 価格（任意）
+    /// </summary>
+    public decimal? Price { get; set; }
+
     public DateTime CreatedAtUtc { get; set; }
 
     public DateTime UpdatedAtUtc { get; set; }

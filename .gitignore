@@ -424,3 +424,6 @@ FodyWeavers.xsd
 *.msp
 
 .DS_Store
+
+# フロントエンドのロックファイルはリポジトリから除外
+src/HomeFinder.UI/package-lock.json

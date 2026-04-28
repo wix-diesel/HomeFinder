@@ -11,6 +11,7 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
     {
         return await dbContext.Items
             .AsNoTracking()
+            .Include(x => x.Category)
             .OrderByDescending(x => x.CreatedAtUtc)
             .ToListAsync(cancellationToken);
     }
@@ -19,6 +20,7 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
     {
         return await dbContext.Items
             .AsNoTracking()
+            .Include(x => x.Category)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 

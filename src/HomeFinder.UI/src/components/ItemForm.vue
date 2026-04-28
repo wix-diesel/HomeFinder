@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { AppPrimaryButton, FormField, StatePanel } from './common';
 import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
+import type { Category } from '../models/category';
+import { categoryService } from '../services/categoryService';
 import { uiText } from '../constants/uiText';
 
 const emit = defineEmits<{
@@ -20,13 +22,24 @@ const props = withDefaults(
   },
 );
 
+const categories = ref<Category[]>([]);
+
+onMounted(async () => {
+  try {
+    categories.value = await categoryService.getCategories(true);
+  } catch {
+    // カテゴリー取得失敗時はフォームを利用可能な状態に保つ
+  }
+});
+
 const formState = reactive<ItemRegistrationFormState>({
   name: '',
   quantity: null,
-  category: '',
+  categoryId: '',
+  manufacturer: '',
   priceInput: '',
   note: '',
-  referenceCode: '',
+  barcode: '',
   description: '',
   isSubmitting: false,
   fieldErrors: {},
@@ -104,16 +117,40 @@ function onRetry(): void {
           />
 
           <FormField
-            name="category"
-            :label-ja="uiText.create.fields.category.label"
-            :helper-text-ja="uiText.create.fields.category.helper"
-            :placeholder-ja="uiText.create.fields.category.placeholder"
-            :model-value="formState.category"
-            @update:model-value="(value) => (formState.category = String(value ?? ''))"
+            name="manufacturer"
+            :label-ja="uiText.create.fields.manufacturer.label"
+            :helper-text-ja="uiText.create.fields.manufacturer.helper"
+            :placeholder-ja="uiText.create.fields.manufacturer.placeholder"
+            :model-value="formState.manufacturer"
+            @update:model-value="(value) => (formState.manufacturer = String(value ?? ''))"
           />
         </div>
 
-        <div class="field-three">
+        <div class="field-two">
+          <label class="form-field">
+            <span class="form-field__label">{{ uiText.create.fields.category.label }}</span>
+            <select
+              name="categoryId"
+              :value="formState.categoryId"
+              @change="(event) => (formState.categoryId = (event.target as HTMLSelectElement).value)"
+            >
+              <option value="">{{ uiText.create.fields.category.placeholder }}</option>
+              <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+            </select>
+            <small class="helper">{{ uiText.create.fields.category.helper }}</small>
+          </label>
+
+          <FormField
+            name="barcode"
+            :label-ja="uiText.create.fields.barcode.label"
+            :helper-text-ja="uiText.create.fields.barcode.helper"
+            :placeholder-ja="uiText.create.fields.barcode.placeholder"
+            :model-value="formState.barcode"
+            @update:model-value="(value) => (formState.barcode = String(value ?? ''))"
+          />
+        </div>
+
+        <div class="field-two">
           <FormField
             name="quantity"
             type="number"
@@ -124,15 +161,6 @@ function onRetry(): void {
             :model-value="formState.quantity"
             required
             @update:model-value="(value) => (formState.quantity = value === null ? null : Number(value))"
-          />
-
-          <FormField
-            name="referenceCode"
-            :label-ja="uiText.create.fields.referenceCode.label"
-            :helper-text-ja="uiText.create.fields.referenceCode.helper"
-            :placeholder-ja="uiText.create.fields.referenceCode.placeholder"
-            :model-value="formState.referenceCode ?? ''"
-            @update:model-value="(value) => (formState.referenceCode = String(value ?? ''))"
           />
 
           <FormField
@@ -152,7 +180,7 @@ function onRetry(): void {
           :label-ja="uiText.create.fields.description.label"
           :helper-text-ja="uiText.create.fields.description.helper"
           :placeholder-ja="uiText.create.fields.description.placeholder"
-          :model-value="formState.description ?? ''"
+          :model-value="formState.description"
           @update:model-value="(value) => (formState.description = String(value ?? ''))"
         />
 
@@ -219,11 +247,32 @@ function onRetry(): void {
   background: #fff;
 }
 
-.field-two,
-.field-three {
+.field-two {
   display: grid;
   gap: 10px;
   grid-template-columns: 1fr;
+}
+
+.form-field {
+  display: grid;
+  gap: 6px;
+}
+
+.form-field__label {
+  font-weight: 700;
+}
+
+select {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
+.helper {
+  color: #475569;
+  font-size: 0.85rem;
 }
 
 .dropzone {
@@ -315,10 +364,6 @@ function onRetry(): void {
 
   .field-two {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .field-three {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 </style>

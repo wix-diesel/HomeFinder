@@ -1,11 +1,12 @@
 export type ItemRegistrationFormState = {
   name: string;
   quantity: number | null;
-  category: string;
+  categoryId: string;
+  manufacturer: string;
   priceInput: string;
   note: string;
-  referenceCode?: string;
-  description?: string;
+  barcode: string;
+  description: string;
   isSubmitting: boolean;
   fieldErrors: Record<string, string>;
   submitError: string | null;
@@ -15,10 +16,11 @@ export function createInitialItemRegistrationFormState(): ItemRegistrationFormSt
   return {
     name: '',
     quantity: null,
-    category: '',
+    categoryId: '',
+    manufacturer: '',
     priceInput: '',
     note: '',
-    referenceCode: '',
+    barcode: '',
     description: '',
     isSubmitting: false,
     fieldErrors: {},

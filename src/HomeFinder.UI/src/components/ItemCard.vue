@@ -65,7 +65,7 @@ const cardMeta = computed(() => {
   };
 });
 
-const categoryText = computed(() => props.item.category ?? '未分類');
+const categoryText = computed(() => props.item.categoryName ?? '未分類');
 
 const priceText = computed(() => `¥${cardMeta.value.price.toLocaleString('ja-JP')}`);
 </script>
