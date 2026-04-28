@@ -37,6 +37,12 @@ onMounted(async () => {
     <div v-else-if="item">
       <p>名称: {{ item.name }}</p>
       <p>数量: {{ item.quantity }}</p>
+      <p v-if="item.categoryName">カテゴリ: {{ item.categoryName }}</p>
+      <p v-if="item.manufacturer">メーカー: {{ item.manufacturer }}</p>
+      <p v-if="item.price !== undefined">価格: {{ item.price }}</p>
+      <p v-if="item.barcode">バーコード: {{ item.barcode }}</p>
+      <p v-if="item.description">説明: {{ item.description }}</p>
+      <p v-if="item.note">メモ: {{ item.note }}</p>
       <p>初回登録日時: {{ createdAtText }}</p>
       <p>最終更新日時: {{ updatedAtText }}</p>
     </div>

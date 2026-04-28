@@ -50,28 +50,33 @@ export const uiText = {
       },
       category: {
         label: 'カテゴリ',
-        placeholder: '例: 家電',
-        helper: '画面表示専用です。APIには送信されません。',
+        placeholder: 'カテゴリを選択',
+        helper: 'カテゴリを選択してください。',
+      },
+      manufacturer: {
+        label: 'メーカー',
+        placeholder: '例: ソニー',
+        helper: '任意です。',
       },
       priceInput: {
         label: '価格',
         placeholder: '例: 3980',
-        helper: '画面表示専用です。APIには送信されません。',
+        helper: '0以上の数値を入力してください。',
       },
-      referenceCode: {
-        label: '参照コード',
-        placeholder: '例: REF-000-000',
-        helper: '画面表示専用です。APIには送信されません。',
+      barcode: {
+        label: 'バーコード',
+        placeholder: '例: 4901234567890',
+        helper: '任意です。',
       },
       description: {
         label: '説明',
         placeholder: '仕様や保管条件などを入力',
-        helper: '画面表示専用です。APIには送信されません。',
+        helper: '任意です。',
       },
       note: {
         label: 'メモ',
         placeholder: '任意',
-        helper: '画面表示専用です。APIには送信されません。',
+        helper: '任意です。',
       },
     },
   },
