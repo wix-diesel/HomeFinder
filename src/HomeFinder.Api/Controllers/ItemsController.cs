@@ -102,7 +102,7 @@ public class ItemsController(IItemService itemService) : ControllerBase
 
         if (result.Error is ItemDeleteConflictException)
         {
-            return Conflict(ApiError.ItemDeleteConflict());
+            return StatusCode(StatusCodes.Status409Conflict, ApiError.ItemDeleteConflict());
         }
 
         return StatusCode(StatusCodes.Status500InternalServerError, new ApiError(
