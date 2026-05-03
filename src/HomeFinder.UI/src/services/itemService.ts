@@ -1,8 +1,9 @@
 import type { Item } from '../models/item';
 import type { ItemDetail } from '../models/itemDetail';
 import type { CreateItemRequest } from '../models/createItemRequest';
+import type { UpdateItemRequest } from '../models/updateItemRequest';
 import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
-import { toCreateItemRequest } from './itemPayloadMapper';
+import { toCreateItemRequest, toUpdateItemRequest } from './itemPayloadMapper';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
 
@@ -81,6 +82,35 @@ export async function createItem(request: CreateItemRequest | ItemRegistrationFo
     }
 
     throw new ItemServiceError('物品登録に失敗しました。');
+  }
+
+  return (await response.json()) as Item;
+}
+
+export async function updateItem(id: string, request: UpdateItemRequest | ItemRegistrationFormState): Promise<Item> {
+  const payload: UpdateItemRequest = 'fieldErrors' in request ? toUpdateItemRequest(request) : request;
+  const response = await fetch(`${API_BASE_URL}/api/items/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new ItemServiceError('更新対象の物品が見つかりません。', 'ITEM_NOT_FOUND');
+    }
+
+    if (response.status === 409) {
+      throw new ItemServiceError('同じ名称の物品がすでに登録されています。', 'ITEM_NAME_CONFLICT');
+    }
+
+    if (response.status === 400) {
+      throw new ItemServiceError('入力内容に誤りがあります。', 'VALIDATION_ERROR');
+    }
+
+    throw new ItemServiceError('物品更新に失敗しました。');
   }
 
   return (await response.json()) as Item;

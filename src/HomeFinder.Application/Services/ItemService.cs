@@ -3,6 +3,7 @@ using HomeFinder.Application.Contracts;
 using HomeFinder.Core.Entities;
 using HomeFinder.Application.Repositories;
 using DotNext;
+using Microsoft.EntityFrameworkCore;
 
 namespace HomeFinder.Application.Services;
 
@@ -75,6 +76,73 @@ public class ItemService(IItemRepository itemRepository) : IItemService
             await itemRepository.AddAsync(item, cancellationToken);
 
             return MapToDto(item);
+        }
+        catch (Exception ex)
+        {
+            return new Result<ItemDto>(ex);
+        }
+    }
+
+    public async Task<Result<ItemDto>> UpdateItemAsync(Guid id, UpdateItemRequest request, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var normalizedName = (request.Name ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 1)
+            {
+                return new Result<ItemDto>(new ArgumentException("入力内容に誤りがあります。", nameof(request)));
+            }
+
+            var item = await itemRepository.GetByIdAsync(id, cancellationToken);
+            if (item is null)
+            {
+                return new Result<ItemDto>(new ItemNotFoundException(id));
+            }
+
+            var conflictExists = await itemRepository.ExistsByNameExcludingAsync(normalizedName, id, cancellationToken);
+            if (conflictExists)
+            {
+                return new Result<ItemDto>(new ItemNameConflictException(normalizedName));
+            }
+
+            item.Name = normalizedName;
+            item.Quantity = request.Quantity;
+            item.Manufacturer = request.Manufacturer?.Trim();
+            item.Description = request.Description?.Trim();
+            item.Note = request.Note?.Trim();
+            item.Barcode = request.Barcode?.Trim();
+            item.Price = request.Price;
+            item.CategoryId = request.CategoryId;
+            item.UpdatedAtUtc = DateTime.UtcNow;
+
+            try
+            {
+                await itemRepository.UpdateAsync(item, cancellationToken);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // 一意制約競合（レースコンディション）は 409 として返す
+                var innerMsg = dbEx.InnerException?.Message ?? string.Empty;
+                if (innerMsg.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Result<ItemDto>(new ItemNameConflictException(normalizedName));
+                }
+
+                // FK 制約違反（存在しないカテゴリーIDなど）は 400 として返す
+                if (innerMsg.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase)
+                    || innerMsg.Contains("REFERENCES", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Result<ItemDto>(new ArgumentException("存在しないカテゴリーIDが指定されました。", nameof(request)));
+                }
+
+                return new Result<ItemDto>(dbEx);
+            }
+
+            // Category ナビゲーションプロパティを最新化するために再取得する
+            var reloaded = await itemRepository.GetByIdAsync(id, cancellationToken);
+            return reloaded is null
+                ? new Result<ItemDto>(new ItemNotFoundException(id))
+                : MapToDto(reloaded);
         }
         catch (Exception ex)
         {

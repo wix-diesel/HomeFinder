@@ -49,3 +49,134 @@ public class ItemDetailEditNavigationEndpointTests : IClassFixture<TestApplicati
     public sealed record ItemResponse(Guid Id, string Name, int Quantity);
     public sealed record ErrorResponse(string Code, string Message);
 }
+
+/// <summary>
+/// feature 007: アイテム更新 PUT エンドポイントの統合テスト
+/// </summary>
+public class ItemUpdateEndpointTests : IClassFixture<TestApplicationFactory>
+{
+    private readonly HttpClient _client;
+
+    public ItemUpdateEndpointTests(TestApplicationFactory factory)
+    {
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task UpdateItem_Returns200_WhenRequestIsValid()
+    {
+        // アイテムを作成してから更新する
+        var createPayload = new { name = "更新テスト用アイテム", quantity = 1 };
+        var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        var updatePayload = new { name = "更新テスト用アイテム", quantity = 5, manufacturer = "テストメーカー" };
+        var response = await _client.PutAsJsonAsync($"/api/items/{created!.Id}", updatePayload);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updated = await response.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(updated);
+        Assert.Equal(5, updated!.Quantity);
+        Assert.Equal("テストメーカー", updated.Manufacturer);
+    }
+
+    [Fact]
+    public async Task UpdateItem_Returns200_WithCorrectCategoryName_WhenCategoryChanges()
+    {
+        // カテゴリーを持つアイテムを作成する
+        var categoriesResponse = await _client.GetAsync("/api/categories");
+        Assert.Equal(HttpStatusCode.OK, categoriesResponse.StatusCode);
+        var categories = await categoriesResponse.Content.ReadFromJsonAsync<CategoryResponse[]>();
+        Assert.NotNull(categories);
+        var foodCategory = categories!.FirstOrDefault(c => c.Name == "食器");
+        Assert.NotNull(foodCategory);
+
+        var createPayload = new { name = "カテゴリ変更テスト用アイテム", quantity = 1 };
+        var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        // カテゴリーを「食器」へ変更する
+        var updatePayload = new { name = "カテゴリ変更テスト用アイテム", quantity = 1, categoryId = foodCategory!.Id };
+        var response = await _client.PutAsJsonAsync($"/api/items/{created!.Id}", updatePayload);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updated = await response.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(updated);
+        Assert.Equal(foodCategory.Id, updated!.CategoryId);
+        Assert.Equal("食器", updated.CategoryName);
+    }
+
+    [Fact]
+    public async Task UpdateItem_Returns404_WhenItemDoesNotExist()
+    {
+        var updatePayload = new { name = "存在しない物品", quantity = 1 };
+        var response = await _client.PutAsJsonAsync($"/api/items/{Guid.NewGuid()}", updatePayload);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(error);
+        Assert.Equal("ITEM_NOT_FOUND", error!.Code);
+    }
+
+    [Fact]
+    public async Task UpdateItem_Returns400_WhenRequestIsInvalid()
+    {
+        var createPayload = new { name = "バリデーションテスト用アイテム", quantity = 1 };
+        var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        var updatePayload = new { name = "", quantity = 0 };
+        var response = await _client.PutAsJsonAsync($"/api/items/{created!.Id}", updatePayload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateItem_Returns409_WhenNameConflictsWithAnotherItem()
+    {
+        // 重複名称チェック: 既存の別アイテムと同じ名称で更新しようとすると 409
+        var createPayload1 = new { name = "競合テスト元アイテム", quantity = 1 };
+        var createResponse1 = await _client.PostAsJsonAsync("/api/items", createPayload1);
+        Assert.Equal(HttpStatusCode.Created, createResponse1.StatusCode);
+
+        var createPayload2 = new { name = "競合テスト先アイテム", quantity = 1 };
+        var createResponse2 = await _client.PostAsJsonAsync("/api/items", createPayload2);
+        Assert.Equal(HttpStatusCode.Created, createResponse2.StatusCode);
+        var item2 = await createResponse2.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(item2);
+
+        var updatePayload = new { name = "競合テスト元アイテム", quantity = 1 };
+        var response = await _client.PutAsJsonAsync($"/api/items/{item2!.Id}", updatePayload);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateItem_Returns200_WhenNameIsUnchanged()
+    {
+        // 同一名称での更新（自分自身との衝突）は許容される
+        var createPayload = new { name = "名称変更なしテスト用アイテム", quantity = 2 };
+        var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        var updatePayload = new { name = "名称変更なしテスト用アイテム", quantity = 10 };
+        var response = await _client.PutAsJsonAsync($"/api/items/{created!.Id}", updatePayload);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updated = await response.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(updated);
+        Assert.Equal(10, updated!.Quantity);
+    }
+
+    public sealed record ItemResponse(Guid Id, string Name, int Quantity);
+    public sealed record ErrorResponse(string Code, string Message);
+}

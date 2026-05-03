@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Item } from '../models/item';
 import { StockStatusBadge } from './common';
@@ -9,6 +9,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+const menuOpen = ref(false);
 
 const catalog = [
   {
@@ -76,6 +77,19 @@ const priceText = computed(() => `¥${cardMeta.value.price.toLocaleString('ja-JP
 function navigateToDetail() {
   router.push({ name: 'item-detail', params: { id: props.item.id } });
 }
+
+// アイテム編集ページへ遷移する
+function navigateToEdit(event: Event) {
+  event.stopPropagation();
+  menuOpen.value = false;
+  router.push({ name: 'item-create', query: { editId: props.item.id } });
+}
+
+// メニューの開閉を切り替える
+function toggleMenu(event: Event) {
+  event.stopPropagation();
+  menuOpen.value = !menuOpen.value;
+}
 </script>
 
 <template>
@@ -98,7 +112,12 @@ function navigateToDetail() {
     <div class="item-content">
       <div class="item-title-row">
         <h3>{{ item.name }}</h3>
-        <button type="button" class="menu" aria-label="メニュー">⋮</button>
+        <div class="menu-wrap">
+          <button type="button" class="menu" aria-label="メニュー" @click="toggleMenu">⋮</button>
+          <div v-if="menuOpen" class="item-menu">
+            <button type="button" class="item-menu-item" :aria-label="`${item.name} を編集`" @click="navigateToEdit">編集</button>
+          </div>
+        </div>
       </div>
       <p class="category">カテゴリ: {{ categoryText }}</p>
       <div class="meta-row">
@@ -155,6 +174,37 @@ function navigateToDetail() {
   border: 0;
   background: transparent;
   color: #94a3b8;
+}
+
+.menu-wrap {
+  position: relative;
+}
+
+.item-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #fff;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  min-width: 100px;
+  z-index: 10;
+}
+
+.item-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.item-menu-item:hover {
+  background: #f8fafc;
 }
 
 .category {

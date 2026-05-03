@@ -17,6 +17,9 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: pushMock,
   }),
+  useRoute: () => ({
+    query: {},
+  }),
 }));
 
 describe('ItemCreatePage', () => {

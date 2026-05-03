@@ -8,5 +8,6 @@ public interface IItemService
     Task<Result<IReadOnlyCollection<ItemDto>>> GetItemsAsync(CancellationToken cancellationToken = default);
     Task<Result<ItemDto>> GetItemByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result<ItemDto>> CreateItemAsync(CreateItemRequest request, CancellationToken cancellationToken = default);
+    Task<Result<ItemDto>> UpdateItemAsync(Guid id, UpdateItemRequest request, CancellationToken cancellationToken = default);
     Task<Result<bool>> DeleteItemAsync(Guid id, CancellationToken cancellationToken = default);
 }
