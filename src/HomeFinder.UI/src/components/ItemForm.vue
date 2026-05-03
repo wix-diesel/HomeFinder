@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { AppPrimaryButton, FormField, StatePanel } from './common';
 import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
 import type { Category } from '../models/category';
@@ -28,17 +28,6 @@ const props = withDefaults(
 
 const categories = ref<Category[]>([]);
 
-onMounted(async () => {
-  if (props.initialValues) {
-    Object.assign(formState, props.initialValues);
-  }
-  try {
-    categories.value = await categoryService.getCategories(true);
-  } catch {
-    // カテゴリー取得失敗時はフォームを利用可能な状態に保つ
-  }
-});
-
 const formState = reactive<ItemRegistrationFormState>({
   name: '',
   quantity: null,
@@ -51,6 +40,25 @@ const formState = reactive<ItemRegistrationFormState>({
   isSubmitting: false,
   fieldErrors: {},
   submitError: null,
+});
+
+// initialValues が渡された（または変更された）タイミングでフォームに反映する
+watch(
+  () => props.initialValues,
+  (newValues) => {
+    if (newValues) {
+      Object.assign(formState, newValues);
+    }
+  },
+  { immediate: true },
+);
+
+onMounted(async () => {
+  try {
+    categories.value = await categoryService.getCategories(true);
+  } catch {
+    // カテゴリー取得失敗時はフォームを利用可能な状態に保つ
+  }
 });
 
 const hasValidationError = computed(() => Object.values(formState.fieldErrors).some((message) => Boolean(message)));

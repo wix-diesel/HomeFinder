@@ -16,7 +16,8 @@ const isEditMode = computed(() => Boolean(editId.value));
 
 // 編集モード用の初期値
 const initialValues = ref<Partial<ItemRegistrationFormState> | undefined>(undefined);
-const loadingItem = ref(false);
+// 編集モードの場合はアイテム取得完了まで初期状態でフォームを表示しない
+const loadingItem = ref(Boolean(route.query.editId));
 
 onMounted(async () => {
   if (isEditMode.value && editId.value) {
