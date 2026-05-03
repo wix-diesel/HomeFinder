@@ -41,6 +41,10 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
             entity.Property(x => x.Price).HasColumnType("decimal(18,2)");
             entity.Property(x => x.CreatedAtUtc).IsRequired();
             entity.Property(x => x.UpdatedAtUtc).IsRequired();
+            entity.Property(x => x.DeletedAtUtc);
+
+            // 論理削除済みアイテムを通常クエリから除外する
+            entity.HasQueryFilter(x => x.DeletedAtUtc == null);
 
             // Category 関連設定
             entity.Property(x => x.CategoryId);

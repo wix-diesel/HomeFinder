@@ -1,5 +1,6 @@
 using HomeFinder.Infrastructure.Data;
 using HomeFinder.Core.Entities;
+using HomeFinder.Core.Errors;
 using HomeFinder.Application.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,5 +34,32 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
     {
         dbContext.Items.Add(item);
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// 指定したアイテムを論理削除する。対象が存在しない場合は ItemNotFoundException をスローする。
+    /// </summary>
+    public async Task SoftDeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        // クエリフィルタが適用されるため、論理削除済みアイテムは null になる
+        var item = await dbContext.Items
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (item is null)
+        {
+            throw new ItemNotFoundException(id);
+        }
+
+        item.DeletedAtUtc = DateTime.UtcNow;
+
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // 同時実行制御違反が発生した場合は競合例外に変換する
+            throw new ItemDeleteConflictException(id);
+        }
     }
 }

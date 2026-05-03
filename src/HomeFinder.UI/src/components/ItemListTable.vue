@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
 import type { Item } from '../models/item';
 import { StockStatusBadge } from './common';
 
@@ -6,10 +7,17 @@ defineProps<{
   items: Item[];
 }>();
 
+const router = useRouter();
+
 function toPrice(item: Item): string {
   const seed = Number.parseInt(item.id.replace(/[^0-9]/g, ''), 10) || item.quantity;
   const value = 1200 * (seed % 60) + item.quantity * 500;
   return `¥${value.toLocaleString('ja-JP')}`;
+}
+
+// アイテム詳細ページへ遷移する
+function navigateToDetail(id: string) {
+  router.push({ name: 'item-detail', params: { id } });
 }
 </script>
 
@@ -25,7 +33,7 @@ function toPrice(item: Item): string {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="item in items" :key="item.id">
+      <tr v-for="item in items" :key="item.id" class="clickable-row" @click="navigateToDetail(item.id)" :aria-label="`${item.name} の詳細を表示`">
         <td>{{ item.name }}</td>
         <td>{{ item.categoryName ?? '未分類' }}</td>
         <td>{{ item.quantity }}</td>
@@ -64,5 +72,9 @@ function toPrice(item: Item): string {
 
 .item-table tbody tr:hover {
   background: #f8fafc;
+}
+
+.clickable-row {
+  cursor: pointer;
 }
 </style>

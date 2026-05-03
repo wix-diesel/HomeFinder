@@ -50,7 +50,7 @@ import SettingsNavigationButton from '../components/common/SettingsNavigationBut
   top: 0;
   left: 0;
   right: 0;
-  z-index: 20;
+  z-index: 2000;
   height: 56px;
   background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;

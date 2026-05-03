@@ -76,4 +76,38 @@ public class ItemsController(IItemService itemService) : ControllerBase
             "予期しないエラーが発生しました。",
             Array.Empty<ApiErrorDetail>()));
     }
+
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> DeleteItem(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await itemService.DeleteItemAsync(id, cancellationToken);
+        if (result.IsSuccessful)
+        {
+            return NoContent();
+        }
+
+        if (result.Error is ItemNotFoundException)
+        {
+            return NotFound(ApiError.ItemDeleteNotFound());
+        }
+
+        if (result.Error is ItemDeleteForbiddenException)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ApiError.Forbidden());
+        }
+
+        if (result.Error is ItemDeleteConflictException)
+        {
+            return StatusCode(StatusCodes.Status409Conflict, ApiError.ItemDeleteConflict());
+        }
+
+        return StatusCode(StatusCodes.Status500InternalServerError, new ApiError(
+            "INTERNAL_SERVER_ERROR",
+            "予期しないエラーが発生しました。",
+            Array.Empty<ApiErrorDetail>()));
+    }
 }

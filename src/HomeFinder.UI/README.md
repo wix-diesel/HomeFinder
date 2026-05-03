@@ -27,3 +27,12 @@ pnpm test:run
 1. 新しい入力フォームは `FormField` と `AppPrimaryButton` を優先利用する。
 2. 画面状態は `StatePanel` で表現し、個別の生テキスト表示を増やさない。
 3. API送信用データは `services/itemPayloadMapper.ts` でUI状態から変換する。
+
+## API 契約ドキュメント
+
+| Feature | 契約ドキュメント |
+|---------|----------------|
+| 001 物品インベントリ | [specs/001-item-inventory/contracts/](../../specs/001-item-inventory/contracts/) |
+| 006 アイテム詳細ページ | [specs/006-item-detail-page/contracts/](../../specs/006-item-detail-page/contracts/) |
+
+feature 006 の詳細ページ API については [item-detail-api.md](../../specs/006-item-detail-page/contracts/item-detail-api.md) を参照してください。

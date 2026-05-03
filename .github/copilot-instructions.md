@@ -9,5 +9,5 @@
 <!-- SPECKIT START -->
 ## Speckit Plan Context
 
-- 現在の計画: `/specs/004-item-category-management/plan.md`
+- 現在の計画: `/specs/006-item-detail-page/plan.md`
 <!-- SPECKIT END -->

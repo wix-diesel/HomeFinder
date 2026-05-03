@@ -46,6 +46,11 @@ public class Item
     public DateTime UpdatedAtUtc { get; set; }
 
     /// <summary>
+    /// 論理削除日時（UTC）。null = 有効、値あり = 削除済み
+    /// </summary>
+    public DateTime? DeletedAtUtc { get; set; }
+
+    /// <summary>
     /// このアイテムが属するカテゴリーの ID
     /// NULL 許容（カテゴリー未指定の場合、「未分類」へ自動割り当て）
     /// </summary>

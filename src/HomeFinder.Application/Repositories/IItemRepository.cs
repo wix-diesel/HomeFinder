@@ -8,4 +8,5 @@ public interface IItemRepository
     Task<Item?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default);
     Task AddAsync(Item item, CancellationToken cancellationToken = default);
+    Task SoftDeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }
