@@ -115,7 +115,7 @@ function toggleMenu(event: Event) {
         <div class="menu-wrap">
           <button type="button" class="menu" aria-label="メニュー" @click="toggleMenu">⋮</button>
           <div v-if="menuOpen" class="item-menu">
-            <button type="button" class="item-menu-item" @click="navigateToEdit">編集</button>
+            <button type="button" class="item-menu-item" :aria-label="`${item.name} を編集`" @click="navigateToEdit">編集</button>
           </div>
         </div>
       </div>
