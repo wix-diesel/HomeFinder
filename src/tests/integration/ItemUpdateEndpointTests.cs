@@ -79,6 +79,35 @@ public class ItemUpdateEndpointTests : IClassFixture<TestApplicationFactory>
         var updated = await response.Content.ReadFromJsonAsync<ItemResponse>();
         Assert.NotNull(updated);
         Assert.Equal(5, updated!.Quantity);
+        Assert.Equal("テストメーカー", updated.Manufacturer);
+    }
+
+    [Fact]
+    public async Task UpdateItem_Returns200_WithCorrectCategoryName_WhenCategoryChanges()
+    {
+        // カテゴリーを持つアイテムを作成する
+        var categoriesResponse = await _client.GetAsync("/api/categories");
+        Assert.Equal(HttpStatusCode.OK, categoriesResponse.StatusCode);
+        var categories = await categoriesResponse.Content.ReadFromJsonAsync<CategoryResponse[]>();
+        Assert.NotNull(categories);
+        var foodCategory = categories!.FirstOrDefault(c => c.Name == "食器");
+        Assert.NotNull(foodCategory);
+
+        var createPayload = new { name = "カテゴリ変更テスト用アイテム", quantity = 1 };
+        var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        // カテゴリーを「食器」へ変更する
+        var updatePayload = new { name = "カテゴリ変更テスト用アイテム", quantity = 1, categoryId = foodCategory!.Id };
+        var response = await _client.PutAsJsonAsync($"/api/items/{created!.Id}", updatePayload);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updated = await response.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(updated);
+        Assert.Equal(foodCategory.Id, updated!.CategoryId);
+        Assert.Equal("食器", updated.CategoryName);
     }
 
     [Fact]
