@@ -4,14 +4,14 @@ using System.Net.Http.Json;
 namespace IntegrationTests;
 
 /// <summary>
-/// feature 006: 編集フロー API 経路テスト（404/403 挙動の検証）
-/// 更新 API は新規実装ではなく GET /api/items/{id} の 404 経路を検証する。
+/// feature 006: 編集ナビゲーション API 経路テスト
+/// 編集ページへの遷移時に呼び出す GET /api/items/{id} の 404 経路（物品が存在しない・論理削除済み）を検証する。
 /// </summary>
-public class ItemUpdateEndpointTests : IClassFixture<TestApplicationFactory>
+public class ItemDetailEditNavigationEndpointTests : IClassFixture<TestApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public ItemUpdateEndpointTests(TestApplicationFactory factory)
+    public ItemDetailEditNavigationEndpointTests(TestApplicationFactory factory)
     {
         _client = factory.CreateClient();
     }

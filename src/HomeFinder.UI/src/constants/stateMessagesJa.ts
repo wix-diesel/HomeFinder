@@ -28,7 +28,13 @@ export const listStateMessages: Record<'empty' | 'validation_error' | 'submittin
   },
 };
 
-export const detailStateMessages: Record<'not_found' | 'fetch_failure' | 'delete_failure' | 'update_not_found', ScreenState> = {
+export const detailStateMessages: Record<'not_found' | 'fetch_failure' | 'delete_failure' | 'update_not_found' | 'submitting', ScreenState> = {
+  submitting: {
+    stateType: 'submitting',
+    titleJa: uiText.detail.loadingMessage,
+    descriptionJa: '',
+    isBusy: true,
+  },
   not_found: {
     stateType: 'empty',
     titleJa: uiText.detail.notFoundMessage,

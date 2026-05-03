@@ -5,6 +5,8 @@ import { getItemById, deleteItem, ItemServiceError } from '../services/itemServi
 import type { ItemDetail } from '../models/itemDetail';
 import { formatUtcToJst } from '../utils/dateTime';
 import { uiText } from '../constants/uiText';
+import { detailStateMessages } from '../constants/stateMessagesJa';
+import { StatePanel } from '../components/common';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog.vue';
 
 const route = useRoute();
@@ -13,7 +15,7 @@ const fallbackImagePath = '/images/item-image-unregistered.svg';
 
 const item = ref<ItemDetail | null>(null);
 const loading = ref(true);
-const errorMessage = ref('');
+const errorStateKey = ref<'not_found' | 'fetch_failure' | null>(null);
 const menuOpen = ref(false);
 const deleteDialogOpen = ref(false);
 const deleteLoading = ref(false);
@@ -24,7 +26,7 @@ const updatedAtText = computed(() => (item.value ? formatUtcToJst(item.value.upd
 const priceText = computed(() =>
   item.value?.price != null ? `¥${item.value.price.toLocaleString('ja-JP')}` : null,
 );
-const categoryBadgeText = computed(() => item.value?.categoryName?.trim() || 'Uncategorized');
+const categoryBadgeText = computed(() => item.value?.categoryName?.trim() || '未分類');
 const itemImageSrc = computed(() => {
   if (!item.value) {
     return fallbackImagePath;
@@ -46,14 +48,14 @@ onMounted(async () => {
 
 async function fetchItem() {
   loading.value = true;
-  errorMessage.value = '';
+  errorStateKey.value = null;
   try {
     item.value = await getItemById(String(route.params.id));
   } catch (error) {
     if (error instanceof ItemServiceError && error.code === 'ITEM_NOT_FOUND') {
-      errorMessage.value = uiText.detail.notFoundMessage;
+      errorStateKey.value = 'not_found';
     } else {
-      errorMessage.value = uiText.detail.fetchErrorMessage;
+      errorStateKey.value = 'fetch_failure';
     }
   } finally {
     loading.value = false;
@@ -144,15 +146,23 @@ async function confirmDelete() {
 
     <main class="detail-main">
       <!-- 読み込み中 -->
-      <p v-if="loading" class="state-message">{{ uiText.detail.loadingMessage }}</p>
+      <StatePanel
+        v-if="loading"
+        :state-type="detailStateMessages.submitting.stateType"
+        :title-ja="detailStateMessages.submitting.titleJa"
+        :description-ja="detailStateMessages.submitting.descriptionJa"
+        :is-busy="true"
+      />
 
-      <!-- 取得エラー -->
-      <div v-else-if="errorMessage" class="error-state">
-        <p>{{ errorMessage }}</p>
-        <button type="button" class="back-link" @click="router.push({ name: 'item-list' })">
-          {{ uiText.detail.backToList }}
-        </button>
-      </div>
+      <!-- 取得エラー（404 / 通信失敗） -->
+      <StatePanel
+        v-else-if="errorStateKey"
+        :state-type="detailStateMessages[errorStateKey].stateType"
+        :title-ja="detailStateMessages[errorStateKey].titleJa"
+        :description-ja="detailStateMessages[errorStateKey].descriptionJa"
+        :primary-action-label-ja="detailStateMessages[errorStateKey].primaryActionLabelJa"
+        @primary-action="router.push({ name: 'item-list' })"
+      />
 
       <!-- 削除エラー（ダイアログ外) -->
       <div v-if="deleteErrorMessage" class="delete-error-banner">
@@ -371,28 +381,6 @@ async function confirmDelete() {
   width: 100%;
   position: relative;
   z-index: 1;
-}
-
-.state-message {
-  color: #64748b;
-  text-align: center;
-  padding: 48px 0;
-}
-
-.error-state {
-  text-align: center;
-  padding: 48px 0;
-  color: #ef4444;
-}
-
-.back-link {
-  margin-top: 12px;
-  border: 0;
-  background: transparent;
-  color: #2563eb;
-  cursor: pointer;
-  text-decoration: underline;
-  font-size: 0.9rem;
 }
 
 .delete-error-banner {
