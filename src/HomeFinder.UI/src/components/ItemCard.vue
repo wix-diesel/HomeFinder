@@ -79,7 +79,15 @@ function navigateToDetail() {
 </script>
 
 <template>
-  <article class="item-card" @click="navigateToDetail" role="button" tabindex="0" :aria-label="`${item.name} の詳細を表示`">
+  <article
+    class="item-card"
+    @click="navigateToDetail"
+    @keydown.enter="navigateToDetail"
+    @keydown.space.prevent="navigateToDetail"
+    role="button"
+    tabindex="0"
+    :aria-label="`${item.name} の詳細を表示`"
+  >
     <div class="item-image-wrap">
       <img :src="cardMeta.image" :alt="`${item.name} の画像`" loading="lazy" />
       <div class="item-status">
