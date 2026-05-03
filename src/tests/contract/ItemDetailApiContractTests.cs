@@ -24,12 +24,12 @@ public class ItemDetailApiContractTests
     {
         var text = LoadContract("item-detail-api.md");
 
-        Assert.Contains("id", text);
-        Assert.Contains("name", text);
+        Assert.Contains("  - id", text);
+        Assert.Contains("  - name", text);
         Assert.Contains("quantity", text);
         Assert.Contains("canEdit", text);
         Assert.Contains("canDelete", text);
-        Assert.Contains("updatedAt", text);
+        Assert.Contains("  - updatedAt", text);
     }
 
     [Fact]
