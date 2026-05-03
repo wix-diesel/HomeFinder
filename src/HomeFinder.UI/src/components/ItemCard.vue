@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import type { Item } from '../models/item';
 import { StockStatusBadge } from './common';
 
 const props = defineProps<{
   item: Item;
 }>();
+
+const router = useRouter();
 
 const catalog = [
   {
@@ -68,10 +71,15 @@ const cardMeta = computed(() => {
 const categoryText = computed(() => props.item.categoryName ?? '未分類');
 
 const priceText = computed(() => `¥${cardMeta.value.price.toLocaleString('ja-JP')}`);
+
+// アイテム詳細ページへ遷移する
+function navigateToDetail() {
+  router.push({ name: 'item-detail', params: { id: props.item.id } });
+}
 </script>
 
 <template>
-  <article class="item-card">
+  <article class="item-card" @click="navigateToDetail" role="button" tabindex="0" :aria-label="`${item.name} の詳細を表示`">
     <div class="item-image-wrap">
       <img :src="cardMeta.image" :alt="`${item.name} の画像`" loading="lazy" />
       <div class="item-status">

@@ -82,6 +82,26 @@ public class ItemService(IItemRepository itemRepository) : IItemService
         }
     }
 
+    /// <summary>
+    /// 指定したアイテムを論理削除する。
+    /// </summary>
+    public async Task<Result<bool>> DeleteItemAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await itemRepository.SoftDeleteAsync(id, cancellationToken);
+            return new Result<bool>(true); // 成功
+        }
+        catch (ItemNotFoundException ex)
+        {
+            return new Result<bool>(ex);
+        }
+        catch (Exception ex)
+        {
+            return new Result<bool>(ex);
+        }
+    }
+
     private static ItemDto MapToDto(Item item)
     {
         return new ItemDto(

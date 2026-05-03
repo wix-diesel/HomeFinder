@@ -1,4 +1,5 @@
 import type { Item } from '../models/item';
+import type { ItemDetail } from '../models/itemDetail';
 import type { CreateItemRequest } from '../models/createItemRequest';
 import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
 import { toCreateItemRequest } from './itemPayloadMapper';
@@ -23,18 +24,41 @@ export async function getItems(): Promise<Item[]> {
   return (await response.json()) as Item[];
 }
 
-export async function getItemById(id: string): Promise<Item> {
+export async function getItemById(id: string): Promise<ItemDetail> {
   const response = await fetch(`${API_BASE_URL}/api/items/${id}`);
 
   if (!response.ok) {
     if (response.status === 404) {
       throw new ItemServiceError('指定された物品は存在しません。', 'ITEM_NOT_FOUND');
     }
+    if (response.status === 403) {
+      throw new ItemServiceError('この物品を表示する権限がありません。', 'FORBIDDEN');
+    }
 
     throw new ItemServiceError('物品詳細の取得に失敗しました。');
   }
 
-  return (await response.json()) as Item;
+  return (await response.json()) as ItemDetail;
+}
+
+export async function deleteItem(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/items/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new ItemServiceError('削除対象の物品が見つかりません。', 'ITEM_NOT_FOUND');
+    }
+    if (response.status === 403) {
+      throw new ItemServiceError('この物品を削除する権限がありません。', 'FORBIDDEN');
+    }
+    if (response.status === 409) {
+      throw new ItemServiceError('物品の削除に競合が発生しました。', 'ITEM_DELETE_CONFLICT');
+    }
+
+    throw new ItemServiceError('物品の削除に失敗しました。');
+  }
 }
 
 export async function createItem(request: CreateItemRequest | ItemRegistrationFormState): Promise<Item> {

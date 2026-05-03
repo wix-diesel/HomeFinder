@@ -14,4 +14,6 @@ public record ItemDto(
     Guid? CategoryId,
     string? CategoryName,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    bool CanEdit = true,
+    bool CanDelete = true);

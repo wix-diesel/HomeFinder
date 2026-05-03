@@ -57,3 +57,59 @@ pnpm dev
 
 - 直近の変更履歴表示
 - 履歴ボタンの有効化
+
+## 6. 自動テスト実行コマンド
+
+### バックエンド
+
+```powershell
+# 契約テスト
+cd src/tests/contract
+dotnet test
+
+# 統合テスト
+cd src/tests/integration
+dotnet test
+```
+
+### フロントエンド
+
+```powershell
+cd src/HomeFinder.UI
+npx vitest run
+```
+
+## 7. テスト実行結果サマリー（実装時点）
+
+| テストスイート | 件数 | 結果 |
+|--------------|------|------|
+| 契約テスト (contract) | 18 件 | ✓ 全 PASS |
+| 統合テスト (integration) | 30 件 | ✓ 全 PASS |
+| UI ユニットテスト (ItemDetailPage) | 13 件 | ✓ 全 PASS |
+
+## 8. シナリオ検証結果
+
+### SC-001: アイテム詳細を閲覧できる（US1）
+- GET `/api/items/{id}` が `canEdit: true`, `canDelete: true` を含む JSON を返すことを統合テストで確認
+- `ItemDetailPage` のロードシーケンスをユニットテストで確認（正常表示 / 404 / fetchError の 3 経路）
+
+### SC-002: 存在しないアイテムは 404 を表示する（US1）
+- GET `/api/items/{invalid-id}` が 404 を返すことを統合テストで確認
+- フロントエンドが 404 時に「見つかりません」メッセージを表示することをユニットテストで確認
+
+### SC-003: 編集ページへ遷移できる（US2）
+- `canEdit: true` の場合に編集ボタン/メニューが表示されることをユニットテストで確認
+- 編集ボタン押下で `/items/{id}/edit` へ遷移することをユニットテストで確認
+
+### SC-004: 削除確認ダイアログを経て論理削除できる（US3）
+- DELETE `/api/items/{id}` が 204 を返すことを統合テストで確認
+- 削除成功後にフロントエンドが一覧ページへ遷移することをユニットテストで確認
+- 論理削除後に一覧 API からアイテムが除外されることを統合テストで確認
+
+### SC-005: 削除後は一覧に表示されない（US3）
+- `DeleteItem_SoftDeleted_ItemDisappearsFromList` 統合テストで確認
+- `HasQueryFilter` による EF Core グローバルフィルタで実装済み
+
+### SC-006: 削除失敗時はエラーメッセージを表示する（US3）
+- DELETE が 404 返却時はフロントエンドが一覧へ遷移することをユニットテストで確認
+- DELETE が一般エラー時はページ内にエラーメッセージを表示することをユニットテストで確認
