@@ -15,16 +15,23 @@ const props = withDefaults(
   defineProps<{
     submitError?: string;
     isSubmitting?: boolean;
+    initialValues?: Partial<ItemRegistrationFormState>;
+    submitLabelJa?: string;
   }>(),
   {
     submitError: '',
     isSubmitting: false,
+    initialValues: undefined,
+    submitLabelJa: undefined,
   },
 );
 
 const categories = ref<Category[]>([]);
 
 onMounted(async () => {
+  if (props.initialValues) {
+    Object.assign(formState, props.initialValues);
+  }
   try {
     categories.value = await categoryService.getCategories(true);
   } catch {
@@ -221,7 +228,7 @@ function onRetry(): void {
 
     <div class="action-bar">
       <button type="button" class="secondary-btn">下書き保存</button>
-      <AppPrimaryButton :label-ja="uiText.create.submit" type="submit" :loading="props.isSubmitting" />
+      <AppPrimaryButton :label-ja="props.submitLabelJa ?? uiText.create.submit" type="submit" :loading="props.isSubmitting" />
     </div>
   </form>
 </template>

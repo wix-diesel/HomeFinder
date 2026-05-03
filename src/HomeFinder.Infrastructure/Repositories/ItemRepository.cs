@@ -30,9 +30,20 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
         return dbContext.Items.AnyAsync(x => x.Name == name, cancellationToken);
     }
 
+    public Task<bool> ExistsByNameExcludingAsync(string name, Guid excludeId, CancellationToken cancellationToken = default)
+    {
+        return dbContext.Items.AnyAsync(x => x.Name == name && x.Id != excludeId, cancellationToken);
+    }
+
     public async Task AddAsync(Item item, CancellationToken cancellationToken = default)
     {
         dbContext.Items.Add(item);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateAsync(Item item, CancellationToken cancellationToken = default)
+    {
+        dbContext.Items.Update(item);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 

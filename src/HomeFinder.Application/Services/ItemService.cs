@@ -82,6 +82,48 @@ public class ItemService(IItemRepository itemRepository) : IItemService
         }
     }
 
+    public async Task<Result<ItemDto>> UpdateItemAsync(Guid id, UpdateItemRequest request, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var normalizedName = (request.Name ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 1)
+            {
+                return new Result<ItemDto>(new ArgumentException("入力内容に誤りがあります。", nameof(request)));
+            }
+
+            var item = await itemRepository.GetByIdAsync(id, cancellationToken);
+            if (item is null)
+            {
+                return new Result<ItemDto>(new ItemNotFoundException(id));
+            }
+
+            var conflictExists = await itemRepository.ExistsByNameExcludingAsync(normalizedName, id, cancellationToken);
+            if (conflictExists)
+            {
+                return new Result<ItemDto>(new ItemNameConflictException(normalizedName));
+            }
+
+            item.Name = normalizedName;
+            item.Quantity = request.Quantity;
+            item.Manufacturer = request.Manufacturer?.Trim();
+            item.Description = request.Description?.Trim();
+            item.Note = request.Note?.Trim();
+            item.Barcode = request.Barcode?.Trim();
+            item.Price = request.Price;
+            item.CategoryId = request.CategoryId;
+            item.UpdatedAtUtc = DateTime.UtcNow;
+
+            await itemRepository.UpdateAsync(item, cancellationToken);
+
+            return MapToDto(item);
+        }
+        catch (Exception ex)
+        {
+            return new Result<ItemDto>(ex);
+        }
+    }
+
     /// <summary>
     /// 指定したアイテムを論理削除する。
     /// </summary>

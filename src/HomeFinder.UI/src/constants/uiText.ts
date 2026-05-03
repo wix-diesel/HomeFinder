@@ -122,12 +122,19 @@ export const uiText = {
     footerVersion: 'v2.4.0 • エンタープライズ版',
     footerCopyright: '© 2024 HomeFinder',
   },
+  edit: {
+    title: 'アイテム編集',
+    subtitle: '内容を変更して更新してください。',
+    successToast: '物品を更新しました。',
+    submit: '更新する',
+  },
   errors: {
     nameRequired: '物品名称は必須です。',
     quantityInvalid: '数量は1以上の整数で入力してください。',
     priceInvalid: '価格は0以上の数値で入力してください。',
     validationSummary: '入力内容に誤りがあります。',
     submitFailed: '物品登録に失敗しました。',
+    updateFailed: '物品更新に失敗しました。',
     itemConflict: '同じ名称の物品がすでに登録されています。',
   },
   detail: {
