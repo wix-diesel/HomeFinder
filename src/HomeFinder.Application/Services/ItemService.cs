@@ -96,6 +96,16 @@ public class ItemService(IItemRepository itemRepository) : IItemService
         {
             return new Result<bool>(ex);
         }
+        catch (ItemDeleteConflictException ex)
+        {
+            // 同時実行競合：呼び出し元で 409 にマッピングする
+            return new Result<bool>(ex);
+        }
+        catch (ItemDeleteForbiddenException ex)
+        {
+            // 権限不足：呼び出し元で 403 にマッピングする
+            return new Result<bool>(ex);
+        }
         catch (Exception ex)
         {
             return new Result<bool>(ex);

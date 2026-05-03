@@ -51,6 +51,15 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
         }
 
         item.DeletedAtUtc = DateTime.UtcNow;
-        await dbContext.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // 同時実行制御違反が発生した場合は競合例外に変換する
+            throw new ItemDeleteConflictException(id);
+        }
     }
 }

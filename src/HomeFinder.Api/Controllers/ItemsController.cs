@@ -81,6 +81,7 @@ public class ItemsController(IItemService itemService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> DeleteItem(Guid id, CancellationToken cancellationToken)
     {
         var result = await itemService.DeleteItemAsync(id, cancellationToken);
@@ -92,6 +93,16 @@ public class ItemsController(IItemService itemService) : ControllerBase
         if (result.Error is ItemNotFoundException)
         {
             return NotFound(ApiError.ItemDeleteNotFound());
+        }
+
+        if (result.Error is ItemDeleteForbiddenException)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ApiError.Forbidden());
+        }
+
+        if (result.Error is ItemDeleteConflictException)
+        {
+            return Conflict(ApiError.ItemDeleteConflict());
         }
 
         return StatusCode(StatusCodes.Status500InternalServerError, new ApiError(
