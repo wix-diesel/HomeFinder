@@ -11,13 +11,13 @@
 - Path Parameters:
   - itemId: 対象アイテム ID
 - 成功 (200):
-  - itemId
-  - displayName
+  - id
+  - name
   - category
   - storageLocation
   - quantity
   - description
-  - updatedAtUtc (UTC, ISO 8601 with Z)
+  - updatedAt (UTC, ISO 8601 with Z)
   - canEdit
   - canDelete
 - 失敗:
