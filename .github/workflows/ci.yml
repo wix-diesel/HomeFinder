@@ -77,3 +77,31 @@ jobs:
       - name: テスト実行
         working-directory: src/HomeFinder.UI
         run: pnpm run test:run
+
+  # ----------------------------------------
+  # バックエンド: コンテナビルド
+  # ----------------------------------------
+  container-backend:
+    name: Backend (Container Build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: バックエンドコンテナイメージのビルド
+        run: docker build -t homefinder-api:ci -f src/HomeFinder.Api/Dockerfile .
+
+  # ----------------------------------------
+  # フロントエンド: コンテナビルド
+  # ----------------------------------------
+  container-frontend:
+    name: Frontend (Container Build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: フロントエンドコンテナイメージのビルド
+        run: docker build -t homefinder-ui:ci -f src/HomeFinder.UI/Dockerfile .
