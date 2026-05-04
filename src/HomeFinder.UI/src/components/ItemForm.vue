@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { AppPrimaryButton, FormField, StatePanel } from './common';
 import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
 import type { Category } from '../models/category';
@@ -15,22 +15,20 @@ const props = withDefaults(
   defineProps<{
     submitError?: string;
     isSubmitting?: boolean;
+    initialValues?: Partial<ItemRegistrationFormState>;
+    submitLabelJa?: string;
+    submitErrorTitleJa?: string;
   }>(),
   {
     submitError: '',
     isSubmitting: false,
+    initialValues: undefined,
+    submitLabelJa: undefined,
+    submitErrorTitleJa: undefined,
   },
 );
 
 const categories = ref<Category[]>([]);
-
-onMounted(async () => {
-  try {
-    categories.value = await categoryService.getCategories(true);
-  } catch {
-    // カテゴリー取得失敗時はフォームを利用可能な状態に保つ
-  }
-});
 
 const formState = reactive<ItemRegistrationFormState>({
   name: '',
@@ -44,6 +42,25 @@ const formState = reactive<ItemRegistrationFormState>({
   isSubmitting: false,
   fieldErrors: {},
   submitError: null,
+});
+
+// initialValues が渡された（または変更された）タイミングでフォームに反映する
+watch(
+  () => props.initialValues,
+  (newValues) => {
+    if (newValues) {
+      Object.assign(formState, newValues);
+    }
+  },
+  { immediate: true },
+);
+
+onMounted(async () => {
+  try {
+    categories.value = await categoryService.getCategories(true);
+  } catch {
+    // カテゴリー取得失敗時はフォームを利用可能な状態に保つ
+  }
 });
 
 const hasValidationError = computed(() => Object.values(formState.fieldErrors).some((message) => Boolean(message)));
@@ -98,7 +115,7 @@ function onRetry(): void {
         <StatePanel
           v-if="props.submitError"
           state-type="failure"
-          :title-ja="uiText.errors.submitFailed"
+          :title-ja="props.submitErrorTitleJa ?? uiText.errors.submitFailed"
           :description-ja="props.submitError"
           :primary-action-label-ja="uiText.create.retry"
           @primary-action="onRetry"
@@ -221,7 +238,7 @@ function onRetry(): void {
 
     <div class="action-bar">
       <button type="button" class="secondary-btn">下書き保存</button>
-      <AppPrimaryButton :label-ja="uiText.create.submit" type="submit" :loading="props.isSubmitting" />
+      <AppPrimaryButton :label-ja="props.submitLabelJa ?? uiText.create.submit" type="submit" :loading="props.isSubmitting" />
     </div>
   </form>
 </template>

@@ -1,15 +1,20 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ItemCreatePage from '../../../src/pages/ItemCreatePage.vue';
-import { createItem, ItemServiceError } from '../../../src/services/itemService';
+import { createItem, getItemById, updateItem, ItemServiceError } from '../../../src/services/itemService';
 
 const pushMock = vi.fn();
+
+// useRoute のクエリを動的に差し替えられるようにする
+let routeQuery: Record<string, string> = {};
 
 vi.mock('../../../src/services/itemService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/services/itemService')>();
   return {
     ...actual,
     createItem: vi.fn(),
+    getItemById: vi.fn(),
+    updateItem: vi.fn(),
   };
 });
 
@@ -17,10 +22,16 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: pushMock,
   }),
+  useRoute: () => ({
+    get query() {
+      return routeQuery;
+    },
+  }),
 }));
 
-describe('ItemCreatePage', () => {
+describe('ItemCreatePage (登録モード)', () => {
   beforeEach(() => {
+    routeQuery = {};
     vi.clearAllMocks();
   });
 
@@ -64,5 +75,84 @@ describe('ItemCreatePage', () => {
     await flushPromises();
 
     expect(pushMock).toHaveBeenCalledWith({ path: '/items', query: { created: '1' } });
+  });
+});
+
+describe('ItemCreatePage (編集モード)', () => {
+  const editId = 'test-item-id-001';
+
+  beforeEach(() => {
+    routeQuery = { editId };
+    vi.clearAllMocks();
+  });
+
+  it('更新成功時に一覧画面へ遷移する', async () => {
+    vi.mocked(getItemById).mockResolvedValue({
+      id: editId,
+      name: '既存アイテム',
+      quantity: 3,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    });
+    vi.mocked(updateItem).mockResolvedValue({
+      id: editId,
+      name: '既存アイテム',
+      quantity: 5,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-05-01T00:00:00Z',
+    });
+
+    const wrapper = mount(ItemCreatePage);
+    await flushPromises(); // 初期データ取得完了を待つ
+
+    await wrapper.find('input[name="name"]').setValue('既存アイテム');
+    await wrapper.find('input[name="quantity"]').setValue('5');
+    await wrapper.find('form').trigger('submit.prevent');
+    await flushPromises();
+
+    expect(updateItem).toHaveBeenCalledWith(editId, expect.anything());
+    expect(pushMock).toHaveBeenCalledWith({ path: '/items', query: { updated: '1' } });
+  });
+
+  it('初期データ取得で ITEM_NOT_FOUND が返った場合に not_found 状態を表示する', async () => {
+    vi.mocked(getItemById).mockRejectedValue(new ItemServiceError('指定された物品は存在しません。', 'ITEM_NOT_FOUND'));
+
+    const wrapper = mount(ItemCreatePage);
+    await flushPromises();
+
+    // フォームではなくエラーパネルが表示される
+    expect(wrapper.find('form').exists()).toBe(false);
+    expect(wrapper.text()).toContain('編集対象の物品が見つかりません');
+  });
+
+  it('初期データ取得で一般エラーが発生した場合に fetch_failure 状態を表示する', async () => {
+    vi.mocked(getItemById).mockRejectedValue(new Error('Network Error'));
+
+    const wrapper = mount(ItemCreatePage);
+    await flushPromises();
+
+    expect(wrapper.find('form').exists()).toBe(false);
+    expect(wrapper.text()).toContain('物品データの取得に失敗しました');
+  });
+
+  it('更新時に ITEM_NOT_FOUND が返った場合は一覧へ遷移する', async () => {
+    vi.mocked(getItemById).mockResolvedValue({
+      id: editId,
+      name: '既存アイテム',
+      quantity: 3,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    });
+    vi.mocked(updateItem).mockRejectedValue(new ItemServiceError('更新対象の物品が見つかりません。', 'ITEM_NOT_FOUND'));
+
+    const wrapper = mount(ItemCreatePage);
+    await flushPromises();
+
+    await wrapper.find('input[name="name"]').setValue('既存アイテム');
+    await wrapper.find('input[name="quantity"]').setValue('3');
+    await wrapper.find('form').trigger('submit.prevent');
+    await flushPromises();
+
+    expect(pushMock).toHaveBeenCalledWith({ path: '/items' });
   });
 });

@@ -77,6 +77,40 @@ public class ItemsController(IItemService itemService) : ControllerBase
             Array.Empty<ApiErrorDetail>()));
     }
 
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(ItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<ItemDto>> UpdateItem(Guid id, [FromBody] UpdateItemRequest request, CancellationToken cancellationToken)
+    {
+        var result = await itemService.UpdateItemAsync(id, request, cancellationToken);
+        if (result.IsSuccessful)
+        {
+            return Ok(result.Value);
+        }
+
+        if (result.Error is ItemNotFoundException)
+        {
+            return NotFound(ApiError.ItemUpdateNotFound());
+        }
+
+        if (result.Error is ArgumentException)
+        {
+            return BadRequest(ApiError.ValidationError(Array.Empty<ApiErrorDetail>()));
+        }
+
+        if (result.Error is ItemNameConflictException)
+        {
+            return Conflict(ApiError.ItemNameConflict());
+        }
+
+        return StatusCode(StatusCodes.Status500InternalServerError, new ApiError(
+            "INTERNAL_SERVER_ERROR",
+            "予期しないエラーが発生しました。",
+            Array.Empty<ApiErrorDetail>()));
+    }
+
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]

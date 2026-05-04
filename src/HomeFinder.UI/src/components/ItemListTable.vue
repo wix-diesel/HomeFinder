@@ -19,6 +19,12 @@ function toPrice(item: Item): string {
 function navigateToDetail(id: string) {
   router.push({ name: 'item-detail', params: { id } });
 }
+
+// アイテム編集ページへ遷移する
+function navigateToEdit(event: Event, id: string) {
+  event.stopPropagation();
+  router.push({ name: 'item-create', query: { editId: id } });
+}
 </script>
 
 <template>
@@ -30,6 +36,7 @@ function navigateToDetail(id: string) {
         <th>数量</th>
         <th>在庫状態</th>
         <th>価格</th>
+        <th>アクション</th>
       </tr>
     </thead>
     <tbody>
@@ -39,6 +46,9 @@ function navigateToDetail(id: string) {
         <td>{{ item.quantity }}</td>
         <td><StockStatusBadge :quantity="item.quantity" /></td>
         <td>{{ toPrice(item) }}</td>
+        <td class="action-cell">
+          <button type="button" class="edit-btn" @click="navigateToEdit($event, item.id)" :aria-label="`${item.name} を編集`">編集</button>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -76,5 +86,24 @@ function navigateToDetail(id: string) {
 
 .clickable-row {
   cursor: pointer;
+}
+
+.action-cell {
+  white-space: nowrap;
+}
+
+.edit-btn {
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  padding: 5px 10px;
+  background: #fff;
+  color: #2563eb;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: #eff6ff;
 }
 </style>

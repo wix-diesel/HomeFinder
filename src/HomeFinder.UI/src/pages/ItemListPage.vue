@@ -42,7 +42,11 @@ const filteredItems = computed(() => {
   });
 });
 
-const toastMessage = computed(() => (route.query.created === '1' ? uiText.create.successToast : ''));
+const toastMessage = computed(() => {
+  if (route.query.created === '1') return uiText.create.successToast;
+  if (route.query.updated === '1') return uiText.edit.successToast;
+  return '';
+});
 
 const visibleCategories = computed(() => categories.value.filter((c) => c.id !== 'all'));
 
