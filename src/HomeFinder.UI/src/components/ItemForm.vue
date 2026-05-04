@@ -17,12 +17,14 @@ const props = withDefaults(
     isSubmitting?: boolean;
     initialValues?: Partial<ItemRegistrationFormState>;
     submitLabelJa?: string;
+    submitErrorTitleJa?: string;
   }>(),
   {
     submitError: '',
     isSubmitting: false,
     initialValues: undefined,
     submitLabelJa: undefined,
+    submitErrorTitleJa: undefined,
   },
 );
 
@@ -113,7 +115,7 @@ function onRetry(): void {
         <StatePanel
           v-if="props.submitError"
           state-type="failure"
-          :title-ja="uiText.errors.submitFailed"
+          :title-ja="props.submitErrorTitleJa ?? uiText.errors.submitFailed"
           :description-ja="props.submitError"
           :primary-action-label-ja="uiText.create.retry"
           @primary-action="onRetry"

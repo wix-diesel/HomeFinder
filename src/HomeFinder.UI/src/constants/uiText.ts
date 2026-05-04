@@ -127,6 +127,13 @@ export const uiText = {
     subtitle: '内容を変更して更新してください。',
     successToast: '物品を更新しました。',
     submit: '更新する',
+    loadingTitle: '物品データを読み込み中です',
+    loadingDescription: 'しばらくお待ちください。',
+    notFoundTitle: '編集対象の物品が見つかりません',
+    notFoundDescription: '物品が削除されているか、URLが正しくありません。',
+    fetchFailureTitle: '物品データの取得に失敗しました',
+    fetchFailureDescription: 'ネットワーク状態を確認し、再読み込みしてください。',
+    updateFailedTitle: '物品更新に失敗しました。',
   },
   errors: {
     nameRequired: '物品名称は必須です。',

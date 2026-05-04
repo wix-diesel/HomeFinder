@@ -177,6 +177,7 @@ public class ItemUpdateEndpointTests : IClassFixture<TestApplicationFactory>
         Assert.Equal(10, updated!.Quantity);
     }
 
-    public sealed record ItemResponse(Guid Id, string Name, int Quantity);
+    public sealed record ItemResponse(Guid Id, string Name, int Quantity, string? Manufacturer, Guid? CategoryId, string? CategoryName);
     public sealed record ErrorResponse(string Code, string Message);
+    public sealed record CategoryResponse(Guid Id, string Name);
 }

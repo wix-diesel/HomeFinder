@@ -2,8 +2,9 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ItemForm from '../components/ItemForm.vue';
-import { PageSectionHeader } from '../components/common';
+import { PageSectionHeader, StatePanel } from '../components/common';
 import { uiText } from '../constants/uiText';
+import { editStateMessages } from '../constants/stateMessagesJa';
 import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
 import { createItem, getItemById, updateItem, ItemServiceError } from '../services/itemService';
 
@@ -18,6 +19,8 @@ const isEditMode = computed(() => Boolean(editId.value));
 const initialValues = ref<Partial<ItemRegistrationFormState> | undefined>(undefined);
 // 編集モードの場合はアイテム取得完了まで初期状態でフォームを表示しない
 const loadingItem = ref(Boolean(route.query.editId));
+// 初期フェッチのエラー種別（null = 正常）
+const fetchErrorStateKey = ref<'not_found' | 'fetch_failure' | null>(null);
 
 onMounted(async () => {
   if (isEditMode.value && editId.value) {
@@ -34,8 +37,12 @@ onMounted(async () => {
         description: item.description ?? '',
         note: item.note ?? '',
       };
-    } catch {
-      errorMessage.value = uiText.errors.updateFailed;
+    } catch (error) {
+      if (error instanceof ItemServiceError && error.code === 'ITEM_NOT_FOUND') {
+        fetchErrorStateKey.value = 'not_found';
+      } else {
+        fetchErrorStateKey.value = 'fetch_failure';
+      }
     } finally {
       loadingItem.value = false;
     }
@@ -66,7 +73,8 @@ async function handleSubmit(formState: ItemRegistrationFormState) {
     }
 
     if (error instanceof ItemServiceError && error.code === 'ITEM_NOT_FOUND') {
-      errorMessage.value = uiText.detail.updateNotFoundMessage;
+      // 更新対象の物品が見つからない場合は一覧へ戻る
+      await router.push({ path: '/items' });
       return;
     }
 
@@ -87,9 +95,31 @@ function handleRetry() {
       :title="isEditMode ? uiText.edit.title : uiText.create.title"
       :description="isEditMode ? uiText.edit.subtitle : uiText.create.subtitle"
     />
+
+    <!-- 編集モード: 初期データ取得中 -->
+    <StatePanel
+      v-if="loadingItem"
+      :state-type="editStateMessages.submitting.stateType"
+      :title-ja="editStateMessages.submitting.titleJa"
+      :description-ja="editStateMessages.submitting.descriptionJa"
+      :is-busy="true"
+    />
+
+    <!-- 編集モード: 初期データ取得エラー -->
+    <StatePanel
+      v-else-if="fetchErrorStateKey"
+      :state-type="editStateMessages[fetchErrorStateKey].stateType"
+      :title-ja="editStateMessages[fetchErrorStateKey].titleJa"
+      :description-ja="editStateMessages[fetchErrorStateKey].descriptionJa"
+      :primary-action-label-ja="editStateMessages[fetchErrorStateKey].primaryActionLabelJa"
+      @primary-action="router.push({ path: '/items' })"
+    />
+
+    <!-- フォーム（登録モード常時 / 編集モードはデータ取得後） -->
     <ItemForm
-      v-if="!loadingItem"
+      v-else
       :submit-error="errorMessage"
+      :submit-error-title-ja="isEditMode ? uiText.edit.updateFailedTitle : undefined"
       :is-submitting="isSubmitting"
       :initial-values="initialValues"
       :submit-label-ja="isEditMode ? uiText.edit.submit : uiText.create.submit"

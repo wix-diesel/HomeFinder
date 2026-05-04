@@ -44,7 +44,29 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
     public async Task UpdateAsync(Item item, CancellationToken cancellationToken = default)
     {
         dbContext.Items.Update(item);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException dbEx)
+        {
+            var innerMsg = dbEx.InnerException?.Message ?? string.Empty;
+
+            // 一意制約競合（レースコンディション）は ItemNameConflictException に変換する
+            if (innerMsg.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ItemNameConflictException(item.Name);
+            }
+
+            // FK 制約違反（存在しないカテゴリーIDなど）は ArgumentException に変換する
+            if (innerMsg.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase)
+                || innerMsg.Contains("REFERENCES", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("存在しないカテゴリーIDが指定されました。", nameof(item));
+            }
+
+            throw;
+        }
     }
 
     /// <summary>

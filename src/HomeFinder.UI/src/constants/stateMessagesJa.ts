@@ -59,3 +59,24 @@ export const detailStateMessages: Record<'not_found' | 'fetch_failure' | 'delete
     primaryActionLabelJa: uiText.detail.backToList,
   },
 };
+
+export const editStateMessages: Record<'submitting' | 'not_found' | 'fetch_failure', ScreenState> = {
+  submitting: {
+    stateType: 'submitting',
+    titleJa: uiText.edit.loadingTitle,
+    descriptionJa: uiText.edit.loadingDescription,
+    isBusy: true,
+  },
+  not_found: {
+    stateType: 'empty',
+    titleJa: uiText.edit.notFoundTitle,
+    descriptionJa: uiText.edit.notFoundDescription,
+    primaryActionLabelJa: uiText.detail.backToList,
+  },
+  fetch_failure: {
+    stateType: 'failure',
+    titleJa: uiText.edit.fetchFailureTitle,
+    descriptionJa: uiText.edit.fetchFailureDescription,
+    primaryActionLabelJa: uiText.detail.backToList,
+  },
+};

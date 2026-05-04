@@ -3,7 +3,6 @@ using HomeFinder.Application.Contracts;
 using HomeFinder.Core.Entities;
 using HomeFinder.Application.Repositories;
 using DotNext;
-using Microsoft.EntityFrameworkCore;
 
 namespace HomeFinder.Application.Services;
 
@@ -115,28 +114,8 @@ public class ItemService(IItemRepository itemRepository) : IItemService
             item.CategoryId = request.CategoryId;
             item.UpdatedAtUtc = DateTime.UtcNow;
 
-            try
-            {
-                await itemRepository.UpdateAsync(item, cancellationToken);
-            }
-            catch (DbUpdateException dbEx)
-            {
-                // 一意制約競合（レースコンディション）は 409 として返す
-                var innerMsg = dbEx.InnerException?.Message ?? string.Empty;
-                if (innerMsg.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase))
-                {
-                    return new Result<ItemDto>(new ItemNameConflictException(normalizedName));
-                }
-
-                // FK 制約違反（存在しないカテゴリーIDなど）は 400 として返す
-                if (innerMsg.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase)
-                    || innerMsg.Contains("REFERENCES", StringComparison.OrdinalIgnoreCase))
-                {
-                    return new Result<ItemDto>(new ArgumentException("存在しないカテゴリーIDが指定されました。", nameof(request)));
-                }
-
-                return new Result<ItemDto>(dbEx);
-            }
+            // DB制約違反（UNIQUE/FK）はリポジトリ側でドメイン例外に変換される
+            await itemRepository.UpdateAsync(item, cancellationToken);
 
             // Category ナビゲーションプロパティを最新化するために再取得する
             var reloaded = await itemRepository.GetByIdAsync(id, cancellationToken);
