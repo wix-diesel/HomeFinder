@@ -9,5 +9,5 @@
 <!-- SPECKIT START -->
 ## Speckit Plan Context
 
-- 現在の計画: `/specs/007-item-image-upload/plan.md`
+- 現在の計画: `/specs/008-item-change-history/plan.md`
 <!-- SPECKIT END -->
