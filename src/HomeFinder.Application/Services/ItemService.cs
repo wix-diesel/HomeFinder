@@ -3,10 +3,15 @@ using HomeFinder.Application.Contracts;
 using HomeFinder.Core.Entities;
 using HomeFinder.Application.Repositories;
 using DotNext;
+using Microsoft.Extensions.Logging;
 
 namespace HomeFinder.Application.Services;
 
-public class ItemService(IItemRepository itemRepository) : IItemService
+public class ItemService(
+    IItemRepository itemRepository,
+    IImageRepository imageRepository,
+    IBlobStorageService blobStorageService,
+    ILogger<ItemService> logger) : IItemService
 {
     public async Task<Result<IReadOnlyCollection<ItemDto>>> GetItemsAsync(CancellationToken cancellationToken = default)
     {
@@ -136,6 +141,20 @@ public class ItemService(IItemRepository itemRepository) : IItemService
     {
         try
         {
+            // アイテムに紐付く画像がある場合は、先に画像側を論理削除して Blob を削除する。
+            var item = await itemRepository.GetByIdAsync(id, cancellationToken);
+            if (item?.ImageId is not null)
+            {
+                var image = await imageRepository.GetByItemIdAsync(id, cancellationToken);
+                if (image is not null)
+                {
+                    var blobName = Path.GetFileName(image.BlobUri);
+                    await blobStorageService.DeleteAsync(blobName, cancellationToken);
+                    await imageRepository.SoftDeleteAsync(image.Id, cancellationToken);
+                    logger.LogInformation("アイテム削除連動で画像を論理削除: ItemId={ItemId}, ImageId={ImageId}", id, image.Id);
+                }
+            }
+
             await itemRepository.SoftDeleteAsync(id, cancellationToken);
             return new Result<bool>(true); // 成功
         }
@@ -172,6 +191,7 @@ public class ItemService(IItemRepository itemRepository) : IItemService
             item.Price,
             item.CategoryId,
             item.Category?.Name,
+            item.ImageId,
             item.CreatedAtUtc,
             item.UpdatedAtUtc);
     }

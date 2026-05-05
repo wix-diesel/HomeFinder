@@ -1,7 +1,7 @@
 # API 契約: 画像アップロード
 
 **機能**: 007-item-image-upload | **エンドポイント**: `POST /api/items/{itemId}/image`  
-**バージョン**: 1.0 | **日付**: 2026-05-04 | **状態**: Draft
+**バージョン**: 1.0 | **日付**: 2026-05-04 | **状態**: Implemented
 
 ## 概要
 
@@ -138,12 +138,21 @@ Content-Type: image/jpeg
 }
 ```
 
+### エラーレスポンス (503 Service Unavailable)
+
+```json
+{
+  "code": "BLOB_STORAGE_UNAVAILABLE",
+  "message": "画像ストレージに一時的に接続できませんでした。しばらく時間を置いてから再度お試しください。"
+}
+```
+
 ### エラーレスポンス (500 Internal Server Error)
 
 ```json
 {
-  "code": "UPLOAD_FAILED",
-  "message": "アップロード処理に失敗しました。時間をおいて再度お試しください。"
+  "code": "INTERNAL_SERVER_ERROR",
+  "message": "予期しないエラーが発生しました。"
 }
 ```
 

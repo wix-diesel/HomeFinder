@@ -8,6 +8,11 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
     public DbSet<Item> Items => Set<Item>();
 
     /// <summary>
+    /// 画像 DbSet
+    /// </summary>
+    public DbSet<Image> Images => Set<Image>();
+
+    /// <summary>
     /// カテゴリー DbSet
     /// </summary>
     public DbSet<Category> Categories => Set<Category>();
@@ -66,6 +71,15 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
                 .WithMany()
                 .HasForeignKey(x => x.ShelfId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Image との One-to-One 関係（FK は Items.ImageId → Images.Id）
+            // Image 削除時は Items.ImageId を NULL に設定
+            entity.Property(x => x.ImageId);
+            entity.HasOne(x => x.Image)
+                .WithOne(img => img.Item)
+                .HasForeignKey<Item>(i => i.ImageId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Category エンティティ設定
@@ -151,6 +165,24 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
             entity.HasIndex(x => new { x.RoomId, x.Name })
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
+        });
+
+        // Image エンティティ設定
+        modelBuilder.Entity<Image>(entity =>
+        {
+            entity.ToTable("Images");
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id).IsRequired();
+            entity.Property(x => x.ItemId).IsRequired();
+            entity.Property(x => x.BlobUri).IsRequired().HasMaxLength(2048);
+            entity.Property(x => x.FileName).IsRequired().HasMaxLength(500);
+            entity.Property(x => x.FileFormat).IsRequired().HasMaxLength(10);
+            entity.Property(x => x.FileSizeBytes).IsRequired();
+            entity.Property(x => x.OriginalWidth).IsRequired();
+            entity.Property(x => x.OriginalHeight).IsRequired();
+            entity.Property(x => x.UploadedAtUtc).IsRequired();
+            entity.Property(x => x.DeletedAtUtc);
         });
     }
 }

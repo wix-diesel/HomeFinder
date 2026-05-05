@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router';
 import type { Item } from '../models/item';
 import { StockStatusBadge } from './common';
+import ImageThumbnail from './ImageThumbnail.vue';
 
 defineProps<{
   items: Item[];
@@ -31,6 +32,7 @@ function navigateToEdit(event: Event, id: string) {
   <table class="item-table">
     <thead>
       <tr>
+        <th>画像</th>
         <th>名称</th>
         <th>カテゴリ</th>
         <th>数量</th>
@@ -41,6 +43,9 @@ function navigateToEdit(event: Event, id: string) {
     </thead>
     <tbody>
       <tr v-for="item in items" :key="item.id" class="clickable-row" @click="navigateToDetail(item.id)" :aria-label="`${item.name} の詳細を表示`">
+        <td>
+          <ImageThumbnail :item-id="item.imageId ?? null" :image-url="item.imageUrl ?? null" :alt="`${item.name} の画像`" />
+        </td>
         <td>{{ item.name }}</td>
         <td>{{ item.categoryName ?? '未分類' }}</td>
         <td>{{ item.quantity }}</td>

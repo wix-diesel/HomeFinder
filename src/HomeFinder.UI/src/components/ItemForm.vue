@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { AppPrimaryButton, FormField, StatePanel } from './common';
+import ImageUploader from './ImageUploader.vue';
 import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
 import type { Category } from '../models/category';
 import { categoryService } from '../services/categoryService';
@@ -18,6 +19,8 @@ const props = withDefaults(
     initialValues?: Partial<ItemRegistrationFormState>;
     submitLabelJa?: string;
     submitErrorTitleJa?: string;
+    /** 編集モードのアイテム ID。指定時はドロップゾーンが画像アップローダーになる */
+    itemId?: string;
   }>(),
   {
     submitError: '',
@@ -25,6 +28,7 @@ const props = withDefaults(
     initialValues: undefined,
     submitLabelJa: undefined,
     submitErrorTitleJa: undefined,
+    itemId: undefined,
   },
 );
 
@@ -211,10 +215,13 @@ function onRetry(): void {
           @update:model-value="(value) => (formState.note = String(value ?? ''))"
         />
 
-        <div class="dropzone" role="button" aria-label="資料アップロード">
-          <p class="dropzone-title">資料をドロップ、またはクリックして選択</p>
-          <p class="dropzone-sub">PNG/JPG/PDF (最大10MB)</p>
-        </div>
+        <!-- 画像アップロード（編集モード: 即時アップロード / 新規作成: ファイル選択して作成時アップロード） -->
+        <ImageUploader
+          :item-id="props.itemId"
+          @file-selected="(file: File) => (formState.imageFile = file)"
+          @uploaded="(imageId: string) => (formState.imageId = imageId)"
+        />
+        <!-- 新規登録モードではドロップゾーンはクリックでファイル選択し、create 時に送信される -->
       </div>
 
       <aside class="summary-panel">

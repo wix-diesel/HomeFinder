@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Item } from '../models/item';
 import { StockStatusBadge } from './common';
+import ImageThumbnail from './ImageThumbnail.vue';
 
 const props = defineProps<{
   item: Item;
@@ -11,61 +12,10 @@ const props = defineProps<{
 const router = useRouter();
 const menuOpen = ref(false);
 
-const catalog = [
-  {
-    key: 'watch',
-    image:
-      'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=900&q=80',
-    price: 29900,
-  },
-  {
-    key: 'headphone',
-    image:
-      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80',
-    price: 18550,
-  },
-  {
-    key: 'journal',
-    image:
-      'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=900&q=80',
-    price: 4500,
-  },
-  {
-    key: 'camera',
-    image:
-      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=80',
-    price: 52000,
-  },
-  {
-    key: 'keyboard',
-    image:
-      'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=900&q=80',
-    price: 15900,
-  },
-  {
-    key: 'chair',
-    image:
-      'https://images.unsplash.com/photo-1581539250439-c96689b516dd?auto=format&fit=crop&w=900&q=80',
-    price: 49900,
-  },
-] as const;
-
-const fallbackImage =
-  'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=900&q=80';
-
 const cardMeta = computed(() => {
-  const lowered = props.item.name.toLowerCase();
-  const matched = catalog.find((entry) => lowered.includes(entry.key));
-
-  if (matched) {
-    return matched;
-  }
-
-  const index = Number.parseInt(props.item.id.replace(/[^0-9]/g, ''), 10) || 0;
-  const backup = catalog[index % catalog.length];
+  const seed = Number.parseInt(props.item.id.replace(/[^0-9]/g, ''), 10) || 0;
   return {
-    image: backup?.image ?? fallbackImage,
-    price: backup?.price ?? props.item.quantity * 1200,
+    price: 1200 * (seed % 60) + props.item.quantity * 500,
   };
 });
 
@@ -103,7 +53,7 @@ function toggleMenu(event: Event) {
     :aria-label="`${item.name} の詳細を表示`"
   >
     <div class="item-image-wrap">
-      <img :src="cardMeta.image" :alt="`${item.name} の画像`" loading="lazy" />
+      <ImageThumbnail :item-id="item.id" :image-url="item.imageUrl ?? null" :alt="`${item.name} の画像`" />
       <div class="item-status">
         <StockStatusBadge :quantity="item.quantity" />
       </div>
@@ -146,13 +96,11 @@ function toggleMenu(event: Event) {
 
 .item-image-wrap {
   position: relative;
-  height: 170px;
-}
-
-.item-image-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
 }
 
 .item-status {

@@ -1,7 +1,7 @@
 # API 契約: 画像削除
 
 **機能**: 007-item-image-upload | **エンドポイント**: `DELETE /api/items/{itemId}/image`  
-**バージョン**: 1.0 | **日付**: 2026-05-04 | **状態**: Draft
+**バージョン**: 1.0 | **日付**: 2026-05-04 | **状態**: Implemented
 
 ## 概要
 
@@ -91,7 +91,16 @@ Cache-Control: max-age=0
 ```json
 {
   "code": "IMAGE_NOT_FOUND",
-  "message": "このアイテムに紐付いた画像が見つかりません。"
+  "message": "アイテム {itemId} に紐付いた画像が見つかりません。"
+}
+```
+
+### エラーレスポンス (503 Service Unavailable)
+
+```json
+{
+  "code": "BLOB_STORAGE_UNAVAILABLE",
+  "message": "画像ストレージに一時的に接続できませんでした。しばらく時間を置いてから再度お試しください。"
 }
 ```
 
@@ -99,8 +108,8 @@ Cache-Control: max-age=0
 
 ```json
 {
-  "code": "DELETE_FAILED",
-  "message": "画像の削除処理に失敗しました。時間をおいて再度お試しください。"
+  "code": "INTERNAL_SERVER_ERROR",
+  "message": "予期しないエラーが発生しました。"
 }
 ```
 
@@ -110,35 +119,35 @@ Cache-Control: max-age=0
 
 1. **認可チェック**: ユーザーが当該 Item の編集権限を持つか確認
 2. **Item 取得**: itemId から Item を取得
-3. **Image 取得**: Item.imageId から Image を取得
-4. **Blob 削除**: Image.blobUri の Azure Blob を物理削除
-5. **DB 更新**:
+3. **Image 取得**: Item.imageId から Image を取得（`deletedAtUtc IS NULL` のみ）
+4. **DB 更新（先行）**:
    - Image を論理削除（`UPDATE Images SET deletedAtUtc = now()`）
    - Item.imageId を NULL に更新（`UPDATE Items SET imageId = NULL`）
+5. **Blob 削除**: Image.blobUri の Azure Blob を物理削除
 6. **204 No Content を返す**
+
+> **DB 先行削除方針**: DB 更新を先に行うことで、Blob 削除に失敗してもデータ整合性を保証する。
+> 孤立した Blob は運用ログ（LogCritical）で検知し、定期クリーンアップで処理する。
 
 ### トランザクション管理
 
-Blob 削除と DB 更新をトランザクション内で実施し、一貫性を保証：
+DB 更新を先に行い、その後 Blob を物理削除する。Blob 削除は非トランザクションのため DB と独立して処理される。
 
 ```csharp
-using var transaction = await _dbContext.Database.BeginTransactionAsync();
+// 1. DB 更新（先行）
+image.DeletedAtUtc = DateTime.UtcNow;
+item.ImageId = null;
+await _dbContext.SaveChangesAsync();
+
+// 2. Azure Blob 削除（非同期・非トランザクション）
 try
 {
-    // 1. Azure Blob 削除
-    await _blobClient.DeleteAsync();
-    
-    // 2. DB 更新
-    image.DeletedAtUtc = DateTime.UtcNow;
-    item.ImageId = null;
-    await _dbContext.SaveChangesAsync();
-    
-    await transaction.CommitAsync();
+    await _blobStorageService.DeleteAsync(image.BlobUri);
 }
-catch (Exception ex)
+catch (BlobStorageException ex)
 {
-    await transaction.RollbackAsync();
-    throw;
+    // DB は整合的なので 204 を返す。孤立 Blob はログで追跡する
+    _logger.LogCritical(ex, "孤立した Blob が残存しています: {BlobUri}", image.BlobUri);
 }
 ```
 
@@ -146,8 +155,9 @@ catch (Exception ex)
 
 | シナリオ | 対応 |
 |---------|------|
-| Blob 削除に失敗 + DB 更新前 | トランザクション ロールバック、500 エラー返却 |
-| Blob 削除成功 + DB 更新に失敗 | トランザクション ロールバック、Azure Blob は削除されたままに（管理画面で手動確認） |
+| DB 更新に失敗（Blob 削除前） | エラーを返却（404 または 503）。DB・Blob ともに変更なし |
+| DB 更新成功 + Blob 削除に失敗 | **204 を返却**（DB は整合的）。孤立 Blob は LogCritical で通知し定期クリーンアップで対処 |
+| 2 重削除リクエスト（同時並行） | 2 番目のリクエストは 404 IMAGE_NOT_FOUND を返す |
 | 両方成功 | トランザクション コミット、204 返却 |
 
 ### キャッシュ無効化

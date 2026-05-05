@@ -1,4 +1,13 @@
 services:
+  # azurite:
+  #   image: mcr.microsoft.com/azure-storage/azurite:latest
+  #   container_name: homefinder-azurite
+  #   command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000
+  #   ports:
+  #     - "10000:10000"
+  #   volumes:
+  #     - ./src/docker/azurite:/data
+
   backend:
     build:
       context: .
@@ -8,6 +17,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: ${HOMEFINDER_SQLSERVER_CONNECTION_STRING:-Server=host.docker.internal,1433;Database=HomeFinderDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True}
+      ConnectionStrings__AzureBlobStorage: ${AZURE_BLOB_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountKey=AccountKey;AccountName=devstoreaccount1;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;}      
+      AzureBlobStorage__ContainerName: ${AZURE_BLOB_CONTAINER_NAME:-homefinder}
     ports:
       - "5000:8080"
 

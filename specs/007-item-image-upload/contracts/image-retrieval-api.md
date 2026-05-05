@@ -1,7 +1,7 @@
 # API 契約: 画像取得
 
 **機能**: 007-item-image-upload | **エンドポイント**: `GET /api/items/{itemId}/image`  
-**バージョン**: 1.0 | **日付**: 2026-05-04 | **状態**: Draft
+**バージョン**: 1.0 | **日付**: 2026-05-04 | **状態**: Implemented
 
 ## 概要
 
@@ -91,7 +91,25 @@ Content-Length: 150000
 ```json
 {
   "code": "IMAGE_NOT_FOUND",
-  "message": "このアイテムに紐付いた画像が見つかりません。"
+  "message": "アイテム {itemId} に紐付いた画像が見つかりません。"
+}
+```
+
+### エラーレスポンス (503 Service Unavailable)
+
+```json
+{
+  "code": "BLOB_STORAGE_UNAVAILABLE",
+  "message": "画像ストレージに一時的に接続できませんでした。しばらく時間を置いてから再度お試しください。"
+}
+```
+
+### エラーレスポンス (500 Internal Server Error)
+
+```json
+{
+  "code": "INTERNAL_SERVER_ERROR",
+  "message": "予期しないエラーが発生しました。"
 }
 ```
 

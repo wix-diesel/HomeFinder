@@ -6,18 +6,20 @@
 
 - .NET 10 SDK
 - Node.js 20+
+- pnpm 10+
+- SQL Server (ローカルまたはリモート)
 
-### バックエンド起動
+## バックエンド起動
 
 ```bash
-cd src/backend
+cd src/HomeFinder.Api
 dotnet run
 ```
 
-### フロントエンド起動
+## フロントエンド起動
 
 ```bash
-cd src/frontend
+cd src/HomeFinder.UI
 pnpm install
 pnpm dev
 ```
@@ -78,12 +80,38 @@ curl -X GET http://localhost:5000/api/items/{id}
 
 ```bash
 curl -X POST http://localhost:5000/api/items \
-	-H "Content-Type: application/json" \
-	-d '{"name":"歯ブラシ","quantity":2}'
+  -H "Content-Type: application/json" \
+  -d '{"name":"歯ブラシ","quantity":2}'
 ```
 
-### エラー確認
+## 画像機能（007-item-image-upload）
 
-- 空名称または数量0以下: `400 Bad Request`
-- 重複名称: `409 Conflict`
-- 未存在ID詳細取得: `404 Not Found`
+### 画像アップロード
+
+```bash
+curl -X POST http://localhost:5000/api/items/{itemId}/image \
+  -F "image=@sample.jpg"
+```
+
+- 許可形式: jpg, jpeg, png, webp, bmp, svg
+- 最大サイズ: 10MB
+- 解像度制限: 1000x1000 以内
+
+### 画像取得
+
+```bash
+curl -X GET http://localhost:5000/api/items/{itemId}/image --output image.jpg
+```
+
+### 画像削除
+
+```bash
+curl -X DELETE http://localhost:5000/api/items/{itemId}/image
+```
+
+## エラー確認
+
+- 空名称または数量0以下: 400 Bad Request
+- 重複名称: 409 Conflict
+- 未存在ID詳細取得: 404 Not Found
+- 画像未登録時の画像取得/削除: 404 Not Found
