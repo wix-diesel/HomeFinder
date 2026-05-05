@@ -12,16 +12,9 @@ const props = defineProps<{
 const router = useRouter();
 const menuOpen = ref(false);
 
-const cardMeta = computed(() => {
-  const seed = Number.parseInt(props.item.id.replace(/[^0-9]/g, ''), 10) || 0;
-  return {
-    price: 1200 * (seed % 60) + props.item.quantity * 500,
-  };
-});
-
 const categoryText = computed(() => props.item.categoryName ?? '未分類');
 
-const priceText = computed(() => `¥${cardMeta.value.price.toLocaleString('ja-JP')}`);
+const priceText = computed(() => props.item.price != null ? `¥${Number(props.item.price).toLocaleString('ja-JP')}` : '—');
 
 // アイテム詳細ページへ遷移する
 function navigateToDetail() {
