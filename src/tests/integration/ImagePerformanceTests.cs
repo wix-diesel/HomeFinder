@@ -11,6 +11,7 @@ namespace IntegrationTests;
 /// <summary>
 /// T7-014〜T7-016: 画像機能パフォーマンス検証
 /// </summary>
+[Collection("ImageTests")]
 public class ImagePerformanceTests : IClassFixture<TestApplicationFactory>
 {
     private readonly TestApplicationFactory _factory;

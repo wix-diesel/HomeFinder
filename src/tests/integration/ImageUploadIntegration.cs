@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IntegrationTests;
 
+[Collection("ImageTests")]
 public class ImageUploadIntegration : IClassFixture<TestApplicationFactory>
 {
     private readonly TestApplicationFactory _factory;
