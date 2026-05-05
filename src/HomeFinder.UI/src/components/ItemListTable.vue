@@ -10,11 +10,7 @@ defineProps<{
 
 const router = useRouter();
 
-function toPrice(item: Item): string {
-  const seed = Number.parseInt(item.id.replace(/[^0-9]/g, ''), 10) || item.quantity;
-  const value = 1200 * (seed % 60) + item.quantity * 500;
-  return `¥${value.toLocaleString('ja-JP')}`;
-}
+function toPrice(item: Item): string { return item.price != null ? `¥${Number(item.price).toLocaleString('ja-JP')}` : '—'; }
 
 // アイテム詳細ページへ遷移する
 function navigateToDetail(id: string) {
