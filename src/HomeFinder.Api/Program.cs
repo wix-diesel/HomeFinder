@@ -2,6 +2,7 @@ using System.Text.Json;
 using HomeFinder.Api.Errors;
 using HomeFinder.Infrastructure.Data;
 using HomeFinder.Infrastructure.Repositories;
+using HomeFinder.Infrastructure.Services;
 using HomeFinder.Application.Repositories;
 using HomeFinder.Application.Services;
 using Microsoft.Data.SqlClient;
@@ -27,6 +28,10 @@ builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IShelfService, ShelfService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IImageRepository, ImageRepository>();
+builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddSingleton<IBlobStorageService, AzureBlobStorageService>();
+builder.Services.AddSingleton<IImageProcessor, ImageSharpImageProcessor>();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -54,7 +59,30 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, ct) =>
+    {
+        // OpenAPI ドキュメントのメタ情報を設定する
+        document.Info.Title = "HomeFinder API";
+        document.Info.Version = "v1";
+        document.Info.Description = """
+            HomeFinder アプリのバックエンド API。
+            物品管理、画像登録・取得・削除、カテゴリ・保管場所管理などの機能を提供する。
+            
+            ## 画像エンドポイント
+            - 小起画像: `POST /api/items/{itemId}/image` (アップロード)
+            - 取得: `GET /api/items/{itemId}/image` (ETag キャッシュ対応)
+            - 削除: `DELETE /api/items/{itemId}/image`
+            
+            ## 画像制限
+            - 許容形式: jpg, jpeg, png, webp, bmp, svg
+            - 最大サイズ: 10MB
+            - 解像度制限: 1000x1000 以内
+            """;
+        return Task.CompletedTask;
+    });
+});
 
 var app = builder.Build();
 

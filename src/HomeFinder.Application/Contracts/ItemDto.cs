@@ -13,6 +13,7 @@ public record ItemDto(
     decimal? Price,
     Guid? CategoryId,
     string? CategoryName,
+    Guid? ImageId,
     DateTime CreatedAt,
     DateTime UpdatedAt,
     bool CanEdit = true,

@@ -69,6 +69,50 @@ namespace HomeFinder.Infrastructure.Data.Migrations
                     b.ToTable("Categories", (string)null);
                 });
 
+            modelBuilder.Entity("HomeFinder.Core.Entities.Image", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BlobUri")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FileFormat")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("FileSizeBytes")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("OriginalHeight")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OriginalWidth")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Images", (string)null);
+                });
+
             modelBuilder.Entity("HomeFinder.Core.Entities.Item", b =>
                 {
                     b.Property<Guid>("Id")
@@ -90,6 +134,9 @@ namespace HomeFinder.Infrastructure.Data.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ImageId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Manufacturer")
                         .HasMaxLength(200)
@@ -121,6 +168,10 @@ namespace HomeFinder.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("ImageId")
+                        .IsUnique()
+                        .HasFilter("[ImageId] IS NOT NULL");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -222,6 +273,11 @@ namespace HomeFinder.Infrastructure.Data.Migrations
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("HomeFinder.Core.Entities.Image", "Image")
+                        .WithOne("Item")
+                        .HasForeignKey("HomeFinder.Core.Entities.Item", "ImageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("HomeFinder.Core.Entities.Room", "Room")
                         .WithMany()
                         .HasForeignKey("RoomId")
@@ -233,6 +289,8 @@ namespace HomeFinder.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Category");
+
+                    b.Navigation("Image");
 
                     b.Navigation("Room");
 
@@ -253,6 +311,11 @@ namespace HomeFinder.Infrastructure.Data.Migrations
             modelBuilder.Entity("HomeFinder.Core.Entities.Category", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("HomeFinder.Core.Entities.Image", b =>
+                {
+                    b.Navigation("Item");
                 });
 
             modelBuilder.Entity("HomeFinder.Core.Entities.Room", b =>

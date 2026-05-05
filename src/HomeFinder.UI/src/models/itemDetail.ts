@@ -14,4 +14,5 @@ export type ItemDetail = {
   updatedAt: string;
   canEdit: boolean;
   canDelete: boolean;
+  imageId?: string | null;
 };

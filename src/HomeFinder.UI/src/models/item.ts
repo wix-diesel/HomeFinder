@@ -11,4 +11,6 @@ export type Item = {
   categoryName?: string | null;
   createdAt: string;
   updatedAt: string;
+  imageId?: string | null;
+  imageUrl?: string | null;
 };

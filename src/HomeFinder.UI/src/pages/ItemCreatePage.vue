@@ -7,6 +7,8 @@ import { uiText } from '../constants/uiText';
 import { editStateMessages } from '../constants/stateMessagesJa';
 import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
 import { createItem, getItemById, updateItem, ItemServiceError } from '../services/itemService';
+import { uploadImage } from '../services/imageService';
+import { useImageNotification } from '../composables/useImageNotification';
 
 const route = useRoute();
 const router = useRouter();
@@ -49,6 +51,8 @@ onMounted(async () => {
   }
 });
 
+const { showSuccess, showError } = useImageNotification();
+
 async function handleSubmit(formState: ItemRegistrationFormState) {
   errorMessage.value = '';
   isSubmitting.value = true;
@@ -56,9 +60,29 @@ async function handleSubmit(formState: ItemRegistrationFormState) {
   try {
     if (isEditMode.value && editId.value) {
       await updateItem(editId.value, formState);
+
+      if (formState.imageFile) {
+        try {
+          await uploadImage(editId.value, formState.imageFile as File);
+          showSuccess('画像をアップロードしました。');
+        } catch (err) {
+          showError('画像のアップロードに失敗しました。');
+        }
+      }
+
       await router.push({ path: '/items', query: { updated: '1' } });
     } else {
-      await createItem(formState);
+      const created = await createItem(formState);
+
+      if (formState.imageFile) {
+        try {
+          await uploadImage(created.id, formState.imageFile as File);
+          showSuccess('画像をアップロードしました。');
+        } catch (err) {
+          showError('画像のアップロードに失敗しました。');
+        }
+      }
+
       await router.push({ path: '/items', query: { created: '1' } });
     }
   } catch (error) {
@@ -123,6 +147,7 @@ function handleRetry() {
       :is-submitting="isSubmitting"
       :initial-values="initialValues"
       :submit-label-ja="isEditMode ? uiText.edit.submit : uiText.create.submit"
+      :item-id="editId"
       @submit="handleSubmit"
       @retry="handleRetry"
     />

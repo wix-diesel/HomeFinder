@@ -83,4 +83,14 @@ public class Item
     /// このアイテムが属する棚の参照
     /// </summary>
     public Shelf? Shelf { get; set; }
+
+    /// <summary>
+    /// 代表画像の ID（FK → Images.Id）。画像なしの場合は null
+    /// </summary>
+    public Guid? ImageId { get; set; }
+
+    /// <summary>
+    /// 代表画像へのナビゲーションプロパティ
+    /// </summary>
+    public Image? Image { get; set; }
 }

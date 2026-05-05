@@ -8,10 +8,10 @@ import { uiText } from '../constants/uiText';
 import { detailStateMessages } from '../constants/stateMessagesJa';
 import { StatePanel } from '../components/common';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog.vue';
+import ImagePreview from '../components/ImagePreview.vue';
 
 const route = useRoute();
 const router = useRouter();
-const fallbackImagePath = '/images/item-image-unregistered.svg';
 
 const item = ref<ItemDetail | null>(null);
 const loading = ref(true);
@@ -27,18 +27,6 @@ const priceText = computed(() =>
   item.value?.price != null ? `¥${item.value.price.toLocaleString('ja-JP')}` : null,
 );
 const categoryBadgeText = computed(() => item.value?.categoryName?.trim() || '未分類');
-const itemImageSrc = computed(() => {
-  if (!item.value) {
-    return fallbackImagePath;
-  }
-
-  const maybeImageUrl = (item.value as ItemDetail & { imageUrl?: string | null }).imageUrl;
-  if (typeof maybeImageUrl === 'string' && maybeImageUrl.trim().length > 0) {
-    return maybeImageUrl;
-  }
-
-  return fallbackImagePath;
-});
 const itemImageAlt = computed(() => (item.value ? `${item.value.name} の画像` : '未登録画像'));
 
 // アイテム詳細を取得する
@@ -174,7 +162,7 @@ async function confirmDelete() {
         <!-- 画像表示エリア -->
         <section class="detail-card image-card grid-image-card">
           <div class="image-frame">
-            <img :src="itemImageSrc" :alt="itemImageAlt" class="item-image" />
+            <ImagePreview :item-id="item.id" :image-id="item.imageId ?? null" :alt="itemImageAlt" />
             <span class="category-badge">{{ categoryBadgeText }}</span>
           </div>
         </section>
