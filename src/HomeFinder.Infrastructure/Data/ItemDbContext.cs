@@ -49,9 +49,12 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
             entity.Property(x => x.Note);
             entity.Property(x => x.Barcode).HasMaxLength(200);
             entity.Property(x => x.Price).HasColumnType("decimal(18,2)");
-            entity.Property(x => x.CreatedAtUtc).IsRequired();
-            entity.Property(x => x.UpdatedAtUtc).IsRequired();
-            entity.Property(x => x.DeletedAtUtc);
+            entity.Property(x => x.CreatedAtUtc).IsRequired()
+                .HasConversion(v => v.ToUniversalTime(), v => new DateTime(v.Ticks, DateTimeKind.Utc));
+            entity.Property(x => x.UpdatedAtUtc).IsRequired()
+                .HasConversion(v => v.ToUniversalTime(), v => new DateTime(v.Ticks, DateTimeKind.Utc));
+            entity.Property(x => x.DeletedAtUtc)
+                .HasConversion(v => v.HasValue ? v.Value.ToUniversalTime() : (DateTime?)null, v => v.HasValue ? new DateTime(v.Value.Ticks, DateTimeKind.Utc) : (DateTime?)null);
 
             // 論理削除済みアイテムを通常クエリから除外する
             entity.HasQueryFilter(x => x.DeletedAtUtc == null);
@@ -200,7 +203,8 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
             entity.Property(x => x.ItemId).IsRequired();
             entity.Property(x => x.ChangeType).IsRequired();
             entity.Property(x => x.Description).IsRequired().HasMaxLength(500);
-            entity.Property(x => x.OccurredAtUtc).IsRequired();
+            entity.Property(x => x.OccurredAtUtc).IsRequired()
+                .HasConversion(v => v.ToUniversalTime(), v => new DateTime(v.Ticks, DateTimeKind.Utc));
 
             entity.HasIndex(x => new { x.ItemId, x.OccurredAtUtc });
 

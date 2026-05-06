@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace IntegrationTests;
 
@@ -67,6 +68,31 @@ public class ItemDetailEndpointTests : IClassFixture<TestApplicationFactory>
         Assert.NotNull(payload);
         Assert.True(payload!.CanEdit);
         Assert.True(payload.CanDelete);
+    }
+
+    [Fact]
+    public async Task GetItemById_CreatedAtAndUpdatedAt_HaveUtcZSuffix()
+    {
+        // アイテムを作成してから詳細を取得し、日時フィールドに Z サフィックスが含まれることを確認
+        var createPayload = new { name = $"UTC日時テスト_{Guid.NewGuid():N}", quantity = 1 };
+        var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        var response = await _client.GetAsync($"/api/items/{created!.Id}");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var rawJson = await response.Content.ReadAsStringAsync();
+        var doc = JsonDocument.Parse(rawJson);
+        var createdAt = doc.RootElement.GetProperty("createdAt").GetString();
+        var updatedAt = doc.RootElement.GetProperty("updatedAt").GetString();
+
+        // JST 変換に必要な Z サフィックス（UTC を示す）が含まれること
+        Assert.NotNull(createdAt);
+        Assert.EndsWith("Z", createdAt!, StringComparison.Ordinal);
+        Assert.NotNull(updatedAt);
+        Assert.EndsWith("Z", updatedAt!, StringComparison.Ordinal);
     }
 
     public sealed record ItemResponse(Guid Id, string Name, int Quantity, DateTime CreatedAt, DateTime UpdatedAt);
