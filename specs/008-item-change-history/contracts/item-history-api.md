@@ -1,18 +1,18 @@
 # API 契約: アイテム変更履歴取得
 
 **機能**: 008-item-change-history | **エンドポイント**: `GET /api/items/{itemId}/history`
-**バージョン**: 1.0 | **日付**: 2026-05-06 | **状態**: Planned
+**バージョン**: 2.0 | **日付**: 2026-05-06 | **状態**: Implemented
 
 ## 概要
 
-指定したアイテムの変更履歴を最新順で最大5件取得するエンドポイント。アイテム詳細ページの Recent Activity セクションで使用する。
+指定したアイテムの変更履歴をページネーション付きで最新順に取得するエンドポイント。アイテム変更履歴ページ（ItemHistoryPage）で使用する。
 
 ## リクエスト
 
 ### URL
 
 ```
-GET /api/items/{itemId}/history?limit=5
+GET /api/items/{itemId}/history?page=1&pageSize=20
 ```
 
 ### パラメータ
@@ -20,13 +20,16 @@ GET /api/items/{itemId}/history?limit=5
 | 名前 | 型 | 場所 | 必須 | 説明 |
 |------|------|------|------|------|
 | `itemId` | UUID | Path | ✅ | 対象アイテムの ID |
-| `limit` | integer | Query | ❌ | 取得件数の上限（デフォルト: 5、最大: 5） |
+| `page` | integer | Query | ❌ | ページ番号（デフォルト: 1、最小: 1） |
+| `pageSize` | integer | Query | ❌ | 1ページあたり件数（デフォルト: 20、最小: 1、最大: 100） |
 
 ### バリデーション規則
 
 | ルール | エラーコード | HTTP Status |
 |--------|-----------|----------|
 | `itemId` が UUID 形式であること | `INVALID_ITEM_ID` | 400 |
+| `page` が 1 以上であること | `VALIDATION_ERROR` | 400 |
+| `pageSize` が 1〜100 の範囲であること | `VALIDATION_ERROR` | 400 |
 | 対象アイテムが存在すること（論理削除済みは存在しないとみなす） | `ITEM_NOT_FOUND` | 404 |
 
 ## レスポンス
@@ -48,7 +51,11 @@ GET /api/items/{itemId}/history?limit=5
       "description": "アイテムが作成されました",
       "occurredAtUtc": "2026-05-05T08:00:00.000Z"
     }
-  ]
+  ],
+  "totalCount": 2,
+  "page": 1,
+  "pageSize": 20,
+  "totalPages": 1
 }
 ```
 
@@ -56,8 +63,15 @@ GET /api/items/{itemId}/history?limit=5
 
 | フィールド | 型 | 説明 |
 |----------|------|------|
-| `histories` | array | 変更履歴の配列（最新順、最大5件） |
+| `histories` | array | 変更履歴の配列（最新順） |
 | `histories[].id` | UUID | 履歴レコードの一意識別子 |
+| `histories[].changeType` | string | 変更種別（後述の一覧参照） |
+| `histories[].description` | string | 変更内容の説明文（変更後の値を含む） |
+| `histories[].occurredAtUtc` | ISO 8601 (UTC, Z suffix) | 変更発生日時 |
+| `totalCount` | integer | 全履歴件数 |
+| `page` | integer | 現在のページ番号 |
+| `pageSize` | integer | 1ページあたり件数 |
+| `totalPages` | integer | 総ページ数 |
 | `histories[].changeType` | string | 変更種別（後述の一覧参照） |
 | `histories[].description` | string | 変更内容の説明文（変更後の値を含む） |
 | `histories[].occurredAtUtc` | ISO 8601 (UTC, Z suffix) | 変更発生日時 |
