@@ -84,7 +84,7 @@ public class ItemDetailEndpointTests : IClassFixture<TestApplicationFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var rawJson = await response.Content.ReadAsStringAsync();
-        var doc = JsonDocument.Parse(rawJson);
+        using var doc = JsonDocument.Parse(rawJson);
         var createdAt = doc.RootElement.GetProperty("createdAt").GetString();
         var updatedAt = doc.RootElement.GetProperty("updatedAt").GetString();
 
