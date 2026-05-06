@@ -49,12 +49,13 @@ public class ItemsController(IItemService itemService) : ControllerBase
     }
 
     [HttpGet("{itemId}/history")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<ItemHistoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedItemHistoryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<IReadOnlyCollection<ItemHistoryDto>>> GetItemHistory(
+    public async Task<ActionResult<PagedItemHistoryResponse>> GetItemHistory(
         string itemId,
-        [FromQuery] int limit = 5,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
         if (!Guid.TryParse(itemId, out var parsedItemId))
@@ -65,12 +66,20 @@ public class ItemsController(IItemService itemService) : ControllerBase
             }));
         }
 
-        var effectiveLimit = Math.Clamp(limit, 1, 5);
-        var result = await itemService.GetItemHistoryAsync(parsedItemId, effectiveLimit, cancellationToken);
+        // page は 1 以上、pageSize は 1〜100 の範囲でバリデーションする
+        if (page < 1 || pageSize < 1 || pageSize > 100)
+        {
+            return BadRequest(ApiError.ValidationError(new[]
+            {
+                new ApiErrorDetail("page/pageSize", "page は 1 以上、pageSize は 1〜100 の範囲で指定してください。"),
+            }));
+        }
+
+        var result = await itemService.GetItemHistoryPagedAsync(parsedItemId, page, pageSize, cancellationToken);
 
         if (result.IsSuccessful)
         {
-            return Ok(new { histories = result.Value });
+            return Ok(result.Value);
         }
 
         if (result.Error is ItemNotFoundException)

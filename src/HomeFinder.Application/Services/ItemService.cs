@@ -313,6 +313,44 @@ public class ItemService(
             item.UpdatedAtUtc);
     }
 
+    /// <summary>
+    /// ページネーション付きアイテム変更履歴を取得する。
+    /// </summary>
+    public async Task<Result<PagedItemHistoryResponse>> GetItemHistoryPagedAsync(
+        Guid itemId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // page は 1 以上、pageSize は 1〜100 の範囲に制限する
+            if (page < 1 || pageSize < 1 || pageSize > 100)
+            {
+                return new Result<PagedItemHistoryResponse>(
+                    new ArgumentException("page は 1 以上、pageSize は 1〜100 の範囲で指定してください。"));
+            }
+
+            var item = await itemRepository.GetByIdAsync(itemId, cancellationToken);
+            if (item is null)
+            {
+                return new Result<PagedItemHistoryResponse>(new ItemNotFoundException(itemId));
+            }
+
+            var totalCount = await itemHistoryRepository.CountByItemIdAsync(itemId, cancellationToken);
+            var totalPages = totalCount == 0 ? 1 : (int)Math.Ceiling((double)totalCount / pageSize);
+
+            var histories = await itemHistoryRepository.GetPagedByItemIdAsync(itemId, page, pageSize, cancellationToken);
+            var historyDtos = histories.Select(MapToHistoryDto).ToArray();
+
+            return new PagedItemHistoryResponse(historyDtos, totalCount, page, pageSize, totalPages);
+        }
+        catch (Exception ex)
+        {
+            return new Result<PagedItemHistoryResponse>(ex);
+        }
+    }
+
     private static ItemHistoryDto MapToHistoryDto(ItemHistory history)
     {
         return new ItemHistoryDto(

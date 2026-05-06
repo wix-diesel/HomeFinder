@@ -26,7 +26,7 @@ public class ItemHistoryIntegrationTests : IClassFixture<TestApplicationFactory>
         var historyResponse = await _client.GetAsync($"/api/items/{createdItem!.Id}/history");
         Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
 
-        var historyPayload = await historyResponse.Content.ReadFromJsonAsync<HistoryResponse>();
+        var historyPayload = await historyResponse.Content.ReadFromJsonAsync<PagedHistoryResponse>();
         Assert.NotNull(historyPayload);
         Assert.NotEmpty(historyPayload!.Histories);
         Assert.Equal("Created", historyPayload.Histories[0].ChangeType);
@@ -49,7 +49,7 @@ public class ItemHistoryIntegrationTests : IClassFixture<TestApplicationFactory>
         Assert.Equal(HttpStatusCode.OK, decreaseResponse.StatusCode);
 
         var historyResponse = await _client.GetAsync($"/api/items/{createdItem.Id}/history");
-        var historyPayload = await historyResponse.Content.ReadFromJsonAsync<HistoryResponse>();
+        var historyPayload = await historyResponse.Content.ReadFromJsonAsync<PagedHistoryResponse>();
         Assert.NotNull(historyPayload);
 
         var types = historyPayload!.Histories.Select(x => x.ChangeType).ToArray();
@@ -75,7 +75,7 @@ public class ItemHistoryIntegrationTests : IClassFixture<TestApplicationFactory>
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
 
         var historyResponse = await _client.GetAsync($"/api/items/{createdItem.Id}/history");
-        var historyPayload = await historyResponse.Content.ReadFromJsonAsync<HistoryResponse>();
+        var historyPayload = await historyResponse.Content.ReadFromJsonAsync<PagedHistoryResponse>();
         Assert.NotNull(historyPayload);
 
         var nameHistory = historyPayload!.Histories.FirstOrDefault(x => x.ChangeType == "NameUpdated");
@@ -104,9 +104,9 @@ public class ItemHistoryIntegrationTests : IClassFixture<TestApplicationFactory>
     }
 
     [Fact]
-    public async Task GetHistory_ReturnsLatestFiveEntries()
+    public async Task GetHistory_ReturnsPagedEntries_WithCorrectPageSize()
     {
-        var createPayload = new { name = $"履歴5件テスト_{Guid.NewGuid():N}", quantity = 1 };
+        var createPayload = new { name = $"履歴ページングテスト_{Guid.NewGuid():N}", quantity = 1 };
         var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
         var createdItem = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
         Assert.NotNull(createdItem);
@@ -118,17 +118,37 @@ public class ItemHistoryIntegrationTests : IClassFixture<TestApplicationFactory>
             Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         }
 
-        var historyResponse = await _client.GetAsync($"/api/items/{createdItem!.Id}/history?limit=5");
+        var historyResponse = await _client.GetAsync($"/api/items/{createdItem!.Id}/history?page=1&pageSize=5");
         Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
 
-        var historyPayload = await historyResponse.Content.ReadFromJsonAsync<HistoryResponse>();
+        var historyPayload = await historyResponse.Content.ReadFromJsonAsync<PagedHistoryResponse>();
         Assert.NotNull(historyPayload);
         Assert.Equal(5, historyPayload!.Histories.Count);
+        Assert.Equal(1, historyPayload.Page);
+        Assert.Equal(5, historyPayload.PageSize);
+        Assert.True(historyPayload.TotalCount >= 7);
+    }
+
+    [Fact]
+    public async Task GetHistory_Returns400_WhenPageSizeExceedsMaximum()
+    {
+        var createPayload = new { name = $"履歴バリデーションテスト_{Guid.NewGuid():N}", quantity = 1 };
+        var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
+        var createdItem = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(createdItem);
+
+        var response = await _client.GetAsync($"/api/items/{createdItem!.Id}/history?page=1&pageSize=101");
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     public sealed record ItemResponse(Guid Id, string Name, int Quantity);
 
-    public sealed record HistoryResponse(IReadOnlyList<HistoryItem> Histories);
+    public sealed record PagedHistoryResponse(
+        IReadOnlyList<HistoryItem> Histories,
+        int TotalCount,
+        int Page,
+        int PageSize,
+        int TotalPages);
 
     public sealed record HistoryItem(
         Guid Id,
