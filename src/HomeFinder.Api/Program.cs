@@ -21,6 +21,7 @@ builder.Services
 builder.Services.AddDbContext<ItemDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IItemHistoryRepository, ItemHistoryRepository>();
 builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IShelfRepository, ShelfRepository>();
@@ -53,7 +54,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("Frontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins("http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://host.docker.internal:5173")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

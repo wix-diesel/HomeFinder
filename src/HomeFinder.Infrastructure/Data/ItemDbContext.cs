@@ -27,6 +27,11 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
     /// </summary>
     public DbSet<Shelf> Shelves => Set<Shelf>();
 
+    /// <summary>
+    /// 変更履歴 DbSet
+    /// </summary>
+    public DbSet<ItemHistory> ItemHistories => Set<ItemHistory>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Item エンティティ設定
@@ -183,6 +188,29 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
             entity.Property(x => x.OriginalHeight).IsRequired();
             entity.Property(x => x.UploadedAtUtc).IsRequired();
             entity.Property(x => x.DeletedAtUtc);
+        });
+
+        // ItemHistory エンティティ設定
+        modelBuilder.Entity<ItemHistory>(entity =>
+        {
+            entity.ToTable("ItemHistories");
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id).IsRequired();
+            entity.Property(x => x.ItemId).IsRequired();
+            entity.Property(x => x.ChangeType).IsRequired();
+            entity.Property(x => x.Description).IsRequired().HasMaxLength(500);
+            entity.Property(x => x.OccurredAtUtc).IsRequired();
+
+            entity.HasIndex(x => new { x.ItemId, x.OccurredAtUtc });
+
+            entity.HasOne(x => x.Item)
+                .WithMany(i => i.Histories)
+                .HasForeignKey(x => x.ItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 論理削除済みアイテムに紐づく履歴は通常クエリから除外する
+            entity.HasQueryFilter(x => x.Item != null && x.Item.DeletedAtUtc == null);
         });
     }
 }

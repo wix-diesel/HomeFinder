@@ -48,6 +48,42 @@ public class ItemsController(IItemService itemService) : ControllerBase
             Array.Empty<ApiErrorDetail>()));
     }
 
+    [HttpGet("{itemId}/history")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<ItemHistoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IReadOnlyCollection<ItemHistoryDto>>> GetItemHistory(
+        string itemId,
+        [FromQuery] int limit = 5,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(itemId, out var parsedItemId))
+        {
+            return BadRequest(ApiError.ValidationError(new[]
+            {
+                new ApiErrorDetail("itemId", "itemId は有効な UUID 形式である必要があります。"),
+            }));
+        }
+
+        var effectiveLimit = Math.Clamp(limit, 1, 5);
+        var result = await itemService.GetItemHistoryAsync(parsedItemId, effectiveLimit, cancellationToken);
+
+        if (result.IsSuccessful)
+        {
+            return Ok(new { histories = result.Value });
+        }
+
+        if (result.Error is ItemNotFoundException)
+        {
+            return NotFound(ApiError.ItemNotFound());
+        }
+
+        return StatusCode(StatusCodes.Status500InternalServerError, new ApiError(
+            "INTERNAL_SERVER_ERROR",
+            "予期しないエラーが発生しました。",
+            Array.Empty<ApiErrorDetail>()));
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(ItemDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]

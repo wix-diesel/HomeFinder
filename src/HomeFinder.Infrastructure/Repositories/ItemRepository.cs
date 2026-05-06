@@ -95,4 +95,17 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
             throw new ItemDeleteConflictException(id);
         }
     }
+
+    public async Task ExecuteInTransactionAsync(Func<Task> operation, CancellationToken cancellationToken = default)
+    {
+        if (!dbContext.Database.IsRelational())
+        {
+            await operation();
+            return;
+        }
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await operation();
+        await transaction.CommitAsync(cancellationToken);
+    }
 }
