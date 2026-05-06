@@ -67,12 +67,18 @@ beforeEach(() => {
     canEdit: true,
     canDelete: true,
   });
-  mocks.getItemHistoryMock.mockResolvedValue([
-    { id: 'c', changeType: 'Created', description: 'created', occurredAtUtc: '2026-05-06T01:00:00.000Z' },
-    { id: 'i', changeType: 'QuantityIncreased', description: 'inc', occurredAtUtc: '2026-05-06T01:00:00.000Z' },
-    { id: 'd', changeType: 'QuantityDecreased', description: 'dec', occurredAtUtc: '2026-05-06T01:00:00.000Z' },
-    { id: 'o', changeType: 'PriceUpdated', description: 'other', occurredAtUtc: '2026-05-06T01:00:00.000Z' },
-  ]);
+  mocks.getItemHistoryMock.mockResolvedValue({
+    histories: [
+      { id: 'c', changeType: 'Created', description: 'created', occurredAtUtc: '2026-05-06T01:00:00.000Z' },
+      { id: 'i', changeType: 'QuantityIncreased', description: 'inc', occurredAtUtc: '2026-05-06T01:00:00.000Z' },
+      { id: 'd', changeType: 'QuantityDecreased', description: 'dec', occurredAtUtc: '2026-05-06T01:00:00.000Z' },
+      { id: 'o', changeType: 'PriceUpdated', description: 'other', occurredAtUtc: '2026-05-06T01:00:00.000Z' },
+    ],
+    totalCount: 4,
+    page: 1,
+    pageSize: 5,
+    totalPages: 1,
+  });
 });
 
 describe('ItemDetailPage history style', () => {

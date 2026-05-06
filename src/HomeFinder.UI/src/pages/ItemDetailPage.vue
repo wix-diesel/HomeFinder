@@ -2,7 +2,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getItemById, deleteItem, ItemServiceError } from '../services/itemService';
-import { getItemHistory, type ItemHistory } from '../services/itemHistoryService';
+import { getItemHistory } from '../services/itemHistoryService';
+import type { ItemHistory } from '../models/itemHistory';
 import type { ItemDetail } from '../models/itemDetail';
 import { formatUtcToJst } from '../utils/dateTime';
 import { uiText } from '../constants/uiText';
@@ -59,7 +60,7 @@ async function fetchItemHistory(itemId: string) {
   historyLoading.value = true;
   historyError.value = false;
   try {
-    histories.value = await getItemHistory(itemId, 5);
+    histories.value = (await getItemHistory(itemId, 1, 5)).histories;
   } catch {
     histories.value = [];
     historyError.value = true;
@@ -83,6 +84,13 @@ function getRecentItemClass(changeType: string): string {
 
 function formatHistoryTime(occurredAtUtc: string): string {
   return formatUtcToJst(occurredAtUtc);
+}
+
+// 履歴一覧ページへ遷移する
+function navigateToHistory() {
+  if (item.value) {
+    router.push({ name: 'ItemHistory', params: { itemId: item.value.id } });
+  }
 }
 
 // 3点リーダーメニューを切り替える
@@ -256,7 +264,7 @@ async function confirmDelete() {
         <section class="detail-card recent-activity-card">
           <div class="recent-header">
             <h3 class="section-title">Recent Activity</h3>
-            <button type="button" class="recent-link" disabled>
+            <button type="button" class="recent-link" @click="navigateToHistory">
               View History
             </button>
           </div>
@@ -552,8 +560,7 @@ async function confirmDelete() {
   color: #2563eb;
   font-size: 0.82rem;
   font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.6;
+  cursor: pointer;
 }
 
 .recent-list {

@@ -27,4 +27,30 @@ public class ItemHistoryRepository(ItemDbContext dbContext) : IItemHistoryReposi
             .Take(limit)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyCollection<ItemHistory>> GetPagedByItemIdAsync(
+        Guid itemId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ItemHistories
+            .AsNoTracking()
+            .Where(x => x.ItemId == itemId)
+            // 第一キー: 変更日時降順、第二キー: ID 降順（同時刻対応）
+            .OrderByDescending(x => x.OccurredAtUtc)
+            .ThenByDescending(x => x.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<int> CountByItemIdAsync(Guid itemId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ItemHistories
+            .AsNoTracking()
+            .CountAsync(x => x.ItemId == itemId, cancellationToken);
+    }
 }

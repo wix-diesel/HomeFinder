@@ -30,6 +30,11 @@ const router = createRouter({
       component: ItemCreatePage,
     },
     {
+      path: '/items/:itemId/history',
+      name: 'ItemHistory',
+      component: () => import('../pages/ItemHistoryPage.vue'),
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: SettingsPage,

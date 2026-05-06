@@ -16,11 +16,13 @@ public class ItemHistoryReadContractTests
     }
 
     [Fact]
-    public void ItemHistoryReadContract_MustDefineFiveItemsLimitAndUtcField()
+    public void ItemHistoryReadContract_MustDefinePagedResponseAndUtcField()
     {
         var text = LoadContract();
 
-        Assert.Contains("最大5件", text);
+        Assert.Contains("pageSize", text);
+        Assert.Contains("totalCount", text);
+        Assert.Contains("totalPages", text);
         Assert.Contains("occurredAtUtc", text);
         Assert.Contains("ISO 8601", text);
     }
