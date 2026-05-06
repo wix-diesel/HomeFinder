@@ -126,6 +126,29 @@ public class ItemHistoryIntegrationTests : IClassFixture<TestApplicationFactory>
         Assert.Equal(5, historyPayload!.Histories.Count);
     }
 
+    [Fact]
+    public async Task GetHistory_OccurredAtUtc_HasUtcZSuffix()
+    {
+        // アイテムを作成して履歴を取得し、日時フィールドに Z サフィックスが含まれることを確認
+        var createPayload = new { name = $"履歴UTC日時テスト_{Guid.NewGuid():N}", quantity = 1 };
+        var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var createdItem = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(createdItem);
+
+        var historyResponse = await _client.GetAsync($"/api/items/{createdItem!.Id}/history");
+        Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
+
+        var rawJson = await historyResponse.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(rawJson);
+        var firstHistory = doc.RootElement.GetProperty("histories")[0];
+        var occurredAtUtc = firstHistory.GetProperty("occurredAtUtc").GetString();
+
+        // JST 変換に必要な Z サフィックス（UTC を示す）が含まれること
+        Assert.NotNull(occurredAtUtc);
+        Assert.EndsWith("Z", occurredAtUtc!, StringComparison.Ordinal);
+    }
+
     public sealed record ItemResponse(Guid Id, string Name, int Quantity);
 
     public sealed record HistoryResponse(IReadOnlyList<HistoryItem> Histories);
