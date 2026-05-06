@@ -290,10 +290,6 @@ async function confirmDelete() {
       >
         {{ uiText.detail.edit }}
       </button>
-      <!-- 履歴ボタンは常に非活性 -->
-      <button type="button" class="history-btn" disabled :aria-label="uiText.detail.historyButton">
-        {{ uiText.detail.historyButton }}
-      </button>
     </footer>
 
     <!-- 削除確認ダイアログ -->

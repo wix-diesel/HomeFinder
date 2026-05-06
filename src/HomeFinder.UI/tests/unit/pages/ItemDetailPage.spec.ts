@@ -13,6 +13,10 @@ vi.mock('../../../src/services/itemService', async (importOriginal) => {
   };
 });
 
+vi.mock('../../../src/services/itemHistoryService', () => ({
+  getItemHistory: vi.fn().mockResolvedValue([]),
+}));
+
 const mockRouterPush = vi.fn();
 
 vi.mock('vue-router', () => ({
@@ -76,7 +80,7 @@ describe('ItemDetailPage', () => {
     const wrapper = mount(ItemDetailPage);
     await flushPromises();
 
-    const historyBtn = wrapper.find('.history-btn');
+    const historyBtn = wrapper.find('.recent-link');
     expect(historyBtn.exists()).toBe(true);
     expect(historyBtn.attributes('disabled')).toBeDefined();
   });
