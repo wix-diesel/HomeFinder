@@ -140,7 +140,7 @@ public class ItemHistoryIntegrationTests : IClassFixture<TestApplicationFactory>
         Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
 
         var rawJson = await historyResponse.Content.ReadAsStringAsync();
-        var doc = JsonDocument.Parse(rawJson);
+        using var doc = JsonDocument.Parse(rawJson);
         var firstHistory = doc.RootElement.GetProperty("histories")[0];
         var occurredAtUtc = firstHistory.GetProperty("occurredAtUtc").GetString();
 
