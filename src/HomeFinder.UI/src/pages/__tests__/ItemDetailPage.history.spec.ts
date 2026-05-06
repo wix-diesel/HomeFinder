@@ -71,14 +71,20 @@ beforeEach(() => {
 
 describe('ItemDetailPage history', () => {
   it('履歴が表示される', async () => {
-    mocks.getItemHistoryMock.mockResolvedValue([
-      {
-        id: 'h1',
-        changeType: 'Created',
-        description: 'アイテムが作成されました',
-        occurredAtUtc: '2026-05-06T01:00:00.000Z',
-      },
-    ]);
+    mocks.getItemHistoryMock.mockResolvedValue({
+      histories: [
+        {
+          id: 'h1',
+          changeType: 'Created',
+          description: 'アイテムが作成されました',
+          occurredAtUtc: '2026-05-06T01:00:00.000Z',
+        },
+      ],
+      totalCount: 1,
+      page: 1,
+      pageSize: 5,
+      totalPages: 1,
+    });
 
     const wrapper = await mountPage();
 
@@ -87,7 +93,13 @@ describe('ItemDetailPage history', () => {
   });
 
   it('履歴が空の場合にメッセージを表示する', async () => {
-    mocks.getItemHistoryMock.mockResolvedValue([]);
+    mocks.getItemHistoryMock.mockResolvedValue({
+      histories: [],
+      totalCount: 0,
+      page: 1,
+      pageSize: 5,
+      totalPages: 1,
+    });
 
     const wrapper = await mountPage();
 

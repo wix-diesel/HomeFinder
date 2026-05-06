@@ -14,7 +14,13 @@ vi.mock('../../../src/services/itemService', async (importOriginal) => {
 });
 
 vi.mock('../../../src/services/itemHistoryService', () => ({
-  getItemHistory: vi.fn().mockResolvedValue([]),
+  getItemHistory: vi.fn().mockResolvedValue({
+    histories: [],
+    totalCount: 0,
+    page: 1,
+    pageSize: 5,
+    totalPages: 1,
+  }),
 }));
 
 const mockRouterPush = vi.fn();
@@ -74,7 +80,7 @@ describe('ItemDetailPage', () => {
     expect(wrapper.text()).toContain('物品詳細の取得に失敗しました。');
   });
 
-  it('右下の履歴ボタンが非活性であること', async () => {
+  it('右下の履歴ボタンが表示されクリック可能であること', async () => {
     vi.mocked(getItemById).mockResolvedValue(mockItem);
 
     const wrapper = mount(ItemDetailPage);
@@ -82,7 +88,7 @@ describe('ItemDetailPage', () => {
 
     const historyBtn = wrapper.find('.recent-link');
     expect(historyBtn.exists()).toBe(true);
-    expect(historyBtn.attributes('disabled')).toBeDefined();
+    expect(historyBtn.attributes('disabled')).toBeUndefined();
   });
 
   // US2: 編集遷移
