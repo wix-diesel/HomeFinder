@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getItemById, deleteItem, ItemServiceError } from '../services/itemService';
+import { getItemHistory, type ItemHistory } from '../services/itemHistoryService';
 import type { ItemDetail } from '../models/itemDetail';
 import { formatUtcToJst } from '../utils/dateTime';
 import { uiText } from '../constants/uiText';
@@ -20,6 +21,9 @@ const menuOpen = ref(false);
 const deleteDialogOpen = ref(false);
 const deleteLoading = ref(false);
 const deleteErrorMessage = ref('');
+const histories = ref<ItemHistory[]>([]);
+const historyLoading = ref(false);
+const historyError = ref(false);
 
 const createdAtText = computed(() => (item.value ? formatUtcToJst(item.value.createdAt) : ''));
 const updatedAtText = computed(() => (item.value ? formatUtcToJst(item.value.updatedAt) : ''));
@@ -39,6 +43,7 @@ async function fetchItem() {
   errorStateKey.value = null;
   try {
     item.value = await getItemById(String(route.params.id));
+    await fetchItemHistory(item.value.id);
   } catch (error) {
     if (error instanceof ItemServiceError && error.code === 'ITEM_NOT_FOUND') {
       errorStateKey.value = 'not_found';
@@ -48,6 +53,36 @@ async function fetchItem() {
   } finally {
     loading.value = false;
   }
+}
+
+async function fetchItemHistory(itemId: string) {
+  historyLoading.value = true;
+  historyError.value = false;
+  try {
+    histories.value = await getItemHistory(itemId, 5);
+  } catch {
+    histories.value = [];
+    historyError.value = true;
+  } finally {
+    historyLoading.value = false;
+  }
+}
+
+function getRecentItemClass(changeType: string): string {
+  switch (changeType) {
+    case 'Created':
+      return 'created';
+    case 'QuantityIncreased':
+      return 'positive';
+    case 'QuantityDecreased':
+      return 'neutral';
+    default:
+      return 'other-update';
+  }
+}
+
+function formatHistoryTime(occurredAtUtc: string): string {
+  return formatUtcToJst(occurredAtUtc);
 }
 
 // 3点リーダーメニューを切り替える
@@ -217,7 +252,7 @@ async function confirmDelete() {
           </section>
         </div>
 
-        <!-- Recent Activity（履歴機能は未実装のためテンプレート表示） -->
+        <!-- Recent Activity -->
         <section class="detail-card recent-activity-card">
           <div class="recent-header">
             <h3 class="section-title">Recent Activity</h3>
@@ -225,20 +260,20 @@ async function confirmDelete() {
               View History
             </button>
           </div>
-          <div class="recent-list">
-            <div class="recent-item positive">
+          <div v-if="historyLoading" class="recent-empty">履歴を読み込み中です...</div>
+          <div v-else-if="historyError" class="recent-empty">履歴の取得に失敗しました。</div>
+          <div v-else-if="histories.length === 0" class="recent-empty">履歴はありません。</div>
+          <div v-else class="recent-list">
+            <div
+              v-for="history in histories"
+              :key="history.id"
+              class="recent-item"
+              :class="getRecentItemClass(history.changeType)"
+            >
               <div class="recent-main">
-                <p class="recent-title">Stock increased by 10 units</p>
-                <p class="recent-sub">Supplier Delivery • Order #SUP-882</p>
+                <p class="recent-title">{{ history.description }}</p>
               </div>
-              <span class="recent-time">Today, 10:45 AM</span>
-            </div>
-            <div class="recent-item neutral">
-              <div class="recent-main">
-                <p class="recent-title">Stock decreased by 2 units</p>
-                <p class="recent-sub">Internal Requisition • Dept: Engineering</p>
-              </div>
-              <span class="recent-time">Yesterday, 4:20 PM</span>
+              <span class="recent-time">{{ formatHistoryTime(history.occurredAtUtc) }}</span>
             </div>
           </div>
         </section>
@@ -552,6 +587,16 @@ async function confirmDelete() {
   background: #fff7ed;
 }
 
+.recent-item.created {
+  border-left-color: #2563eb;
+  background: #eff6ff;
+}
+
+.recent-item.other-update {
+  border-left-color: #ca8a04;
+  background: #fefce8;
+}
+
 .recent-main {
   min-width: 0;
 }
@@ -573,6 +618,12 @@ async function confirmDelete() {
   white-space: nowrap;
   font-size: 0.78rem;
   color: #64748b;
+}
+
+.recent-empty {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.88rem;
 }
 
 @media (min-width: 960px) {

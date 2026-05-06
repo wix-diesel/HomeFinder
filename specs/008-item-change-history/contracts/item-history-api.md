@@ -85,12 +85,14 @@ GET /api/items/{itemId}/history?limit=5
 
 ```json
 {
-  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-  "title": "Bad Request",
-  "status": 400,
-  "errors": {
-    "itemId": ["itemId は有効な UUID 形式である必要があります。"]
-  }
+  "code": "VALIDATION_ERROR",
+  "message": "入力内容に誤りがあります。",
+  "details": [
+    {
+      "field": "itemId",
+      "reason": "itemId は有効な UUID 形式である必要があります。"
+    }
+  ]
 }
 ```
 
@@ -111,24 +113,38 @@ GET /api/items/{itemId}/history?limit=5
 
 ```csharp
 // GET /api/items/{itemId}/history
-[HttpGet("{itemId:guid}/history")]
-public async Task<ActionResult<ItemHistoryResponse>> GetItemHistory(
-    Guid itemId,
+[HttpGet("{itemId}/history")]
+public async Task<ActionResult<object>> GetItemHistory(
+  string itemId,
     [FromQuery] int limit = 5,
     CancellationToken cancellationToken = default)
 {
-    // limit は最大5件に制限
-    var effectiveLimit = Math.Min(limit, 5);
-    var result = await itemService.GetItemHistoryAsync(itemId, effectiveLimit, cancellationToken);
-
-    if (!result.IsSuccessful)
+  if (!Guid.TryParse(itemId, out var parsedItemId))
+  {
+    return BadRequest(ApiError.ValidationError(new[]
     {
-        return result.Error is ItemNotFoundException
-            ? NotFound(ProblemDetailsFactory.CreateNotFound("指定されたアイテムが見つかりませんでした。"))
-            : StatusCode(500);
+      new ApiErrorDetail("itemId", "itemId は有効な UUID 形式である必要があります。"),
+    }));
+  }
+
+    // limit は最大5件に制限
+  var effectiveLimit = Math.Clamp(limit, 1, 5);
+  var result = await itemService.GetItemHistoryAsync(parsedItemId, effectiveLimit, cancellationToken);
+
+  if (result.IsSuccessful)
+    {
+    return Ok(new { histories = result.Value });
     }
 
-    return Ok(new { histories = result.Value });
+  if (result.Error is ItemNotFoundException)
+  {
+    return NotFound(ApiError.ItemNotFound());
+  }
+
+  return StatusCode(500, new ApiError(
+    "INTERNAL_SERVER_ERROR",
+    "予期しないエラーが発生しました。",
+    Array.Empty<ApiErrorDetail>()));
 }
 ```
 

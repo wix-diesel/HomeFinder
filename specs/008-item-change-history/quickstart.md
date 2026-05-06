@@ -142,3 +142,33 @@ pnpm dev
 - `ItemService.UpdateItemAsync` では、更新前に旧値を記録してから更新後の値と比較し、変化があったフィールドのみ履歴を記録する
 - `OccurredAtUtc` は `DateTime.UtcNow` を一度だけ取得し、同一操作内のすべての履歴レコードに同じ値を設定する（同時更新の識別を可能にするため）
 - フロントエンドで `occurredAtUtc` を JST 表示する際は `new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', ... })` を使用する
+
+## 実装済みファイル（2026-05-06 時点）
+
+- `src/HomeFinder.Core/Entities/ItemHistory.cs`
+- `src/HomeFinder.Core/Entities/ItemHistoryChangeType.cs`
+- `src/HomeFinder.Application/Contracts/ItemHistoryDto.cs`
+- `src/HomeFinder.Application/Repositories/IItemHistoryRepository.cs`
+- `src/HomeFinder.Infrastructure/Repositories/ItemHistoryRepository.cs`
+- `src/HomeFinder.Infrastructure/Data/ItemDbContext.cs`
+- `src/HomeFinder.Application/Services/IItemService.cs`
+- `src/HomeFinder.Application/Services/ItemService.cs`
+- `src/HomeFinder.Api/Controllers/ItemsController.cs`
+- `src/HomeFinder.Api/Program.cs`
+- `src/HomeFinder.UI/src/services/itemHistoryService.ts`
+- `src/HomeFinder.UI/src/pages/ItemDetailPage.vue`
+
+## 実行済み検証コマンド
+
+```bash
+# バックエンド（契約テスト）
+cd src
+dotnet test tests/contract/contract.csproj -v minimal
+
+# バックエンド（履歴統合テスト）
+dotnet test tests/integration/integration.csproj --filter FullyQualifiedName~ItemHistoryIntegrationTests -v minimal
+
+# フロントエンド（履歴UIテスト）
+cd HomeFinder.UI
+pnpm test:run src/pages/__tests__/ItemDetailPage.history.spec.ts src/pages/__tests__/ItemDetailPage.historyStyle.spec.ts
+```

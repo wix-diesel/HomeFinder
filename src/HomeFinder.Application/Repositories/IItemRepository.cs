@@ -11,4 +11,5 @@ public interface IItemRepository
     Task AddAsync(Item item, CancellationToken cancellationToken = default);
     Task UpdateAsync(Item item, CancellationToken cancellationToken = default);
     Task SoftDeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task ExecuteInTransactionAsync(Func<Task> operation, CancellationToken cancellationToken = default);
 }

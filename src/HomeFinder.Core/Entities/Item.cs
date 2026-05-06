@@ -93,4 +93,9 @@ public class Item
     /// 代表画像へのナビゲーションプロパティ
     /// </summary>
     public Image? Image { get; set; }
+
+    /// <summary>
+    /// 変更履歴
+    /// </summary>
+    public ICollection<ItemHistory> Histories { get; set; } = new List<ItemHistory>();
 }

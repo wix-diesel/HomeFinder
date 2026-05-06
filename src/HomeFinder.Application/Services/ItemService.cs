@@ -9,6 +9,8 @@ namespace HomeFinder.Application.Services;
 
 public class ItemService(
     IItemRepository itemRepository,
+    IItemHistoryRepository itemHistoryRepository,
+    ICategoryRepository categoryRepository,
     IImageRepository imageRepository,
     IBlobStorageService blobStorageService,
     ILogger<ItemService> logger) : IItemService
@@ -45,6 +47,26 @@ public class ItemService(
         }
     }
 
+    public async Task<Result<IReadOnlyCollection<ItemHistoryDto>>> GetItemHistoryAsync(Guid itemId, int limit, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var item = await itemRepository.GetByIdAsync(itemId, cancellationToken);
+            if (item is null)
+            {
+                return new Result<IReadOnlyCollection<ItemHistoryDto>>(new ItemNotFoundException(itemId));
+            }
+
+            var safeLimit = Math.Clamp(limit, 1, 5);
+            var histories = await itemHistoryRepository.GetRecentByItemIdAsync(itemId, safeLimit, cancellationToken);
+            return histories.Select(MapToHistoryDto).ToArray();
+        }
+        catch (Exception ex)
+        {
+            return new Result<IReadOnlyCollection<ItemHistoryDto>>(ex);
+        }
+    }
+
     public async Task<Result<ItemDto>> CreateItemAsync(CreateItemRequest request, CancellationToken cancellationToken = default)
     {
         try
@@ -77,7 +99,23 @@ public class ItemService(
                 UpdatedAtUtc = now,
             };
 
-            await itemRepository.AddAsync(item, cancellationToken);
+            var histories = new[]
+            {
+                new ItemHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = item.Id,
+                    ChangeType = ItemHistoryChangeType.Created,
+                    Description = "アイテムが作成されました",
+                    OccurredAtUtc = now,
+                },
+            };
+
+            await itemRepository.ExecuteInTransactionAsync(async () =>
+            {
+                await itemRepository.AddAsync(item, cancellationToken);
+                await itemHistoryRepository.AddRangeAsync(histories, cancellationToken);
+            }, cancellationToken);
 
             return MapToDto(item);
         }
@@ -109,6 +147,15 @@ public class ItemService(
                 return new Result<ItemDto>(new ItemNameConflictException(normalizedName));
             }
 
+            var previousName = item.Name;
+            var previousQuantity = item.Quantity;
+            var previousPrice = item.Price;
+            var previousCategoryId = item.CategoryId;
+
+            var operationTime = DateTime.UtcNow;
+
+            var changedHistories = new List<ItemHistory>();
+
             item.Name = normalizedName;
             item.Quantity = request.Quantity;
             item.Manufacturer = request.Manufacturer?.Trim();
@@ -117,10 +164,80 @@ public class ItemService(
             item.Barcode = request.Barcode?.Trim();
             item.Price = request.Price;
             item.CategoryId = request.CategoryId;
-            item.UpdatedAtUtc = DateTime.UtcNow;
+            item.UpdatedAtUtc = operationTime;
+
+            if (!string.Equals(previousName, normalizedName, StringComparison.Ordinal))
+            {
+                changedHistories.Add(new ItemHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = item.Id,
+                    ChangeType = ItemHistoryChangeType.NameUpdated,
+                    Description = $"名称が\"{normalizedName}\"に変更されました",
+                    OccurredAtUtc = operationTime,
+                });
+            }
+
+            if (previousQuantity != request.Quantity)
+            {
+                changedHistories.Add(new ItemHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = item.Id,
+                    ChangeType = request.Quantity > previousQuantity
+                        ? ItemHistoryChangeType.QuantityIncreased
+                        : ItemHistoryChangeType.QuantityDecreased,
+                    Description = request.Quantity > previousQuantity
+                        ? $"数量が{request.Quantity}個に増加しました"
+                        : $"数量が{request.Quantity}個に減少しました",
+                    OccurredAtUtc = operationTime,
+                });
+            }
+
+            if (previousPrice != request.Price)
+            {
+                var priceValue = request.Price is null
+                    ? "未設定"
+                    : $"{request.Price.Value:0.##}円";
+                changedHistories.Add(new ItemHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = item.Id,
+                    ChangeType = ItemHistoryChangeType.PriceUpdated,
+                    Description = $"値段が{priceValue}に変更されました",
+                    OccurredAtUtc = operationTime,
+                });
+            }
+
+            if (previousCategoryId != request.CategoryId)
+            {
+                var categoryName = "未分類";
+                if (request.CategoryId is not null)
+                {
+                    var category = await categoryRepository.GetByIdAsync(request.CategoryId.Value);
+                    categoryName = category?.Name ?? request.CategoryId.Value.ToString();
+                }
+
+                changedHistories.Add(new ItemHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = item.Id,
+                    ChangeType = ItemHistoryChangeType.CategoryUpdated,
+                    Description = $"カテゴリが\"{categoryName}\"に変更されました",
+                    OccurredAtUtc = operationTime,
+                });
+            }
 
             // DB制約違反（UNIQUE/FK）はリポジトリ側でドメイン例外に変換される
-            await itemRepository.UpdateAsync(item, cancellationToken);
+            await itemRepository.ExecuteInTransactionAsync(async () =>
+            {
+                await itemRepository.UpdateAsync(item, cancellationToken);
+
+                if (changedHistories.Count > 0)
+                {
+                    await itemHistoryRepository.AddRangeAsync(changedHistories, cancellationToken);
+                }
+            }, cancellationToken);
 
             // Category ナビゲーションプロパティを最新化するために再取得する
             var reloaded = await itemRepository.GetByIdAsync(id, cancellationToken);
@@ -194,5 +311,14 @@ public class ItemService(
             item.ImageId,
             item.CreatedAtUtc,
             item.UpdatedAtUtc);
+    }
+
+    private static ItemHistoryDto MapToHistoryDto(ItemHistory history)
+    {
+        return new ItemHistoryDto(
+            history.Id,
+            history.ChangeType.ToString(),
+            history.Description,
+            history.OccurredAtUtc);
     }
 }
