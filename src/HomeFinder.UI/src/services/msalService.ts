@@ -16,7 +16,6 @@ const msalConfig: Configuration = {
   cache: {
     // 24時間セッション対応（SC-006）: localStorage にキャッシュする
     cacheLocation: 'localStorage',
-    storeAuthStateInCookie: false,
   },
 };
 
