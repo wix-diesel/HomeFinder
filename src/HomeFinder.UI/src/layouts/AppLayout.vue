@@ -8,6 +8,17 @@
       <div class="header-actions">
         <!-- FR-001/FR-008: 歯車アイコンは常時表示される設定遷移導線 -->
         <SettingsNavigationButton />
+        <!-- US4: ログアウトボタン（認証済み時のみ表示） -->
+        <button
+          v-if="auth.isAuthenticated.value"
+          type="button"
+          class="logout-btn"
+          :disabled="auth.isLoading.value"
+          :aria-label="auth.isLoading.value ? 'サインアウト中...' : 'サインアウト'"
+          @click="auth.logout()"
+        >
+          <span class="material-symbols-outlined">logout</span>
+        </button>
         <button type="button" class="avatar-btn" aria-label="プロフィール">
           <span class="material-symbols-outlined">person</span>
         </button>
@@ -38,6 +49,9 @@
 <script setup lang="ts">
 import { uiText } from '../constants/uiText';
 import SettingsNavigationButton from '../components/common/SettingsNavigationButton.vue';
+import { useAuth } from '../composables/useAuth';
+
+const auth = useAuth();
 </script>
 
 <style scoped>
@@ -105,6 +119,28 @@ import SettingsNavigationButton from '../components/common/SettingsNavigationBut
 
 .icon-btn .material-symbols-outlined,
 .avatar-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.logout-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.logout-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.logout-btn .material-symbols-outlined {
   font-size: 18px;
 }
 

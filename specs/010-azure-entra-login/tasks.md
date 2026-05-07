@@ -15,8 +15,8 @@
 
 **目的**: Pinia・MSAL.js の依存関係追加と環境変数ファイルの作成
 
-- [ ] T001 `src/HomeFinder.UI/package.json` に `@azure/msal-browser` と `pinia` を追加して `pnpm install` を実行する
-- [ ] T002 [P] `src/HomeFinder.UI/.env.development` を新規作成し `VITE_AZURE_CLIENT_ID`・`VITE_AZURE_TENANT_ID`・`VITE_AZURE_REDIRECT_URI` のプレースホルダーを記述する（contracts/auth-contract.md の環境変数契約に従う）。`.env.development` が `src/HomeFinder.UI/.gitignore` に含まれていることを確認する
+- [X] T001 `src/HomeFinder.UI/package.json` に `@azure/msal-browser` と `pinia` を追加して `pnpm install` を実行する
+- [X] T002 [P] `src/HomeFinder.UI/.env.development` を新規作成し `VITE_AZURE_CLIENT_ID`・`VITE_AZURE_TENANT_ID`・`VITE_AZURE_REDIRECT_URI` のプレースホルダーを記述する（contracts/auth-contract.md の環境変数契約に従う）。`.env.development` が `src/HomeFinder.UI/.gitignore` に含まれていることを確認する
 
 ---
 
@@ -26,17 +26,17 @@
 
 **⚠️ 重要**: このフェーズが完了するまで、ユーザーストーリーの作業を開始できない
 
-- [ ] T003 `src/HomeFinder.UI/src/services/msalService.ts` を新規作成する（MSAL 操作ラッパー: `loginPopup()`・`logoutPopup()`・`acquireTokenSilent()` の実装。MSAL 設定で `cacheLocation: 'localStorage'` を指定する（24時間セッション対応、SC-006）。contracts/auth-contract.md の MsalService インターフェース契約に従う）
-- [ ] T004 `src/HomeFinder.UI/src/stores/authStore.ts` を新規作成する（Pinia ストア: `user`・`isLoading`・`error` ステート、`isAuthenticated` ゲッター、`login()`・`logout()`・`initialize()` アクション。contracts/auth-contract.md の AuthStore 契約に従う。T003 に依存）
-- [ ] T005 `src/HomeFinder.UI/src/main.ts` を修正して `createPinia()` を登録する（T004 に依存）
-- [ ] T006 `src/HomeFinder.UI/src/App.vue` を修正して `onMounted` で `authStore.initialize()` を呼び出す（ページ再訪問時のサイレントトークン復元。T004 に依存）
+- [X] T003 `src/HomeFinder.UI/src/services/msalService.ts` を新規作成する（MSAL 操作ラッパー: `loginPopup()`・`logoutPopup()`・`acquireTokenSilent()` の実装。MSAL 設定で `cacheLocation: 'localStorage'` を指定する（24時間セッション対応、SC-006）。contracts/auth-contract.md の MsalService インターフェース契約に従う）
+- [X] T004 `src/HomeFinder.UI/src/stores/authStore.ts` を新規作成する（Pinia ストア: `user`・`isLoading`・`error` ステート、`isAuthenticated` ゲッター、`login()`・`logout()`・`initialize()` アクション。contracts/auth-contract.md の AuthStore 契約に従う。T003 に依存）
+- [X] T005 `src/HomeFinder.UI/src/main.ts` を修正して `createPinia()` を登録する（T004 に依存）
+- [X] T006 `src/HomeFinder.UI/src/App.vue` を修正して `onMounted` で `authStore.initialize()` を呼び出す（ページ再訪問時のサイレントトークン復元。T004 に依存）
 
 ### 単体テスト（実装前に FAIL を確認すること）⚠️
 
 > **注意: 実装前にテストを書き、FAIL することを確認すること（憲法原則 IV）**
 
-- [ ] T019 [P] `src/HomeFinder.UI/tests/unit/msalService.test.ts` を新規作成して `msalService` の単体テストを実装する（`loginPopup`・`logoutPopup`・`acquireTokenSilent` のモックを使用した正常系・異常系テスト）
-- [ ] T020 [P] `src/HomeFinder.UI/tests/unit/authStore.test.ts` を新規作成して `authStore` の単体テストを実装する（`login` 成功・失敗・`logout`・`initialize`・`isAuthenticated` の動作検証。msalService をモック）
+- [X] T019 [P] `src/HomeFinder.UI/tests/unit/msalService.test.ts` を新規作成して `msalService` の単体テストを実装する（`loginPopup`・`logoutPopup`・`acquireTokenSilent` のモックを使用した正常系・異常系テスト）
+- [X] T020 [P] `src/HomeFinder.UI/tests/unit/authStore.test.ts` を新規作成して `authStore` の単体テストを実装する（`login` 成功・失敗・`logout`・`initialize`・`isAuthenticated` の動作検証。msalService をモック）
 
 **チェックポイント**: MSAL ラッパーと Pinia ストアが初期化される。ユーザーストーリーの実装を開始できる
 
@@ -50,9 +50,9 @@
 
 ### ユーザーストーリー 1 の実装
 
-- [ ] T007 [US1] `src/HomeFinder.UI/src/pages/LoginPage.vue` をスタブとして新規作成する（「Sign in with Microsoft」ボタンのみのミニマム実装。デザイン詳細は US3 フェーズで完成させる）
-- [ ] T008 [P] [US1] `src/HomeFinder.UI/src/router/index.ts` の全既存ルートに `meta: { requiresAuth: true }` を追加し、`/login` ルートを `meta: { requiresAuth: false }` で追加する
-- [ ] T009 [US1] `src/HomeFinder.UI/src/router/index.ts` に `router.beforeEach` ナビゲーションガードを実装する（未認証かつ `requiresAuth: true` のルートへのアクセス → `/login?returnUrl=<to.fullPath>` にリダイレクト。returnUrl は同一オリジンのパスのみ許可する検証を含む。data-model.md のガード契約に従う。T008 に依存）
+- [X] T007 [US1] `src/HomeFinder.UI/src/pages/LoginPage.vue` をスタブとして新規作成する（「Sign in with Microsoft」ボタンのみのミニマム実装。デザイン詳細は US3 フェーズで完成させる）
+- [X] T008 [P] [US1] `src/HomeFinder.UI/src/router/index.ts` の全既存ルートに `meta: { requiresAuth: true }` を追加し、`/login` ルートを `meta: { requiresAuth: false }` で追加する
+- [X] T009 [US1] `src/HomeFinder.UI/src/router/index.ts` に `router.beforeEach` ナビゲーションガードを実装する（未認証かつ `requiresAuth: true` のルートへのアクセス → `/login?returnUrl=<to.fullPath>` にリダイレクト。returnUrl は同一オリジンのパスのみ許可する検証を含む。data-model.md のガード契約に従う。T008 に依存）
 
 **チェックポイント**: 未認証状態で保護ルートにアクセスするとログインページにリダイレクトされる
 
@@ -66,10 +66,10 @@
 
 ### ユーザーストーリー 2 の実装
 
-- [ ] T010 [US2] `src/HomeFinder.UI/src/pages/LoginPage.vue` を修正して `authStore.login()` 呼び出しとエラーメッセージ表示ロジックを実装する（失敗時は汎用メッセージを表示し詳細エラーは非表示。FR-010 に従う。T004 に依存）
-- [ ] T011 [US2] `src/HomeFinder.UI/src/pages/LoginPage.vue` を修正して認証成功後に `returnUrl` クエリパラメータを読み取り元ページへリダイレクトするロジックを実装する（returnUrl がない場合は `/` へ。T010 に依存）
-- [ ] T012 [US2] `src/HomeFinder.UI/src/router/index.ts` のナビゲーションガードに「認証済みユーザーが `/login` にアクセスした場合は `/` にリダイレクト」するロジックを追加する（T009 に依存）
-- [ ] T013 [P] [US2] `src/HomeFinder.UI/src/composables/useAuth.ts` を新規作成する（authStore のラッパー composable。contracts/auth-contract.md の UseAuth 契約に従う）
+- [X] T010 [US2] `src/HomeFinder.UI/src/pages/LoginPage.vue` を修正して `authStore.login()` 呼び出しとエラーメッセージ表示ロジックを実装する（失敗時は汎用メッセージを表示し詳細エラーは非表示。FR-010 に従う。T004 に依存）
+- [X] T011 [US2] `src/HomeFinder.UI/src/pages/LoginPage.vue` を修正して認証成功後に `returnUrl` クエリパラメータを読み取り元ページへリダイレクトするロジックを実装する（returnUrl がない場合は `/` へ。T010 に依存）
+- [X] T012 [US2] `src/HomeFinder.UI/src/router/index.ts` のナビゲーションガードに「認証済みユーザーが `/login` にアクセスした場合は `/` にリダイレクト」するロジックを追加する（T009 に依存）
+- [X] T013 [P] [US2] `src/HomeFinder.UI/src/composables/useAuth.ts` を新規作成する（authStore のラッパー composable。contracts/auth-contract.md の UseAuth 契約に従う）
 
 **チェックポイント**: ログインフロー全体が機能する。MS 認証後に元のページへ遷移できる
 
@@ -83,8 +83,8 @@
 
 ### ユーザーストーリー 4 の実装
 
-- [ ] T014 [US4] `src/HomeFinder.UI/src/stores/authStore.ts` の `logout()` アクションを完成させる（`msalService.logoutPopup()` 呼び出し → Azure Entra サインアウト通知 → `user = null` → `router.push('/login')`。FR-008・FR-009 に従う。T004 に依存）
-- [ ] T015 [US4] アプリのレイアウト（`src/HomeFinder.UI/src/layouts/` または既存のナビゲーションコンポーネント）にログアウトボタンを追加する（`useAuth().logout()` を呼び出す。T013・T014 に依存）
+- [X] T014 [US4] `src/HomeFinder.UI/src/stores/authStore.ts` の `logout()` アクションを完成させる（`msalService.logoutPopup()` 呼び出し → Azure Entra サインアウト通知 → `user = null` → `router.push('/login')`。FR-008・FR-009 に従う。T004 に依存）
+- [X] T015 [US4] アプリのレイアウト（`src/HomeFinder.UI/src/layouts/` または既存のナビゲーションコンポーネント）にログアウトボタンを追加する（`useAuth().logout()` を呼び出す。T013・T014 に依存）
 
 **チェックポイント**: ログイン・ログアウトの完全なフローが動作する
 
@@ -98,8 +98,8 @@
 
 ### ユーザーストーリー 3 の実装
 
-- [ ] T016 [P] [US3] ログインページ用ヒーロー画像を `src/HomeFinder.UI/src/assets/` または `src/HomeFinder.UI/public/` に追加する（`/design/login.html` で参照されている部屋の画像）
-- [ ] T017 [US3] `src/HomeFinder.UI/src/pages/LoginPage.vue` を `/design/login.html` に準拠した完全なUIに更新する（ヘッダーの Home Finder ロゴ・ヒーロー画像エリア・"Internal Access Only" 見出しと説明文・Microsoft 四色 SVG ロゴ付きサインインボタン・ITサポートデスク情報パネル・"SYSTEM OPERATIONAL" フッター。TailwindCSS・Material Symbols Outlined を使用。T016 に依存）
+- [X] T016 [P] [US3] ログインページ用ヒーロー画像を `src/HomeFinder.UI/src/assets/` または `src/HomeFinder.UI/public/` に追加する（`/design/login.html` で参照されている部屋の画像）
+- [X] T017 [US3] `src/HomeFinder.UI/src/pages/LoginPage.vue` を `/design/login.html` に準拠した完全なUIに更新する（ヘッダーの Home Finder ロゴ・ヒーロー画像エリア・"Internal Access Only" 見出しと説明文・Microsoft 四色 SVG ロゴ付きサインインボタン・ITサポートデスク情報パネル・"SYSTEM OPERATIONAL" フッター。TailwindCSS・Material Symbols Outlined を使用。T016 に依存）
 
 **チェックポイント**: ログインページが `/design/login.html` のデザインと視覚的に一致する（SC-003）
 
@@ -109,8 +109,8 @@
 
 **目的**: 認証ログ・成功基準の検証
 
-- [ ] T018 `src/HomeFinder.UI/src/stores/authStore.ts` の `login()`・`logout()` アクションに認証イベントログを追加する（成功・失敗のユーザーIDとUTCタイムスタンプをコンソール出力。FR-011・SC-007 に従う。T004 に依存）
-- [ ] T021 `quickstart.md` の「開発時の確認手順」に従い SC-001〜SC-007 をすべて手動で検証する（未認証リダイレクト・ログイン後遷移・UIデザイン・24時間セッション・認証ログ・MSのみ認証手段の確認）
+- [X] T018 `src/HomeFinder.UI/src/stores/authStore.ts` の `login()`・`logout()` アクションに認証イベントログを追加する（成功・失敗のユーザーIDとUTCタイムスタンプをコンソール出力。FR-011・SC-007 に従う。T004 に依存）
+- [ ] T021 [手動] `quickstart.md` の「開発時の確認手順」に従い SC-001〜SC-007 をすべて手動で検証する（Azure Entra アプリ登録設定後に実施）
 
 ---
 

@@ -4,8 +4,7 @@ import ItemDetailPage from '../pages/ItemDetailPage.vue';
 import ItemCreatePage from '../pages/ItemCreatePage.vue';
 import SettingsPage from '../pages/SettingsPage.vue';
 import StorageManagementPage from '../pages/StorageManagement.vue';
-// CategoryManagementPage は Phase 3 (T028) で実装予定
-// import CategoryManagementPage from '../pages/CategoryManagementPage.vue';
+import LoginPage from '../pages/LoginPage.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -15,38 +14,49 @@ const router = createRouter({
       redirect: '/items',
     },
     {
+      // ログインページ（認証不要）
+      path: '/login',
+      name: 'login',
+      component: LoginPage,
+      meta: { requiresAuth: false },
+    },
+    {
       path: '/items',
       name: 'item-list',
       component: ItemListPage,
+      meta: { requiresAuth: true },
     },
     {
       path: '/items/:id',
       name: 'item-detail',
       component: ItemDetailPage,
+      meta: { requiresAuth: true },
     },
     {
       path: '/items/new',
       name: 'item-create',
       component: ItemCreatePage,
+      meta: { requiresAuth: true },
     },
     {
       path: '/items/:itemId/history',
       name: 'ItemHistory',
       component: () => import('../pages/ItemHistoryPage.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/settings',
       name: 'settings',
       component: SettingsPage,
+      meta: { requiresAuth: true },
     },
     {
       path: '/categories',
       name: 'category-management',
-      // component: CategoryManagementPage, // Phase 3 (T028) で実装
-      component: () => import('../pages/CategoryManagementPage.vue'), // 動的インポート
+      component: () => import('../pages/CategoryManagementPage.vue'),
       meta: {
         title: 'カテゴリー管理',
-        requiresAuth: false,
+        requiresAuth: true,
       },
     },
     {
@@ -55,10 +65,46 @@ const router = createRouter({
       component: StorageManagementPage,
       meta: {
         title: '場所管理',
-        requiresAuth: false,
+        requiresAuth: true,
       },
     },
   ],
+});
+
+/**
+ * returnUrl が同一オリジンのパスかどうかを検証する（オープンリダイレクト防止）
+ */
+function isSafeReturnUrl(url: string): boolean {
+  if (!url || typeof url !== 'string') return false;
+  // 外部ドメインや javascript: スキームを排除し、/で始まるパスのみ許可する
+  try {
+    // 絶対URLが指定された場合は拒否する（同一オリジンパスのみ許可）
+    const parsed = new URL(url, window.location.origin);
+    return parsed.origin === window.location.origin && url.startsWith('/');
+  } catch {
+    return false;
+  }
+}
+
+// ナビゲーションガード（US1・US2: 未認証リダイレクト・認証済みの /login アクセス制御）
+router.beforeEach(async (to, _from, next) => {
+  // Pinia ストアはルーター外から遅延インポートする（循環依存を避けるため）
+  const { useAuthStore } = await import('../stores/authStore');
+  const authStore = useAuthStore();
+
+  const requiresAuth = to.meta.requiresAuth !== false;
+
+  if (requiresAuth && !authStore.isAuthenticated) {
+    // (1) 未認証でアクセス → /login?returnUrl=<元パス> へリダイレクト
+    const returnUrl = isSafeReturnUrl(to.fullPath) ? to.fullPath : '/';
+    next({ path: '/login', query: { returnUrl } });
+  } else if (to.path === '/login' && authStore.isAuthenticated) {
+    // (2) 認証済みで /login にアクセス → / へリダイレクト（T012）
+    next('/');
+  } else {
+    // (3) 通過
+    next();
+  }
 });
 
 export default router;
