@@ -9,5 +9,5 @@
 <!-- SPECKIT START -->
 ## Speckit Plan Context
 
-- 現在の計画: `/specs/009-item-change-history/plan.md`
+- 現在の計画: `/specs/010-azure-entra-login/plan.md`
 <!-- SPECKIT END -->
