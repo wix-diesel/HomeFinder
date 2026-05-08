@@ -21,9 +21,9 @@
 
       <!-- アクセスメッセージ -->
       <div class="access-message">
-        <h2 class="access-heading">Internal Access Only</h2>
+        <h2 class="access-heading">社内専用アクセス</h2>
         <p class="access-description">
-          Please sign in with your corporate Microsoft account to continue.
+          続行するには社内の Microsoft アカウントでサインインしてください。
         </p>
       </div>
 
@@ -43,10 +43,10 @@
             <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
             <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
           </svg>
-          <span>{{ authStore.isLoading ? 'サインイン中...' : 'Sign in with Microsoft' }}</span>
+          <span>{{ authStore.isLoading ? 'サインイン中...' : 'Microsoftでサインイン' }}</span>
         </button>
 
-        <!-- エラーメッセージ（汎用。詳細は非表示。FR-010・SC-004） -->
+      <!-- エラーメッセージ（汎用。詳細は非表示。FR-010・SC-004） -->
         <p v-if="authStore.error" class="error-message" role="alert">
           {{ authStore.error }}
         </p>
@@ -55,9 +55,9 @@
         <div class="support-panel">
           <span class="material-symbols-outlined support-icon" aria-hidden="true">info</span>
           <p class="support-text">
-            Trouble signing in? Contact the
-            <strong class="support-link">IT Support Desk</strong>
-            for authorization or credentials help.
+            サインインに問題がありますか？承認や資格情報に関しては
+            <strong class="support-link">ITサポートデスク</strong>
+            にお問い合わせください。
           </p>
         </div>
       </div>
@@ -66,7 +66,7 @@
       <footer class="login-footer">
         <div class="status-indicator">
           <span class="status-dot" aria-hidden="true"></span>
-          <span class="status-text">SYSTEM OPERATIONAL</span>
+          <span class="status-text">システム稼働中</span>
         </div>
         <p class="version-text">v4.2.0-PROD | HOME FINDER ENTERPRISE</p>
       </footer>
@@ -75,20 +75,29 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
-import heroImage from '../assets/hero.png';
+import { msalService } from '../services/msalService';
+import heroImage from '../assets/living_room_interior.png';
 
-const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
 async function handleLogin() {
-  await authStore.login();
-  if (authStore.isAuthenticated) {
-    // returnUrl クエリパラメータを読み取り元ページへリダイレクトする（US2・FR-006）
-    const returnUrl = route.query.returnUrl as string | undefined;
-    await router.push(returnUrl || '/');
+  const rawReturn = route.query.returnUrl as string | undefined;
+  const returnUrl = rawReturn ? rawReturn.split('#')[0] : '/';
+
+  authStore.isLoading = true;
+  authStore.error = null;
+  try {
+    // Docker/一部ブラウザ環境では popup がタブ化して戻りが不安定なため、
+    // loginRedirect を標準フローとして使用する。
+    await msalService.loginRedirect(returnUrl || '/');
+    return;
+  } catch (err) {
+    authStore.error = 'サインインに失敗しました。もう一度お試しください。';
+  } finally {
+    authStore.isLoading = false;
   }
 }
 </script>

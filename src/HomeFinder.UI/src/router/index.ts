@@ -87,7 +87,7 @@ function isSafeReturnUrl(url: string): boolean {
 }
 
 // ナビゲーションガード（US1・US2: 未認証リダイレクト・認証済みの /login アクセス制御）
-router.beforeEach(async (to, _from, next) => {
+router.beforeEach(async (to, _from) => {
   // Pinia ストアはルーター外から遅延インポートする（循環依存を避けるため）
   const { useAuthStore } = await import('../stores/authStore');
   const authStore = useAuthStore();
@@ -96,15 +96,15 @@ router.beforeEach(async (to, _from, next) => {
 
   if (requiresAuth && !authStore.isAuthenticated) {
     // (1) 未認証でアクセス → /login?returnUrl=<元パス> へリダイレクト
-    const returnUrl = isSafeReturnUrl(to.fullPath) ? to.fullPath : '/';
-    next({ path: '/login', query: { returnUrl } });
+    // フラグメント (#...) を含めないようにサニタイズする
+    const sanitizedFullPath = String(to.fullPath).split('#')[0];
+    const returnUrl = isSafeReturnUrl(sanitizedFullPath) ? sanitizedFullPath : '/';
+    return { path: '/login', query: { returnUrl } };
   } else if (to.path === '/login' && authStore.isAuthenticated) {
     // (2) 認証済みで /login にアクセス → / へリダイレクト（T012）
-    next('/');
-  } else {
-    // (3) 通過
-    next();
+    return '/';
   }
+  // (3) 通過（戻り値なし）
 });
 
 export default router;

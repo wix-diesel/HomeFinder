@@ -5,7 +5,9 @@ import { setActivePinia, createPinia } from 'pinia';
 vi.mock('../../../src/services/msalService', () => ({
   msalService: {
     loginPopup: vi.fn(),
-    logoutPopup: vi.fn(),
+    loginRedirect: vi.fn(),
+    handleRedirectPromise: vi.fn(),
+    logoutRedirect: vi.fn(),
     acquireTokenSilent: vi.fn(),
   },
 }));
@@ -72,7 +74,7 @@ describe('authStore', () => {
   describe('logout()', () => {
     it('user を null にリセットする', async () => {
       const { msalService } = await import('../../../src/services/msalService');
-      vi.mocked(msalService.logoutPopup).mockResolvedValueOnce(undefined);
+      vi.mocked(msalService.logoutRedirect).mockResolvedValueOnce(undefined);
 
       const { useAuthStore } = await import('../../../src/stores/authStore');
       const store = useAuthStore();
@@ -89,6 +91,7 @@ describe('authStore', () => {
   describe('initialize()', () => {
     it('キャッシュなし: user が null のまま', async () => {
       const { msalService } = await import('../../../src/services/msalService');
+      vi.mocked(msalService.handleRedirectPromise).mockResolvedValueOnce(null);
       vi.mocked(msalService.acquireTokenSilent).mockResolvedValueOnce(null);
 
       const { useAuthStore } = await import('../../../src/stores/authStore');
@@ -100,6 +103,7 @@ describe('authStore', () => {
 
     it('キャッシュ有効: user を復元する', async () => {
       const { msalService } = await import('../../../src/services/msalService');
+      vi.mocked(msalService.handleRedirectPromise).mockResolvedValueOnce(null);
       vi.mocked(msalService.acquireTokenSilent).mockResolvedValueOnce({
         account: { homeAccountId: 'oid-123', name: 'Test User', username: 'test@example.com' },
         idTokenClaims: { oid: 'oid-123', name: 'Test User', preferred_username: 'test@example.com' },

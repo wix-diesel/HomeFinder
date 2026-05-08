@@ -48,6 +48,12 @@ export const useAuthStore = defineStore('auth', () => {
   // ゲッター
   const isAuthenticated = computed(() => user.value !== null);
 
+  function sanitizeReturnUrl(url: string | null | undefined): string {
+    if (!url || typeof url !== 'string') return '/';
+    if (!url.startsWith('/')) return '/';
+    return url.split('#')[0] || '/';
+  }
+
   /**
    * MSAL loginPopup() でログインフローを開始する。
    * 成功時: user をセット、error を null に。
@@ -71,22 +77,38 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * MSAL logoutPopup() でサインアウトし Azure Entra に通知する。
-   * user を null にリセットして /login に遷移する（FR-008・FR-009）。
+   * AuthenticationResult を受け取り store を更新するユーティリティ。
+   * Login を UI から直接開く際に、ポップアップがユーザーイベントに紐づくよう
+   * `msalService.loginPopup()` をコンポーネント側で直接呼ぶケースの補助として使用します。
+   */
+  function applyLoginResult(result: AuthenticationResult): void {
+    try {
+      user.value = extractUser(result);
+      error.value = null;
+      console.info('[Auth] applyLoginResult: ユーザー設定完了');
+    } catch (err) {
+      console.warn('[Auth] applyLoginResult エラー', err);
+      error.value = 'サインインの処理中に問題が発生しました。';
+    }
+  }
+
+  /**
+   * MSAL logoutRedirect() でサインアウトし Azure Entra に通知する。
+   * リダイレクト後は postLogoutRedirectUri (/login) に戻るため、
+   * ローカル状態のリセットはリダイレクト前に行う。
    */
   async function logout(): Promise<void> {
     isLoading.value = true;
     try {
-      await msalService.logoutPopup();
+      // リダイレクト前にローカル状態をリセットする
       user.value = null;
       error.value = null;
-      // 認証イベントログ（最小限、T018）
-      console.info('[Auth] ログアウト成功');
-      await router.push('/login');
+      console.info('[Auth] ログアウト開始（リダイレクト）');
+      await msalService.logoutRedirect();
+      // logoutRedirect() はページ遷移するため、以降のコードは実行されない
     } catch (err) {
       console.warn('[Auth] ログアウト失敗', err);
-      // ログアウト失敗時もローカル状態はリセットする
-      user.value = null;
+      // ログアウト失敗時もローカル状態はリセット済みのまま /login へ
       await router.push('/login');
     } finally {
       isLoading.value = false;
@@ -100,13 +122,29 @@ export const useAuthStore = defineStore('auth', () => {
   async function initialize(): Promise<void> {
     isLoading.value = true;
     try {
+      // loginRedirect() 復帰時の結果を先に処理する
+      const redirectResult = await msalService.handleRedirectPromise();
+      if (redirectResult) {
+        user.value = extractUser(redirectResult);
+        const returnUrl = sanitizeReturnUrl(redirectResult.state);
+        console.info('[Auth] リダイレクトログイン成功');
+        await router.replace(returnUrl || '/');
+        return;
+      }
+
       const result = await msalService.acquireTokenSilent();
       if (result) {
         user.value = extractUser(result);
         console.info('[Auth] セッション復元成功');
       }
     } catch (err) {
-      console.warn('[Auth] セッション復元失敗', err);
+      // MSAL 初期化エラーの場合は詳細をログ出力
+      if (err instanceof Error && err.message.includes('VITE_AZURE')) {
+        console.error('[Auth] MSAL 設定エラー:', err.message);
+        error.value = err.message;
+      } else {
+        console.warn('[Auth] セッション復元失敗', err);
+      }
     } finally {
       isLoading.value = false;
     }
@@ -120,5 +158,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     initialize,
+    applyLoginResult,
   };
 });

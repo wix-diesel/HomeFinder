@@ -110,7 +110,7 @@
 **目的**: 認証ログ・成功基準の検証
 
 - [X] T018 `src/HomeFinder.UI/src/stores/authStore.ts` の `login()`・`logout()` アクションに認証イベントログを追加する（成功・失敗のユーザーIDとUTCタイムスタンプをコンソール出力。FR-011・SC-007 に従う。T004 に依存）
-- [ ] T021 [手動] `quickstart.md` の「開発時の確認手順」に従い SC-001〜SC-007 をすべて手動で検証する（Azure Entra アプリ登録設定後に実施）
+- [X] T021 [手動] `quickstart.md` の「開発時の確認手順」に従い SC-001〜SC-007 をすべて手動で検証する（Azure Entra アプリ登録設定後に実施）
 
 ---
 

@@ -6,9 +6,11 @@ const { mockMsalInstance } = vi.hoisted(() => {
   const mockMsalInstance = {
     initialize: vi.fn().mockResolvedValue(undefined),
     loginPopup: vi.fn(),
-    logoutPopup: vi.fn().mockResolvedValue(undefined),
+    logoutRedirect: vi.fn().mockResolvedValue(undefined),
     acquireTokenSilent: vi.fn(),
     getAllAccounts: vi.fn().mockReturnValue([]),
+    handleRedirectPromise: vi.fn().mockResolvedValue(null),
+    loginRedirect: vi.fn().mockResolvedValue(undefined),
   };
   return { mockMsalInstance };
 });
@@ -32,6 +34,10 @@ import { msalService } from '../../../src/services/msalService';
 describe('msalService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // テスト環境で環境変数を設定（validateMsalConfig の検証に対応）
+    import.meta.env.VITE_AZURE_CLIENT_ID = 'test-client-id';
+    import.meta.env.VITE_AZURE_TENANT_ID = 'test-tenant-id';
+    import.meta.env.VITE_AZURE_REDIRECT_URI = 'http://localhost:5174';
     // initialize はデフォルトで成功を返す
     mockMsalInstance.initialize.mockResolvedValue(undefined);
     mockMsalInstance.getAllAccounts.mockReturnValue([]);
@@ -60,15 +66,15 @@ describe('msalService', () => {
     });
   });
 
-  describe('logoutPopup', () => {
-    it('正常系: logoutPopup を呼び出す', async () => {
+  describe('logoutRedirect', () => {
+    it('正常系: logoutRedirect を呼び出す', async () => {
       mockMsalInstance.getAllAccounts.mockReturnValueOnce([
         { homeAccountId: 'oid', name: 'Test User' },
       ]);
 
-      await msalService.logoutPopup();
+      await msalService.logoutRedirect();
 
-      expect(mockMsalInstance.logoutPopup).toHaveBeenCalled();
+      expect(mockMsalInstance.logoutRedirect).toHaveBeenCalled();
     });
   });
 
