@@ -35,17 +35,17 @@ describe('storage services', () => {
   });
 
   it('create/update/delete shelf を呼び出せる', async () => {
-    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ id: 's1' }), { status: 200 }));
+    vi.mocked(apiClient.apiFetch).mockImplementation(async () => new Response(JSON.stringify({ id: 's1' }), { status: 200 }));
 
     await createShelf('r1', { name: 'S', description: 'desc' });
     await updateShelf('r1', 's1', { name: 'S2', description: 'desc2' });
     await deleteShelf('r1', 's1');
 
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(apiClient.apiFetch).toHaveBeenCalledTimes(3);
   });
 
   it('listShelves が shelves 配列を返す', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ shelves: [{ id: 's1' }] }), { status: 200 }));
+    vi.mocked(apiClient.apiFetch).mockResolvedValue(new Response(JSON.stringify({ shelves: [{ id: 's1' }] }), { status: 200 }));
 
     const shelves = await listShelves('r1');
 
