@@ -1,13 +1,19 @@
 using HomeFinder.Infrastructure.Data;
 using HomeFinder.Application.Services;
 using HomeFinder.Core.Entities;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
 
 namespace IntegrationTests;
 
@@ -19,6 +25,19 @@ public class TestApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
+            // テスト用認証ハンドラーに差し替えて 401 を回避する
+            services.RemoveAll<IAuthenticationSchemeProvider>();
+            services.AddAuthentication("Test")
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", _ => { });
+            services.AddAuthorization(options =>
+            {
+                // すべてのポリシー・ロールチェックを通過させるデフォルトポリシーを設定する
+                options.DefaultPolicy = new AuthorizationPolicyBuilder("Test")
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.FallbackPolicy = null;
+            });
+
             var dbContextDescriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(DbContextOptions<ItemDbContext>));
             if (dbContextDescriptor != null)
@@ -180,5 +199,32 @@ internal sealed class InMemoryImageProcessor : IImageProcessor
         imageStream.CopyTo(ms);
         ms.Position = 0;
         return Task.FromResult<Stream>(ms);
+    }
+}
+
+/// <summary>
+/// 統合テスト用の認証ハンドラー。常に認証済み User ロールでリクエストを通過させる。
+/// </summary>
+internal sealed class TestAuthHandler(
+    IOptionsMonitor<AuthenticationSchemeOptions> options,
+    ILoggerFactory logger,
+    UrlEncoder encoder) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+{
+    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    {
+        // Items.Read / Items.Create / Items.Delete / User ロールをすべて付与する
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Name, "TestUser"),
+            new Claim(ClaimTypes.NameIdentifier, "test-user-id"),
+            new Claim(ClaimTypes.Role, "Items.Read"),
+            new Claim(ClaimTypes.Role, "Items.Create"),
+            new Claim(ClaimTypes.Role, "Items.Delete"),
+            new Claim(ClaimTypes.Role, "User"),
+        };
+        var identity = new ClaimsIdentity(claims, "Test");
+        var principal = new ClaimsPrincipal(identity);
+        var ticket = new AuthenticationTicket(principal, "Test");
+        return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 }

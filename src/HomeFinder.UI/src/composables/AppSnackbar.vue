@@ -1,33 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { useSnackbarStore } from '../stores/snackbarStore';
 
-const message = ref('');
-const isVisible = ref(false);
-const isError = ref(false);
-let hideTimer: ReturnType<typeof setTimeout> | null = null;
-
-function show(text: string, error: boolean = false, durationMs: number = 3000) {
-  message.value = text;
-  isError.value = error;
-  isVisible.value = true;
-
-  if (hideTimer !== null) {
-    clearTimeout(hideTimer);
-  }
-  hideTimer = setTimeout(() => {
-    isVisible.value = false;
-  }, durationMs);
-}
-
-// 外部に公開するメソッドと状態
-defineExpose({ show, message, isVisible, isError });
+// グローバルスナックバーストアと接続する（apiClient.ts 等からもトーストを呼び出せるようにする）
+const snackbar = useSnackbarStore();
 </script>
 
 <template>
   <transition name="snackbar-fade">
-    <div v-if="isVisible" :class="['snackbar', isError ? 'snackbar--error' : 'snackbar--success']" role="alert" aria-live="polite">
-      <span class="snackbar__message">{{ message }}</span>
-      <button class="snackbar__close" @click="isVisible = false" aria-label="閉じる">✕</button>
+    <div v-if="snackbar.isVisible" :class="['snackbar', snackbar.isError ? 'snackbar--error' : 'snackbar--success']" role="alert" aria-live="polite">
+      <span class="snackbar__message">{{ snackbar.message }}</span>
+      <button class="snackbar__close" @click="snackbar.hide()" aria-label="閉じる">✕</button>
     </div>
   </transition>
 </template>

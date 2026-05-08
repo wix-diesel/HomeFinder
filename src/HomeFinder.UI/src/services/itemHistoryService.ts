@@ -1,8 +1,7 @@
 import type { ItemHistory, PagedItemHistoryResponse } from '../models/itemHistory';
+import { apiClient } from './apiClient';
 
 export type { ItemHistory, PagedItemHistoryResponse };
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
 
 /**
  * アイテム変更履歴をページネーション付きで取得する。
@@ -13,8 +12,8 @@ export async function getItemHistory(
   page = 1,
   pageSize = 20,
 ): Promise<PagedItemHistoryResponse> {
-  const url = `${API_BASE_URL}/api/items/${itemId}/history?page=${page}&pageSize=${pageSize}`;
-  const response = await fetch(url);
+  const url = `/api/items/${itemId}/history?page=${page}&pageSize=${pageSize}`;
+  const response = await apiClient.apiFetch(url);
   if (!response.ok) {
     console.error(`API error: ${response.status}`, response);
     throw new Error('履歴の取得に失敗しました。');

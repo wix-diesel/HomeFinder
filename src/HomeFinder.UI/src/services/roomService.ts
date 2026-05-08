@@ -1,18 +1,18 @@
 import type { CreateRoomPayload, Room, UpdateRoomPayload } from '../models/storageLocation';
+import { apiClient } from './apiClient';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
 
 async function parseError(response: Response): Promise<Error> {
   try {
     const body = await response.json();
-    return new Error(body?.message ?? `API Error: ${response.status}`);
+    return new Error(body?.message ?? '保管場所一覧の取得に失敗しました。');
   } catch {
-    return new Error(`API Error: ${response.status}`);
+    return new Error('保管場所一覧の取得に失敗しました。');
   }
 }
 
 export async function listRooms(): Promise<Room[]> {
-  const response = await fetch(`${API_BASE_URL}/api/rooms`);
+  const response = await apiClient.apiFetch('/api/rooms');
   if (!response.ok) {
     throw await parseError(response);
   }
@@ -22,7 +22,7 @@ export async function listRooms(): Promise<Room[]> {
 }
 
 export async function createRoom(payload: CreateRoomPayload): Promise<Room> {
-  const response = await fetch(`${API_BASE_URL}/api/rooms`, {
+  const response = await apiClient.apiFetch('/api/rooms', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -35,7 +35,7 @@ export async function createRoom(payload: CreateRoomPayload): Promise<Room> {
 }
 
 export async function updateRoom(roomId: string, payload: UpdateRoomPayload): Promise<Room> {
-  const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+  const response = await apiClient.apiFetch(`/api/rooms/${roomId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -48,7 +48,7 @@ export async function updateRoom(roomId: string, payload: UpdateRoomPayload): Pr
 }
 
 export async function deleteRoom(roomId: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+  const response = await apiClient.apiFetch(`/api/rooms/${roomId}`, {
     method: 'DELETE',
   });
   if (!response.ok) {

@@ -4,8 +4,7 @@ import type { CreateItemRequest } from '../models/createItemRequest';
 import type { UpdateItemRequest } from '../models/updateItemRequest';
 import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
 import { toCreateItemRequest, toUpdateItemRequest } from './itemPayloadMapper';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
+import { apiClient } from './apiClient';
 
 export class ItemServiceError extends Error {
   code?: string;
@@ -17,7 +16,7 @@ export class ItemServiceError extends Error {
 }
 
 export async function getItems(): Promise<Item[]> {
-  const response = await fetch(`${API_BASE_URL}/api/items`);
+  const response = await apiClient.apiFetch('/api/items');
   if (!response.ok) {
     throw new Error('物品一覧の取得に失敗しました。');
   }
@@ -26,7 +25,7 @@ export async function getItems(): Promise<Item[]> {
 }
 
 export async function getItemById(id: string): Promise<ItemDetail> {
-  const response = await fetch(`${API_BASE_URL}/api/items/${id}`);
+  const response = await apiClient.apiFetch(`/api/items/${id}`);
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -43,7 +42,7 @@ export async function getItemById(id: string): Promise<ItemDetail> {
 }
 
 export async function deleteItem(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/items/${id}`, {
+  const response = await apiClient.apiFetch(`/api/items/${id}`, {
     method: 'DELETE',
   });
 
@@ -64,7 +63,7 @@ export async function deleteItem(id: string): Promise<void> {
 
 export async function createItem(request: CreateItemRequest | ItemRegistrationFormState): Promise<Item> {
   const payload: CreateItemRequest = 'fieldErrors' in request ? toCreateItemRequest(request) : request;
-  const response = await fetch(`${API_BASE_URL}/api/items`, {
+  const response = await apiClient.apiFetch('/api/items', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -89,7 +88,7 @@ export async function createItem(request: CreateItemRequest | ItemRegistrationFo
 
 export async function updateItem(id: string, request: UpdateItemRequest | ItemRegistrationFormState): Promise<Item> {
   const payload: UpdateItemRequest = 'fieldErrors' in request ? toUpdateItemRequest(request) : request;
-  const response = await fetch(`${API_BASE_URL}/api/items/${id}`, {
+  const response = await apiClient.apiFetch(`/api/items/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

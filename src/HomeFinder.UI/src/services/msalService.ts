@@ -53,6 +53,12 @@ const loginScopes: string[] = (import.meta.env.VITE_AZURE_SCOPES as string | und
   .map((s) => s.trim())
   .filter(Boolean) ?? ['openid', 'profile', 'email'];
 
+// API アクセス用スコープ（VITE_AZURE_API_SCOPE 環境変数から取得する）
+const apiScopes: string[] = (import.meta.env.VITE_AZURE_API_SCOPE as string | undefined)
+  ?.split(',')
+  .map((s) => s.trim())
+  .filter(Boolean) ?? [];
+
 // PublicClientApplication のシングルトン
 let msalInstance: PublicClientApplication | null = null;
 let initialized = false;
@@ -180,10 +186,44 @@ function getActiveAccount(): AccountInfo | null {
   return accounts[0];
 }
 
+/**
+ * バックエンド API 用のアクセストークンをサイレントに取得する
+ * キャッシュヒットしない場合はポップアップにフォールバックする
+ * @returns Bearer トークン文字列（例: "Bearer eyJ..."）
+ * @throws アカウントがない場合、または InteractionRequiredAuthError でポップアップも失敗した場合
+ */
+async function acquireTokenForApi(): Promise<string> {
+  await initialize();
+  const account = getActiveAccount();
+  if (!account) {
+    throw new Error('ログインが必要です。');
+  }
+
+  try {
+    const result = await getMsalInstance().acquireTokenSilent({
+      scopes: apiScopes,
+      account,
+    });
+    return result.accessToken;
+  } catch (error) {
+    if (error instanceof InteractionRequiredAuthError) {
+      // サイレント取得失敗時はポップアップで再取得する
+      const result = await getMsalInstance().acquireTokenPopup({
+        scopes: apiScopes,
+        account,
+        redirectUri: import.meta.env.VITE_AZURE_REDIRECT_URI as string,
+      });
+      return result.accessToken;
+    }
+    throw error;
+  }
+}
+
 export const msalService = {
   loginPopup,
   loginRedirect,
   handleRedirectPromise,
   logoutRedirect,
   acquireTokenSilent,
+  acquireTokenForApi,
 };

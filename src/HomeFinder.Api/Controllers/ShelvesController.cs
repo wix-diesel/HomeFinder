@@ -2,12 +2,14 @@ using HomeFinder.Core.Errors;
 using HomeFinder.Application.Contracts;
 using HomeFinder.Application.Services;
 using HomeFinder.Api.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeFinder.Api.Controllers;
 
 [ApiController]
 [Route("api/rooms/{roomId:guid}/shelves")]
+[Authorize(Roles = "User")]
 public class ShelvesController(IShelfService shelfService, ILogger<ShelvesController> logger) : ControllerBase
 {
     [HttpPost]

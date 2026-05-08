@@ -1,6 +1,7 @@
 using HomeFinder.Api.Errors;
 using HomeFinder.Application.Services;
 using HomeFinder.Core.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.Text;
@@ -34,6 +35,7 @@ public class ImagesController(IImageService imageService) : ControllerBase
     /// <param name="image">アップロードする画像ファイル (multipart/form-data)</param>
     /// <param name="cancellationToken"></param>
     [HttpPost]
+    [Authorize(Roles = "Items.Create")]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(ImageUploadApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
@@ -104,6 +106,7 @@ public class ImagesController(IImageService imageService) : ControllerBase
     /// <param name="itemId">アイテムの ID</param>
     /// <param name="cancellationToken"></param>
     [HttpGet]
+    [Authorize(Roles = "Items.Read")]
     [Produces("image/jpeg", "image/png", "image/webp", "image/bmp", "image/svg+xml", "application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status304NotModified)]
@@ -160,6 +163,7 @@ public class ImagesController(IImageService imageService) : ControllerBase
     /// <param name="itemId">アイテムの ID</param>
     /// <param name="cancellationToken"></param>
     [HttpDelete]
+    [Authorize(Roles = "Items.Delete")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
