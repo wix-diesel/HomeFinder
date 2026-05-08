@@ -40,7 +40,7 @@ function navigateToEdit(event: Event, id: string) {
     <tbody>
       <tr v-for="item in items" :key="item.id" class="clickable-row" @click="navigateToDetail(item.id)" :aria-label="`${item.name} の詳細を表示`">
         <td>
-          <ImageThumbnail :item-id="item.imageId ?? null" :image-url="item.imageUrl ?? null" :alt="`${item.name} の画像`" />
+          <ImageThumbnail :item-id="item.id" :image-url="item.imageUrl ?? null" :alt="`${item.name} の画像`" />
         </td>
         <td>{{ item.name }}</td>
         <td>{{ item.categoryName ?? '未分類' }}</td>
