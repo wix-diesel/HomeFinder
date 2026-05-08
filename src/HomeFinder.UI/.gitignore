@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Azure Entra 認証設定（シークレット情報を含む可能性があるため除外）
+.env.development
+.env.production
+.env.*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
