@@ -9,5 +9,5 @@
 <!-- SPECKIT START -->
 ## Speckit Plan Context
 
-- 現在の計画: `/specs/010-azure-entra-login/plan.md`
+- 現在の計画: `/specs/011-api-authorization/plan.md`
 <!-- SPECKIT END -->
