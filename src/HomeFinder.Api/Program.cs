@@ -1,6 +1,7 @@
 using System.Text.Json;
 using HomeFinder.Api.Errors;
 using HomeFinder.Infrastructure.Data;
+using Microsoft.Identity.Web;
 using HomeFinder.Infrastructure.Repositories;
 using HomeFinder.Infrastructure.Services;
 using HomeFinder.Application.Repositories;
@@ -10,6 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// JWT Bearer 認証（Azure Entra アプリロール検証）を登録する
+builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
+builder.Services.AddAuthorization();
 
 builder.Services
     .AddControllers()
@@ -141,6 +146,9 @@ app.UseExceptionHandler(handler =>
 });
 
 app.UseCors("Frontend");
+// 認証・認可ミドルウェアを有効化する（UseCors の後、MapControllers の前に配置する）
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

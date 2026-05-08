@@ -1,6 +1,6 @@
 import type { ImageUploadResponse } from '../models/image';
+import { apiClient } from './apiClient';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
 
 export class ImageServiceError extends Error {
   code?: string;
@@ -19,7 +19,7 @@ export async function uploadImage(itemId: string, file: File): Promise<ImageUplo
   const formData = new FormData();
   formData.append('image', file);
 
-  const response = await fetch(`${API_BASE_URL}/api/items/${itemId}/image`, {
+  const response = await apiClient.apiFetch(`/api/items/${itemId}/image`, {
     method: 'POST',
     body: formData,
   });
@@ -39,7 +39,8 @@ export async function uploadImage(itemId: string, file: File): Promise<ImageUplo
  * 実際のダウンロードはブラウザの <img> タグに任せる
  */
 export function getImageUrl(itemId: string): string {
-  return `${API_BASE_URL}/api/items/${itemId}/image`;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
+  return `${baseUrl}/api/items/${itemId}/image`;
 }
 
 /**
@@ -48,7 +49,7 @@ export function getImageUrl(itemId: string): string {
  */
 export async function getImageByItemId(itemId: string): Promise<string | null> {
   const url = getImageUrl(itemId);
-  const response = await fetch(url, { method: 'HEAD' });
+  const response = await apiClient.apiFetch(`/api/items/${itemId}/image`, { method: 'HEAD' });
   if (!response.ok) {
     if (response.status === 404) {
       return null;
@@ -83,7 +84,7 @@ export async function getImagesByItemIds(itemIds: string[]): Promise<Record<stri
  * DELETE /api/items/{itemId}/image
  */
 export async function deleteImage(itemId: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/items/${itemId}/image`, {
+  const response = await apiClient.apiFetch(`/api/items/${itemId}/image`, {
     method: 'DELETE',
   });
 

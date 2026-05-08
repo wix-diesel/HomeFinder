@@ -5,8 +5,7 @@ import type {
   CreateCategoryRequest,
   UpdateCategoryRequest,
 } from '../models/category';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
+import { apiClient } from './apiClient';
 
 /**
  * カテゴリー API サービス
@@ -21,10 +20,8 @@ export class CategoryService {
    */
   async getCategories(includeReserved: boolean = true): Promise<Category[]> {
     try {
-      const url = new URL(`${API_BASE_URL}${this.baseUrl}`);
-      url.searchParams.append('includeReserved', String(includeReserved));
-
-      const response = await fetch(url.toString(), {
+      const path = `/api/categories?includeReserved=${String(includeReserved)}`;
+      const response = await apiClient.apiFetch(path, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +44,7 @@ export class CategoryService {
    */
   async getCategory(id: string): Promise<Category> {
     try {
-      const response = await fetch(`${API_BASE_URL}${this.baseUrl}/${id}`, {
+      const response = await apiClient.apiFetch(`${this.baseUrl}/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +67,7 @@ export class CategoryService {
    */
   async createCategory(request: CreateCategoryRequest): Promise<Category> {
     try {
-      const response = await fetch(`${API_BASE_URL}${this.baseUrl}`, {
+      const response = await apiClient.apiFetch(this.baseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +95,7 @@ export class CategoryService {
     request: UpdateCategoryRequest
   ): Promise<Category> {
     try {
-      const response = await fetch(`${API_BASE_URL}${this.baseUrl}/${id}`, {
+      const response = await apiClient.apiFetch(`${this.baseUrl}/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -123,7 +120,7 @@ export class CategoryService {
    */
   async deleteCategory(id: string): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}${this.baseUrl}/${id}`, {
+      const response = await apiClient.apiFetch(`${this.baseUrl}/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

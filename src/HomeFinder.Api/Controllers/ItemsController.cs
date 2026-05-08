@@ -2,6 +2,7 @@ using HomeFinder.Core.Errors;
 using HomeFinder.Application.Contracts;
 using HomeFinder.Application.Services;
 using HomeFinder.Api.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeFinder.Api.Controllers;
@@ -11,6 +12,7 @@ namespace HomeFinder.Api.Controllers;
 public class ItemsController(IItemService itemService) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Roles = "Items.Read")]
     [ProducesResponseType(typeof(IReadOnlyCollection<ItemDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyCollection<ItemDto>>> GetItems(CancellationToken cancellationToken)
     {
@@ -27,6 +29,7 @@ public class ItemsController(IItemService itemService) : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "Items.Read")]
     [ProducesResponseType(typeof(ItemDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ItemDto>> GetItem(Guid id, CancellationToken cancellationToken)
@@ -49,6 +52,7 @@ public class ItemsController(IItemService itemService) : ControllerBase
     }
 
     [HttpGet("{itemId}/history")]
+    [Authorize(Roles = "Items.Read")]
     [ProducesResponseType(typeof(PagedItemHistoryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
@@ -94,6 +98,7 @@ public class ItemsController(IItemService itemService) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Items.Create")]
     [ProducesResponseType(typeof(ItemDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status409Conflict)]
@@ -123,6 +128,7 @@ public class ItemsController(IItemService itemService) : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Items.Create")]
     [ProducesResponseType(typeof(ItemDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
@@ -157,6 +163,7 @@ public class ItemsController(IItemService itemService) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Items.Delete")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status403Forbidden)]

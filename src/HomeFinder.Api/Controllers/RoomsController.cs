@@ -3,12 +3,14 @@ using HomeFinder.Application.Contracts;
 using HomeFinder.Core.Entities;
 using HomeFinder.Application.Services;
 using HomeFinder.Api.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeFinder.Api.Controllers;
 
 [ApiController]
 [Route("api/rooms")]
+[Authorize(Roles = "User")]
 public class RoomsController(IRoomService roomService, ILogger<RoomsController> logger) : ControllerBase
 {
     [HttpGet]

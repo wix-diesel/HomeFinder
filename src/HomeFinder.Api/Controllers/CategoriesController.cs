@@ -4,6 +4,7 @@ using HomeFinder.Application.Contracts;
 using HomeFinder.Core.Errors;
 using HomeFinder.Application.Services;
 using HomeFinder.Api.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeFinder.Api.Controllers
@@ -13,6 +14,7 @@ namespace HomeFinder.Api.Controllers
     /// </summary>
     [ApiController]
     [Route("api/categories")]
+    [Authorize(Roles = "User")]
     [Produces("application/json")]
     public class CategoriesController : ControllerBase
     {
