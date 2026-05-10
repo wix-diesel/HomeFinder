@@ -217,7 +217,7 @@ internal sealed class TestAuthHandler(
         {
             new Claim(ClaimTypes.Name, "TestUser"),
             new Claim(ClaimTypes.NameIdentifier, "test-user-id"),
-                new Claim("preferred_username", "testuser@example.com"),
+            new Claim("preferred_username", "testuser@example.com"),
             new Claim(ClaimTypes.Role, "Items.Read"),
             new Claim(ClaimTypes.Role, "Items.Create"),
             new Claim(ClaimTypes.Role, "Items.Delete"),
