@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 import { uiText } from '../constants/uiText';
 import type { SettingsPageViewModel } from '../models/settingsPageViewModel';
 import { useUserProfileStore } from '../stores/userProfileStore';
-import { getActivePinia } from 'pinia';
 
 const router = useRouter();
 let userProfileStore: any;
