@@ -65,8 +65,8 @@
 - バージョン管理: `src/Directory.Build.props` (フレームワーク) / `src/Directory.Packages.props` (NuGet)
 
 ### スコープ
-- ログイン機能: なし
-- ユーザー認証: なし
+- ログイン機能: Azure Entra ID によるログインを前提とする
+- ユーザー認証: Azure Entra ID (OIDC/OAuth2) を使用する
 - 物品名の一意性: 在庫内で必須
 - 数量制約: 1 以上の正整数
 

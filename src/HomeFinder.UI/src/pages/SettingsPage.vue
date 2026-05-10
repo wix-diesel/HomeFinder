@@ -1,9 +1,21 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { uiText } from '../constants/uiText';
 import type { SettingsPageViewModel } from '../models/settingsPageViewModel';
+import { useUserProfileStore } from '../stores/userProfileStore';
 
 const router = useRouter();
+const userProfileStore = useUserProfileStore();
+
+const profileName = computed(() => userProfileStore.displayName || uiText.settings.profileName);
+const profileAvatarImagePath = computed(() => userProfileStore.avatarImagePath || '/images/user-avatar-default.svg');
+
+onMounted(async () => {
+  if (!userProfileStore.profile) {
+    await userProfileStore.loadProfile();
+  }
+});
 
 // 設定画面の表示モデル（FR-003/FR-004: 日本語・design/settings.html 構成準拠）
 const viewModel: SettingsPageViewModel = {
@@ -88,6 +100,10 @@ function handleCategoryNavigation() {
 function handleLocationNavigation() {
   router.push({ name: 'storage-management' });
 }
+
+function goToUserSettings() {
+  router.push({ name: 'user-settings' });
+}
 </script>
 
 <template>
@@ -110,12 +126,21 @@ function handleLocationNavigation() {
     </div>
 
     <!-- プロフィールセクション（design/settings.html Hero Profile Section 準拠） -->
-    <section class="settings-profile-card" aria-label="プロフィール">
+    <section
+      class="settings-profile-card settings-profile-card-button"
+      aria-label="プロフィール"
+      data-testid="settings-profile-card"
+      role="button"
+      tabindex="0"
+      @click="goToUserSettings"
+      @keydown.enter.prevent="goToUserSettings"
+      @keydown.space.prevent="goToUserSettings"
+    >
       <div class="settings-profile-avatar">
-        <span class="material-symbols-outlined settings-profile-icon" aria-hidden="true">account_circle</span>
+        <img :src="profileAvatarImagePath" alt="プロフィール画像" class="settings-profile-image" />
       </div>
       <div>
-        <p class="settings-profile-name">{{ uiText.settings.profileName }}</p>
+        <p class="settings-profile-name">{{ profileName }}</p>
         <p class="settings-profile-role">{{ uiText.settings.profileRole }}</p>
       </div>
     </section>
@@ -238,9 +263,21 @@ function handleLocationNavigation() {
   flex-shrink: 0;
 }
 
-.settings-profile-icon {
-  font-size: 48px;
-  color: #2563eb;
+.settings-profile-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid #cbd5e1;
+}
+
+.settings-profile-card-button {
+  cursor: pointer;
+}
+
+.settings-profile-card-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .settings-profile-name {

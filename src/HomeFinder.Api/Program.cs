@@ -36,6 +36,8 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IImageRepository, ImageRepository>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddSingleton<IBlobStorageService, AzureBlobStorageService>();
 builder.Services.AddSingleton<IImageProcessor, ImageSharpImageProcessor>();
 
@@ -146,6 +148,7 @@ app.UseExceptionHandler(handler =>
 });
 
 app.UseCors("Frontend");
+app.UseStaticFiles();
 // 認証・認可ミドルウェアを有効化する（UseCors の後、MapControllers の前に配置する）
 app.UseAuthentication();
 app.UseAuthorization();

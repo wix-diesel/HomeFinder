@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">デフォルトユーザーアイコン</title>
+  <desc id="desc">グレーの人型シルエット</desc>
+  <rect width="240" height="240" rx="120" fill="#E2E8F0" />
+  <circle cx="120" cy="94" r="40" fill="#94A3B8" />
+  <path d="M48 214c0-39.8 32.2-72 72-72s72 32.2 72 72" fill="#94A3B8" />
+</svg>

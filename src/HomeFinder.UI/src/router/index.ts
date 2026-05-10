@@ -3,6 +3,7 @@ import ItemListPage from '../pages/ItemListPage.vue';
 import ItemDetailPage from '../pages/ItemDetailPage.vue';
 import ItemCreatePage from '../pages/ItemCreatePage.vue';
 import SettingsPage from '../pages/SettingsPage.vue';
+import UserSettingsPage from '../pages/UserSettingsPage.vue';
 import StorageManagementPage from '../pages/StorageManagement.vue';
 import LoginPage from '../pages/LoginPage.vue';
 
@@ -48,6 +49,12 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: SettingsPage,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/user-settings',
+      name: 'user-settings',
+      component: UserSettingsPage,
       meta: { requiresAuth: true },
     },
     {
