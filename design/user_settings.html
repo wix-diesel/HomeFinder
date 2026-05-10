@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Profile Settings - Inventory Precision</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#d3e4fe",
+                        "surface": "#f7f9fb",
+                        "secondary-container": "#d0e1fb",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-variant": "#e0e3e5",
+                        "on-surface-variant": "#434655",
+                        "surface-container": "#eceef0",
+                        "on-primary-fixed": "#00174b",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#505f76",
+                        "on-tertiary-container": "#ffede6",
+                        "tertiary-container": "#bc4800",
+                        "surface-container-high": "#e6e8ea",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "background": "#f7f9fb",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary": "#943700",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-tint": "#0053db",
+                        "inverse-primary": "#b4c5ff",
+                        "on-tertiary-fixed": "#360f00",
+                        "on-surface": "#191c1e",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c3c6d7",
+                        "surface-container-low": "#f2f4f6",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-secondary-container": "#54647a",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-dim": "#d8dadc",
+                        "on-background": "#191c1e",
+                        "primary": "#004ac6",
+                        "primary-container": "#2563eb",
+                        "outline": "#737686",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "base": "4px",
+                        "md": "16px",
+                        "container-max": "1280px",
+                        "sm": "8px",
+                        "xl": "40px",
+                        "lg": "24px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "code-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Manrope"],
+                        "headline-sm": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "code-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["18px", { "lineHeight": "26px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            background-color: #F8FAFC;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-surface font-body-md antialiased">
+    <!-- TopAppBar Component -->
+    <header
+        class="bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-on-surface-variant docked full-width top-0 sticky z-40">
+        <div class="flex justify-between items-center w-full px-md h-16 max-w-container-max mx-auto">
+            <div class="flex items-center gap-md">
+                <button
+                    class="active:scale-95 transition-transform duration-150 p-xs hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim"
+                        data-icon="arrow_back">arrow_back</span>
+                </button>
+                <h1 class="font-headline-sm text-headline-sm font-semibold text-primary dark:text-primary-fixed">Profile
+                    Settings</h1>
+            </div>
+            <button
+                class="active:scale-95 transition-transform duration-150 p-xs hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-on-surface-variant dark:text-on-surface-variant"
+                    data-icon="settings">settings</span>
+            </button>
+        </div>
+    </header>
+    <main class="max-w-[800px] mx-auto px-md py-xl min-h-[calc(100vh-144px)]">
+        <!-- User Profile Photo Section -->
+        <section class="flex flex-col items-center mb-xl">
+            <div class="relative group">
+                <div
+                    class="w-32 h-32 rounded-full overflow-hidden border-2 border-outline-variant bg-surface-container-high">
+                    <img alt="Alex Rivera" class="w-full h-full object-cover"
+                        data-alt="A professional headshot of a middle-aged male inventory manager with a friendly expression. He is wearing a clean, modern navy blue polo shirt. The background is a soft-focus, bright warehouse with high-key natural lighting and cool blue tones. The overall aesthetic is professional, sharp, and corporate, aligning with a light-mode high-efficiency UI design."
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfsZjyG1oc-ODCvNQO1Cmvv8uyQvmRc6uYMOHrcCpQoX8RZ2sdaN8-7NCwgWvtHhYVB1_c30CyWpPJElGT3JdKCk84xT1NPCCNtgRdm4K9rkO1W2lnd8YgvQfeYrU-jB7cj5q6KK9cgUYQgGTk--Sr6XSxqNJmqh7aIHR0KJt0jV6YwQYUQJRX6dpspcifAbhWM8ocXpUXJGdj5ULSw8seoZvvacQELMyPSYNe8K5-U083X1M5kJD9mt4Jsi9g_hN5EMI6ur16Nqc" />
+                </div>
+                <button
+                    class="absolute bottom-0 right-0 bg-primary text-on-primary p-2 rounded-full shadow-lg active:scale-90 transition-transform duration-200 flex items-center justify-center border-2 border-surface">
+                    <span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+                </button>
+            </div>
+            <div class="mt-md text-center">
+                <h2 class="font-headline-md text-headline-md text-on-surface">Alex Rivera</h2>
+                <p class="font-body-md text-on-surface-variant uppercase tracking-wider text-[11px] font-bold">Inventory
+                    Manager</p>
+            </div>
+        </section>
+        <!-- Bento Grid Styled Form Sections -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+            <!-- Information Form -->
+            <div class="md:col-span-8 bg-surface-container-lowest border border-outline-variant p-lg rounded-xl">
+                <h3 class="font-headline-sm text-headline-sm mb-lg text-primary">Account Details</h3>
+                <div class="space-y-lg">
+                    <!-- Name Input -->
+                    <div class="flex flex-col gap-xs">
+                        <label class="font-label-md text-label-md text-on-surface-variant" for="user-name">FULL
+                            NAME</label>
+                        <input
+                            class="w-full h-11 px-md border border-outline rounded-lg bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:border-primary transition-all font-body-lg text-body-lg outline-none"
+                            id="user-name" type="text" value="Alex Rivera" />
+                    </div>
+                    <!-- Email Input (Read-only) -->
+                    <div class="flex flex-col gap-xs">
+                        <div class="flex justify-between items-center">
+                            <label class="font-label-md text-label-md text-on-surface-variant" for="user-email">EMAIL
+                                ADDRESS</label>
+                            <div
+                                class="flex items-center gap-xs text-secondary-fixed-dim bg-secondary/10 px-2 py-0.5 rounded">
+                                <span class="material-symbols-outlined text-[14px]" data-icon="lock"
+                                    style="font-variation-settings: 'FILL' 1;">lock</span>
+                                <span class="text-[10px] font-bold">MANAGED BY IT</span>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <input
+                                class="w-full h-11 px-md border border-outline-variant rounded-lg bg-surface-container-low text-on-surface-variant font-body-lg text-body-lg cursor-not-allowed"
+                                disabled="" id="user-email" type="email" value="alex.rivera@example.com" />
+                            <div class="mt-sm flex items-start gap-sm">
+                                <span class="material-symbols-outlined text-secondary text-[18px]"
+                                    data-icon="info">info</span>
+                                <p class="text-body-md text-on-secondary-container text-xs">This email is synced with
+                                    your Microsoft Enterprise account and cannot be modified here.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-xl flex justify-end">
+                    <button
+                        class="h-11 px-lg bg-primary text-on-primary font-headline-sm text-body-md rounded-lg hover:bg-primary-container active:scale-95 transition-all shadow-sm">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- BottomNavBar Component -->
+    <nav
+        class="bg-surface dark:bg-surface-dim border-t border-outline-variant dark:border-on-surface-variant fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-sm pb-safe">
+        <a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 duration-200"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+            <span class="font-label-md text-label-md">Dashboard</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 duration-200"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+            <span class="font-label-md text-label-md">Inventory</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-90 duration-200"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="qr_code_scanner">qr_code_scanner</span>
+            <span class="font-label-md text-label-md">Scan</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim font-bold bg-secondary-container/50 dark:bg-secondary-container/20 rounded-full px-4 py-1 active:scale-90 transition-transform duration-200"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="person"
+                style="font-variation-settings: 'FILL' 1;">person</span>
+            <span class="font-label-md text-label-md">Profile</span>
+        </a>
+    </nav>
+</body>
+
+</html>
