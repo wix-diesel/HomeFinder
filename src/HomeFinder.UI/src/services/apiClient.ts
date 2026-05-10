@@ -26,6 +26,11 @@ async function apiFetch(path: string, init: RequestInit = {}): Promise<Response>
 
   const headers = new Headers(init.headers);
   headers.set('Authorization', `Bearer ${token}`);
+  
+  // FormData は自動的に Content-Type: multipart/form-data が設定されるため、明示的な Content-Type 設定を削除
+  if (init.body instanceof FormData) {
+    headers.delete('Content-Type');
+  }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
@@ -45,6 +50,12 @@ async function apiFetch(path: string, init: RequestInit = {}): Promise<Response>
       const newToken = await msalService.acquireTokenForApi();
       const retryHeaders = new Headers(init.headers);
       retryHeaders.set('Authorization', `Bearer ${newToken}`);
+      
+      // FormData は自動的に Content-Type: multipart/form-data が設定されるため、明示的な Content-Type 設定を削除
+      if (init.body instanceof FormData) {
+        retryHeaders.delete('Content-Type');
+      }
+      
       return await fetch(`${API_BASE_URL}${path}`, {
         ...init,
         headers: retryHeaders,

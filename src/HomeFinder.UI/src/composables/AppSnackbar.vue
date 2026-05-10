@@ -1,8 +1,23 @@
 <script setup lang="ts">
+import { reactive } from 'vue';
+import { getActivePinia } from 'pinia';
 import { useSnackbarStore } from '../stores/snackbarStore';
 
-// グローバルスナックバーストアと接続する（apiClient.ts 等からもトーストを呼び出せるようにする）
-const snackbar = useSnackbarStore();
+// Pinia が登録されていないテスト環境でもコンポーネントを安全にマウントできるよう、
+// getActivePinia() によるガードを追加します。
+let snackbar: any;
+if (getActivePinia()) {
+  snackbar = useSnackbarStore();
+} else {
+  // テストや軽量なマウント用のダミー実装
+  snackbar = reactive({
+    isVisible: false,
+    isError: false,
+    message: '',
+    show: (_: string, __: boolean) => {},
+    hide: () => {},
+  });
+}
 </script>
 
 <template>

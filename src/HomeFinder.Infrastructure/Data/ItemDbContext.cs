@@ -32,6 +32,11 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
     /// </summary>
     public DbSet<ItemHistory> ItemHistories => Set<ItemHistory>();
 
+    /// <summary>
+    /// ユーザープロフィール DbSet
+    /// </summary>
+    public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Item エンティティ設定
@@ -215,6 +220,28 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
 
             // 論理削除済みアイテムに紐づく履歴は通常クエリから除外する
             entity.HasQueryFilter(x => x.Item != null && x.Item.DeletedAtUtc == null);
+        });
+
+        // UserProfile エンティティ設定
+        modelBuilder.Entity<UserProfile>(entity =>
+        {
+            entity.ToTable("UserProfiles", table =>
+            {
+                table.HasCheckConstraint("CK_UserProfiles_DisplayName_Length", "LEN([DisplayName]) BETWEEN 1 AND 30");
+            });
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id).IsRequired();
+            entity.Property(x => x.EntraObjectId).IsRequired().HasMaxLength(100);
+            entity.Property(x => x.Email).IsRequired().HasMaxLength(320);
+            entity.Property(x => x.DisplayName).IsRequired().HasMaxLength(30);
+            entity.Property(x => x.AvatarImagePath).IsRequired().HasMaxLength(512);
+            entity.Property(x => x.CreatedAtUtc).IsRequired()
+                .HasConversion(v => v.ToUniversalTime(), v => new DateTime(v.Ticks, DateTimeKind.Utc));
+            entity.Property(x => x.UpdatedAtUtc).IsRequired()
+                .HasConversion(v => v.ToUniversalTime(), v => new DateTime(v.Ticks, DateTimeKind.Utc));
+
+            entity.HasIndex(x => x.EntraObjectId).IsUnique();
         });
     }
 }

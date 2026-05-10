@@ -19,8 +19,20 @@
         >
           <span class="material-symbols-outlined">logout</span>
         </button>
-        <button type="button" class="avatar-btn" aria-label="プロフィール">
-          <span class="material-symbols-outlined">person</span>
+        <button
+          type="button"
+          class="avatar-btn"
+          data-testid="header-avatar-button"
+          aria-label="プロフィール"
+          @click="goToUserSettings"
+        >
+          <img
+            :src="avatarImagePath"
+            alt="プロフィール画像"
+            class="avatar-image"
+            data-testid="header-avatar-image"
+          />
+          <span class="avatar-name">{{ displayName }}</span>
         </button>
       </div>
     </header>
@@ -28,6 +40,8 @@
     <main class="app-main">
       <RouterView />
     </main>
+
+      <AppSnackbar />
 
     <nav class="bottom-nav" aria-label="メインナビゲーション">
       <RouterLink to="/items" class="nav-link">
@@ -47,11 +61,24 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { uiText } from '../constants/uiText';
 import SettingsNavigationButton from '../components/common/SettingsNavigationButton.vue';
 import { useAuth } from '../composables/useAuth';
+import { useUserProfileStore } from '../stores/userProfileStore';
+import AppSnackbar from '../composables/AppSnackbar.vue';
 
 const auth = useAuth();
+const router = useRouter();
+const userProfileStore = useUserProfileStore();
+
+const displayName = computed(() => userProfileStore.displayName || 'プロフィール');
+const avatarImagePath = computed(() => userProfileStore.avatarImagePath || '/images/user-avatar-default.svg');
+
+function goToUserSettings() {
+  router.push({ name: 'user-settings' });
+}
 </script>
 
 <style scoped>
@@ -106,15 +133,34 @@ const auth = useAuth();
 
 .icon-btn,
 .avatar-btn {
-  width: 30px;
-  height: 30px;
+  height: 32px;
   border: 1px solid #cbd5e1;
   border-radius: 999px;
   background: #fff;
   color: #475569;
-  display: grid;
-  place-items: center;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 0 0;
+}
+
+.avatar-btn {
+  cursor: pointer;
+}
+
+.avatar-image {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.avatar-name {
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
 }
 
 .icon-btn .material-symbols-outlined,
