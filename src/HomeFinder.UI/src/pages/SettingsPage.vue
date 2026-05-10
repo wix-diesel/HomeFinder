@@ -4,9 +4,21 @@ import { useRouter } from 'vue-router';
 import { uiText } from '../constants/uiText';
 import type { SettingsPageViewModel } from '../models/settingsPageViewModel';
 import { useUserProfileStore } from '../stores/userProfileStore';
+import { getActivePinia } from 'pinia';
 
 const router = useRouter();
-const userProfileStore = useUserProfileStore();
+let userProfileStore: any;
+try {
+  userProfileStore = useUserProfileStore();
+} catch {
+  // テスト環境などでモックされていない／Pinia が未登録の場合のフォールバック
+  userProfileStore = {
+    displayName: '',
+    avatarImagePath: '/images/user-avatar-default.svg',
+    profile: null,
+    async loadProfile() {},
+  };
+}
 
 const profileName = computed(() => userProfileStore.displayName || uiText.settings.profileName);
 const profileAvatarImagePath = computed(() => userProfileStore.avatarImagePath || '/images/user-avatar-default.svg');

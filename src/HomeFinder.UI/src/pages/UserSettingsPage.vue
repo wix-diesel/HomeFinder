@@ -73,8 +73,11 @@ async function save() {
     return;
   }
 
-  // 保存処理はストア側でトーストを表示する
-  await userProfileStore.saveProfile(displayNameInput.value.trim());
+  // 保存処理を呼び出し、成功ならトーストを表示する
+  const result = await userProfileStore.saveProfile(displayNameInput.value.trim());
+  if (result) {
+    snackbar.show('プロフィールを保存しました。', false);
+  }
 }
 </script>
 
