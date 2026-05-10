@@ -92,7 +92,7 @@ public class UserProfileService(IUserProfileRepository userProfileRepository) : 
             }
 
             profile.DisplayName = request.DisplayName.Trim();
-            profile.AvatarImagePath = request.AvatarImagePath.Trim();
+            // AvatarImagePath は POST /api/users/me/profile/avatar で管理するため、ここでは更新しない
             profile.UpdatedAtUtc = DateTime.UtcNow;
 
             var updated = await userProfileRepository.UpdateAsync(profile, cancellationToken);
@@ -114,23 +114,7 @@ public class UserProfileService(IUserProfileRepository userProfileRepository) : 
             details["displayName"] = "表示名は1〜30文字で入力してください。";
         }
 
-        var avatarImagePath = request.AvatarImagePath?.Trim() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(avatarImagePath))
-        {
-            details["avatarImagePath"] = "アイコン画像は必須です。";
-        }
-        else if (avatarImagePath.Length > 512)
-        {
-            details["avatarImagePath"] = "アイコン画像パスが長すぎます。";
-        }
-        else
-        {
-            var extension = Path.GetExtension(avatarImagePath);
-            if (!AllowedAvatarExtensions.Contains(extension))
-            {
-                details["avatarImagePath"] = "アイコン画像形式が不正です。";
-            }
-        }
+        // AvatarImagePath は POST /api/users/me/profile/avatar で管理するため、ここでは検証しない
 
         return details;
     }

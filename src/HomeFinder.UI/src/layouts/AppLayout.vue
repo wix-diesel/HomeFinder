@@ -41,6 +41,8 @@
       <RouterView />
     </main>
 
+      <AppSnackbar />
+
     <nav class="bottom-nav" aria-label="メインナビゲーション">
       <RouterLink to="/items" class="nav-link">
         <span class="material-symbols-outlined nav-icon" aria-hidden="true">list_alt</span>
@@ -65,6 +67,7 @@ import { uiText } from '../constants/uiText';
 import SettingsNavigationButton from '../components/common/SettingsNavigationButton.vue';
 import { useAuth } from '../composables/useAuth';
 import { useUserProfileStore } from '../stores/userProfileStore';
+import AppSnackbar from '../composables/AppSnackbar.vue';
 
 const auth = useAuth();
 const router = useRouter();

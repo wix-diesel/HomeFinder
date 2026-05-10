@@ -1,5 +1,25 @@
 import { apiClient } from './apiClient';
 
+
+/**
+ * バックエンドから返ってきた相対パスを API エンドポイントに変換
+ * デフォルトアイコンパスはそのまま（フロントエンドの public フォルダ）
+ * ユーザーアップロード画像は GET /api/users/me/profile/avatar エンドポイントを使用
+ */
+function normalizeAvatarPath(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  if (path.startsWith('/images/user-avatar-default.svg')) {
+    return path; // フロントエンドのデフォルトアイコン
+  }
+  if (path.startsWith('/images/users/')) {
+    // バックエンドで保存されたユーザーアイコンは API エンドポイント経由でアクセス
+    return '/api/users/me/profile/avatar';
+  }
+  return path;
+}
+
 export interface UserProfile {
   entraObjectId: string;
   email: string;
@@ -9,17 +29,21 @@ export interface UserProfile {
 
 export interface UpdateUserProfilePayload {
   displayName: string;
-  avatarImagePath: string;
 }
 
 export class UserProfileServiceError extends Error
 {
+  readonly code: string;
+  readonly details: Record<string, string>;
+
   constructor(
     message: string,
-    public readonly code: string = 'UNKNOWN_ERROR',
-    public readonly details: Record<string, string> = {},
+    code: string = 'UNKNOWN_ERROR',
+    details: Record<string, string> = {},
   ) {
     super(message);
+    this.code = code;
+    this.details = details;
   }
 }
 
@@ -56,10 +80,15 @@ export async function getMyProfile(): Promise<UserProfile> {
     throw await parseError(response);
   }
 
-  return await response.json() as UserProfile;
+  const profile = await response.json() as { entraObjectId: string; email: string; displayName: string };
+  return {
+    ...profile,
+    // バックエンドは avatarImagePath を返さないため、フロント側で常に API の avatar エンドポイントを参照する
+    avatarImagePath: normalizeAvatarPath('/api/users/me/profile/avatar'),
+  };
 }
 
-export async function uploadMyAvatar(file: File): Promise<{ avatarImagePath: string }> {
+export async function uploadMyAvatar(file: File): Promise<void> {
   const formData = new FormData();
   formData.append('file', file);
 
@@ -71,8 +100,7 @@ export async function uploadMyAvatar(file: File): Promise<{ avatarImagePath: str
   if (!response.ok) {
     throw await parseError(response);
   }
-
-  return await response.json() as { avatarImagePath: string };
+  // 成功時は何も返さない（204 No Content）
 }
 
 export async function updateMyProfile(payload: UpdateUserProfilePayload): Promise<UserProfile> {
@@ -88,5 +116,9 @@ export async function updateMyProfile(payload: UpdateUserProfilePayload): Promis
     throw await parseError(response);
   }
 
-  return await response.json() as UserProfile;
+  const profile = await response.json() as { entraObjectId: string; email: string; displayName: string };
+  return {
+    ...profile,
+    avatarImagePath: normalizeAvatarPath('/api/users/me/profile/avatar'),
+  };
 }

@@ -63,7 +63,7 @@ describe('UserSettingsPage', () => {
     await wrapper.get('form').trigger('submit');
     await flushPromises();
 
-    expect(saveProfileMock).toHaveBeenCalledWith('更新後の表示名', '/images/user-avatar-default.svg');
+    expect(saveProfileMock).toHaveBeenCalledWith('更新後の表示名');
     expect(snackbarShowMock).toHaveBeenCalledWith('プロフィールを保存しました。', false);
   });
 });

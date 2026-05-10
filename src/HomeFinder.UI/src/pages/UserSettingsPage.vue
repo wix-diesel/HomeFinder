@@ -9,7 +9,7 @@ const snackbar = useSnackbarStore();
 const userProfileStore = useUserProfileStore();
 
 const displayNameInput = ref('');
-const avatarPreviewPath = ref('/images/user-avatar-default.svg');
+const avatarPreviewPath = computed(() => userProfileStore.avatarImagePath);
 const localValidationErrors = ref<Record<string, string>>({});
 
 const email = computed(() => userProfileStore.email);
@@ -22,7 +22,6 @@ const combinedErrors = computed(() => ({
 onMounted(async () => {
   await userProfileStore.loadProfile();
   displayNameInput.value = userProfileStore.displayName;
-  avatarPreviewPath.value = userProfileStore.avatarImagePath;
 });
 
 function goBack() {
@@ -58,8 +57,8 @@ async function handleAvatarSelected(event: Event) {
   }
 
   try {
-    const path = await userProfileStore.uploadAvatar(file);
-    avatarPreviewPath.value = path;
+    await userProfileStore.uploadAvatar(file);
+    // avatarPreviewPath は store の profile から自動的に更新される
     snackbar.show('アイコン画像をアップロードしました。', false);
   } catch {
     snackbar.show('アイコン画像のアップロードに失敗しました。', true);
@@ -74,13 +73,8 @@ async function save() {
     return;
   }
 
-  const saved = await userProfileStore.saveProfile(displayNameInput.value.trim(), avatarPreviewPath.value);
-  if (saved) {
-    snackbar.show('プロフィールを保存しました。', false);
-    return;
-  }
-
-  snackbar.show(userProfileStore.errorMessage || 'プロフィールの保存に失敗しました。', true);
+  // 保存処理はストア側でトーストを表示する
+  await userProfileStore.saveProfile(displayNameInput.value.trim());
 }
 </script>
 

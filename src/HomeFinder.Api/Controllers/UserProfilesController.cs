@@ -25,9 +25,9 @@ public class UserProfilesController(
     ];
 
     [HttpGet]
-    [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<UserProfileDto>> GetMyProfile(CancellationToken cancellationToken)
+    public async Task<ActionResult<object>> GetMyProfile(CancellationToken cancellationToken)
     {
         if (!TryGetCurrentUser(out var oid, out var email))
         {
@@ -37,7 +37,13 @@ public class UserProfilesController(
         var result = await userProfileService.GetOrCreateProfileAsync(oid, email, cancellationToken);
         if (result.IsSuccessful)
         {
-            return Ok(result.Value);
+            var v = result.Value;
+            return Ok(new
+            {
+                entraObjectId = v.EntraObjectId,
+                email = v.Email,
+                displayName = v.DisplayName,
+            });
         }
 
         return StatusCode(StatusCodes.Status500InternalServerError, new ApiError(
@@ -47,11 +53,11 @@ public class UserProfilesController(
 
     [HttpPost("avatar")]
     [Consumes("multipart/form-data")]
-    [ProducesResponseType(typeof(AvatarUploadResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [RequestSizeLimit(MaxAvatarSizeBytes + 4096)]
-    public async Task<ActionResult<AvatarUploadResponse>> UploadAvatar(IFormFile file, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadAvatar(IFormFile file, CancellationToken cancellationToken)
     {
         if (!TryGetCurrentUser(out var oid, out var email))
         {
@@ -86,6 +92,20 @@ public class UserProfilesController(
         var folderPath = Path.Combine(webRoot, "images", "users", oid);
         Directory.CreateDirectory(folderPath);
 
+        // 古いアバターを削除（既に存在する場合）
+        try
+        {
+            var oldFiles = Directory.GetFiles(folderPath, "avatar-*");
+            foreach (var oldFile in oldFiles)
+            {
+                System.IO.File.Delete(oldFile);
+            }
+        }
+        catch
+        {
+            // 削除失敗は無視（新しいファイルは上書きされる）
+        }
+
         var fileName = $"avatar-{Guid.NewGuid():N}{extension.ToLowerInvariant()}";
         var savePath = Path.Combine(folderPath, fileName);
 
@@ -94,17 +114,65 @@ public class UserProfilesController(
             await file.CopyToAsync(stream, cancellationToken);
         }
 
-        var avatarImagePath = $"/images/users/{oid}/{fileName}";
+        return NoContent();
+    }
 
-        return Ok(new AvatarUploadResponse(avatarImagePath));
+    [HttpGet("avatar")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Produces("image/png", "image/jpeg", "image/svg+xml")]
+    public async Task<IActionResult> GetAvatar(CancellationToken cancellationToken)
+    {
+        if (!TryGetCurrentUser(out var oid, out var _))
+        {
+            return Unauthorized(new ApiError("UNAUTHORIZED", "認証情報を確認できませんでした。"));
+        }
+
+        var webRoot = string.IsNullOrWhiteSpace(environment.WebRootPath)
+            ? Path.Combine(environment.ContentRootPath, "wwwroot")
+            : environment.WebRootPath;
+
+        var folderPath = Path.Combine(webRoot, "images", "users", oid);
+
+        // デフォルトアバターのファイルパス
+        var defaultPath = Path.Combine(webRoot, "images", "user-avatar-default.svg");
+
+        if (!Directory.Exists(folderPath))
+        {
+            if (System.IO.File.Exists(defaultPath))
+            {
+                return PhysicalFile(defaultPath, "image/svg+xml");
+            }
+            return NotFound();
+        }
+
+        var latest = Directory.GetFiles(folderPath, "avatar-*")
+            .OrderByDescending(f => new FileInfo(f).LastWriteTimeUtc)
+            .FirstOrDefault();
+
+        if (string.IsNullOrEmpty(latest))
+        {
+            if (System.IO.File.Exists(defaultPath))
+            {
+                return PhysicalFile(defaultPath, "image/svg+xml");
+            }
+            return NotFound();
+        }
+
+        var contentType = latest.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png"
+            : latest.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || latest.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg"
+            : latest.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) ? "image/svg+xml"
+            : "application/octet-stream";
+
+        return PhysicalFile(latest, contentType);
     }
 
     [HttpPut]
-    [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<UserProfileDto>> UpdateMyProfile([FromBody] UpdateUserProfileRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<object>> UpdateMyProfile([FromBody] UpdateUserProfileRequest request, CancellationToken cancellationToken)
     {
         if (!TryGetCurrentUser(out var oid, out var email))
         {
@@ -121,7 +189,13 @@ public class UserProfilesController(
         var result = await userProfileService.UpdateProfileAsync(oid, email, request, cancellationToken);
         if (result.IsSuccessful)
         {
-            return Ok(result.Value);
+            var v = result.Value;
+            return Ok(new
+            {
+                entraObjectId = v.EntraObjectId,
+                email = v.Email,
+                displayName = v.DisplayName,
+            });
         }
 
         if (result.Error is UserProfileValidationException validationEx)
@@ -165,5 +239,3 @@ public class UserProfilesController(
         return !string.IsNullOrWhiteSpace(oid) && !string.IsNullOrWhiteSpace(email);
     }
 }
-
-public record AvatarUploadResponse(string AvatarImagePath);

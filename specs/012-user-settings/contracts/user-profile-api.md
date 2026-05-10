@@ -1,3 +1,16 @@
+### 変更履歴（重要）
+
+- `POST /api/users/me/profile/avatar` は 2026-05-10 に設計変更され、アップロード後は画像の保存のみ行い `204 No Content` を返すようになりました。バックエンドは画像の保存先パスをクライアントに渡しません。
+- クライアントは画像表示・プレビューのために常に `GET /api/users/me/profile/avatar` を使用して最新の画像データ（バイナリ）を取得します。フロントエンドでファイルパスを保持・操作しないでください。
+- `PUT /api/users/me/profile` のリクエストボディは `displayName` のみを含むものとします（`avatarImagePath` は送らないでください）。
+
+---
+
+フロントエンドの振る舞い:
+
+- 画像を変更する場合は、まず `POST /api/users/me/profile/avatar` に `multipart/form-data` でファイルを送信する（レスポンスボディは期待しない、`204 No Content`）。
+- 画像表示・プレビューは常に `GET /api/users/me/profile/avatar` を `fetch` / `apiClient` 経由で取得し、レスポンスのバイナリを `Blob` として扱ってください（例: `URL.createObjectURL(blob)`）。
+- プロフィールの保存は `PUT /api/users/me/profile` に `{"displayName":"..."}` を送るだけです。
 # API契約: ユーザープロフィール
 
 **フィーチャー**: `012-user-settings` | **日付**: 2026-05-10  
@@ -40,7 +53,7 @@
 
 ### `POST /api/users/me/profile/avatar`
 
-プロフィール画像アップロード。`multipart/form-data` で画像ファイルを受け取り、保存後の `avatarImagePath` を返却する。
+プロフィール画像アップロード。`multipart/form-data` で画像ファイルを受け取り、サーバー側で保存します。
 
 #### Request
 
@@ -50,13 +63,9 @@
 - 対応形式: `image/png`, `image/jpeg`
 - サイズ上限: 2MB
 
-#### Response `200 OK`
+#### Response `204 No Content`
 
-```json
-{
-  "avatarImagePath": "/images/users/8b7a.../avatar.jpg"
-}
-```
+- 成功時はボディを返しません。クライアントは保存先パスを受け取りません。
 
 #### Error
 
