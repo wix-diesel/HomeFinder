@@ -1,5 +1,6 @@
 using DotNext;
 using HomeFinder.Application.Contracts;
+using HomeFinder.Application.Helper;
 using HomeFinder.Application.Repositories;
 using HomeFinder.Core.Entities;
 using HomeFinder.Core.Errors;
@@ -97,19 +98,7 @@ public class ImageService(
             }
 
             // --- 画像リサイズ（必要な場合）---
-            imageStream.Position = 0;
-            Stream uploadStream;
-            int finalWidth = width, finalHeight = height;
-            if (width > MaxResolution || height > MaxResolution)
-            {
-                uploadStream = await imageProcessor.ResizeAsync(imageStream, MaxResolution, MaxResolution, cancellationToken);
-                (finalWidth, finalHeight) = await imageProcessor.GetDimensionsAsync(uploadStream, cancellationToken);
-                uploadStream.Position = 0;
-            }
-            else
-            {
-                uploadStream = imageStream;
-            }
+            var (uploadStream, finalWidth, finalHeight) = await ImageHelper.ResizeImageAsync(imageStream, imageProcessor, width, height, MaxResolution, cancellationToken);    
 
             // --- 既存画像を論理削除 ---
             if (item.ImageId.HasValue)
@@ -136,9 +125,10 @@ public class ImageService(
             // --- Blob アップロード ---
             var contentType = $"image/{fileFormat}";
             var blobName = $"{Guid.NewGuid()}{extension.ToLowerInvariant()}";
-            var blobUri = await ExecuteBlobWithRetryAsync(
+            var blobUri = await Helper.AzureBlobHelper.ExecuteBlobWithRetryAsync(
                 ct => blobStorageService.UploadAsync(blobName, uploadStream, contentType, ct),
                 "Upload",
+                BlobRetryCount,
                 cancellationToken);
 
             // --- Image エンティティ保存 ---
@@ -200,9 +190,10 @@ public class ImageService(
             }
 
             var blobName = Path.GetFileName(image.BlobUri);
-            var (content, contentType) = await ExecuteBlobWithRetryAsync(
+            var (content, contentType) = await Helper.AzureBlobHelper.ExecuteBlobWithRetryAsync(
                 ct => blobStorageService.DownloadAsync(blobName, ct),
                 "Download",
+                BlobRetryCount,
                 cancellationToken);
 
             logger.LogInformation("画像取得完了: ItemId={ItemId}, ImageId={ImageId}", itemId, image.Id);
@@ -280,37 +271,6 @@ public class ImageService(
     }
 
     /// <summary>
-    /// Blob 操作を指数バックオフなしで簡易リトライする。
-    /// </summary>
-    private async Task<T> ExecuteBlobWithRetryAsync<T>(
-        Func<CancellationToken, Task<T>> action,
-        string operation,
-        CancellationToken cancellationToken)
-    {
-        Exception? lastException = null;
-        for (var attempt = 1; attempt <= BlobRetryCount; attempt++)
-        {
-            try
-            {
-                return await action(cancellationToken);
-            }
-            catch (Exception ex) when (attempt < BlobRetryCount)
-            {
-                lastException = ex;
-                logger.LogWarning(ex, "Blob {Operation} 再試行: attempt={Attempt}", operation, attempt);
-                await Task.Delay(20 * attempt, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                lastException = ex;
-                break;
-            }
-        }
-
-        throw lastException ?? new InvalidOperationException($"Blob {operation} failed.");
-    }
-
-    /// <summary>
     /// 戻り値なし Blob 操作のためのオーバーロード。
     /// </summary>
     private async Task ExecuteBlobWithRetryAsync(
@@ -318,10 +278,10 @@ public class ImageService(
         string operation,
         CancellationToken cancellationToken)
     {
-        await ExecuteBlobWithRetryAsync(async ct =>
+        await Helper.AzureBlobHelper.ExecuteBlobWithRetryAsync(async ct =>
         {
             await action(ct);
             return true;
-        }, operation, cancellationToken);
+        }, operation, BlobRetryCount, cancellationToken);
     }
 }

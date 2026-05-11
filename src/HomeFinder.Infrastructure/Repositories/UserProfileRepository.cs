@@ -13,6 +13,11 @@ public class UserProfileRepository(ItemDbContext dbContext) : IUserProfileReposi
             .FirstOrDefaultAsync(x => x.EntraObjectId == entraObjectId, cancellationToken);
     }
 
+    public async Task<UserProfile?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.UserProfiles.FindAsync([userId], cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<UserProfile> AddAsync(UserProfile profile, CancellationToken cancellationToken = default)
     {
         dbContext.UserProfiles.Add(profile);
@@ -26,4 +31,5 @@ public class UserProfileRepository(ItemDbContext dbContext) : IUserProfileReposi
         await dbContext.SaveChangesAsync(cancellationToken);
         return profile;
     }
+
 }

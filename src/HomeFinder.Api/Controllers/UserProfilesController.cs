@@ -15,6 +15,7 @@ namespace HomeFinder.Api.Controllers;
 [Produces("application/json")]
 public class UserProfilesController(
     IUserProfileService userProfileService,
+    IAvatarService avatarService,
     IWebHostEnvironment environment) : ControllerBase
 {
     private const long MaxAvatarSizeBytes = 2 * 1024 * 1024;
@@ -69,52 +70,11 @@ public class UserProfilesController(
             return BadRequest(new ApiError("INVALID_IMAGE_FORMAT", "画像ファイルを指定してください。"));
         }
 
-        if (!AllowedContentTypes.Contains(file.ContentType))
-        {
-            return BadRequest(new ApiError("INVALID_IMAGE_FORMAT", "PNG または JPG を指定してください。"));
-        }
-
-        if (file.Length > MaxAvatarSizeBytes)
-        {
-            return BadRequest(new ApiError("IMAGE_TOO_LARGE", "画像サイズは2MB以下にしてください。"));
-        }
-
-        var extension = Path.GetExtension(file.FileName);
-        if (string.IsNullOrWhiteSpace(extension))
-        {
-            extension = file.ContentType == "image/png" ? ".png" : ".jpg";
-        }
-
-        var webRoot = string.IsNullOrWhiteSpace(environment.WebRootPath)
-            ? Path.Combine(environment.ContentRootPath, "wwwroot")
-            : environment.WebRootPath;
-
-        var folderPath = Path.Combine(webRoot, "images", "users", oid);
-        Directory.CreateDirectory(folderPath);
-
-        // 古いアバターを削除（既に存在する場合）
-        try
-        {
-            var oldFiles = Directory.GetFiles(folderPath, "avatar-*");
-            foreach (var oldFile in oldFiles)
-            {
-                System.IO.File.Delete(oldFile);
-            }
-        }
-        catch
-        {
-            // 削除失敗は無視（新しいファイルは上書きされる）
-        }
-
-        var fileName = $"avatar-{Guid.NewGuid():N}{extension.ToLowerInvariant()}";
-        var savePath = Path.Combine(folderPath, fileName);
-
-        await using (var stream = System.IO.File.Create(savePath))
-        {
-            await file.CopyToAsync(stream, cancellationToken);
-        }
-
-        return NoContent();
+        using var stream = file.OpenReadStream();
+        var result = await avatarService.UploadAvatarAsync(oid, stream, file.FileName, file.Length, cancellationToken);
+        if(result.IsSuccessful)
+            return NoContent();
+        return BadRequest(new ApiError("AVATAR_UPLOAD_FAILED", result.Error?.Message ?? "アバターのアップロードに失敗しました。"));
     }
 
     [HttpGet("avatar")]
@@ -127,44 +87,46 @@ public class UserProfilesController(
         {
             return Unauthorized(new ApiError("UNAUTHORIZED", "認証情報を確認できませんでした。"));
         }
-
-        var webRoot = string.IsNullOrWhiteSpace(environment.WebRootPath)
-            ? Path.Combine(environment.ContentRootPath, "wwwroot")
-            : environment.WebRootPath;
-
-        var folderPath = Path.Combine(webRoot, "images", "users", oid);
-
-        // デフォルトアバターのファイルパス
-        var defaultPath = Path.Combine(webRoot, "images", "user-avatar-default.svg");
-
-        if (!Directory.Exists(folderPath))
+        
+        var result = await avatarService.GetAvatarByEntraIdAsync(oid, cancellationToken);
+        if (!result.IsSuccessful)
         {
+            if (result.Error is EntraIdNotFoundException)
+            {
+                return NotFound(new ApiError("AVATAR_NOT_FOUND", "アバターが見つかりませんでした。"));
+            }
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiError(
+                "INTERNAL_SERVER_ERROR",
+                "予期しないエラーが発生しました。"));
+        }
+
+        var avatar = result.Value;
+        if (!avatar.IsSet)
+        {
+            var webRoot = string.IsNullOrWhiteSpace(environment.WebRootPath)
+                ? Path.Combine(environment.ContentRootPath, "wwwroot")
+                : environment.WebRootPath;
+
+            var defaultPath = Path.Combine(webRoot, "images", "user-avatar-default.svg");
             if (System.IO.File.Exists(defaultPath))
             {
                 return PhysicalFile(defaultPath, "image/svg+xml");
             }
             return NotFound();
-        }
+        }              
 
-        var latest = Directory.GetFiles(folderPath, "avatar-*")
-            .OrderByDescending(f => new FileInfo(f).LastWriteTimeUtc)
-            .FirstOrDefault();
+        // Blob から取得した ContentType が有効な MIME タイプであればそのまま使用する
+        var contentType = !string.IsNullOrWhiteSpace(avatar.ContentType)
+            && avatar.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
+            ? avatar.ContentType
+            : (Path.GetExtension(avatar.FileName) is var extension && !string.IsNullOrWhiteSpace(extension)
+                ? extension.Equals(".png", StringComparison.OrdinalIgnoreCase) ? "image/png"
+                    : extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) || extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg"
+                    : extension.Equals(".svg", StringComparison.OrdinalIgnoreCase) ? "image/svg+xml"
+                    : "application/octet-stream"
+                : "application/octet-stream");
 
-        if (string.IsNullOrEmpty(latest))
-        {
-            if (System.IO.File.Exists(defaultPath))
-            {
-                return PhysicalFile(defaultPath, "image/svg+xml");
-            }
-            return NotFound();
-        }
-
-        var contentType = latest.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png"
-            : latest.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || latest.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg"
-            : latest.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) ? "image/svg+xml"
-            : "application/octet-stream";
-
-        return PhysicalFile(latest, contentType);
+        return File(avatar.Content, contentType, avatar.FileName);
     }
 
     [HttpPut]
