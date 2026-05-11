@@ -35,10 +35,6 @@ public class UserProfilesController(
             return Unauthorized(new ApiError("UNAUTHORIZED", "認証情報を確認できませんでした。"));
         }
 
-        var userProfile = await userProfileService.GetOrCreateProfileAsync(oid, email, cancellationToken);
-
-        
-
         var result = await userProfileService.GetOrCreateProfileAsync(oid, email, cancellationToken);
         if (result.IsSuccessful)
         {
