@@ -118,10 +118,16 @@ public class UserProfilesController(
             return NotFound();
         }              
 
-        var contentType = avatar.ContentType.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png"
-            : avatar.ContentType.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || avatar.ContentType.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg"
-            : avatar.ContentType.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) ? "image/svg+xml"
-            : "application/octet-stream";
+        // Blob から取得した ContentType が有効な MIME タイプであればそのまま使用する
+        var contentType = !string.IsNullOrWhiteSpace(avatar.ContentType)
+            && avatar.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
+            ? avatar.ContentType
+            : (Path.GetExtension(avatar.FileName) is var extension && !string.IsNullOrWhiteSpace(extension)
+                ? extension.Equals(".png", StringComparison.OrdinalIgnoreCase) ? "image/png"
+                    : extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) || extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg"
+                    : extension.Equals(".svg", StringComparison.OrdinalIgnoreCase) ? "image/svg+xml"
+                    : "application/octet-stream"
+                : "application/octet-stream");
 
         return File(avatar.Content, contentType, avatar.FileName);
     }
