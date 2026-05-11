@@ -9,6 +9,7 @@ using HomeFinder.Application.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +90,28 @@ builder.Services.AddOpenApi(options =>
             - 最大サイズ: 10MB
             - 解像度制限: 1000x1000 以内
             """;
+
+        // Swagger UI から Bearer トークンを入力できるように認証スキーマを公開する
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Name = "Authorization",
+            Description = "Bearer {token} の形式で入力してください。"
+        };
+
+        document.Security =
+        [
+            new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference("Bearer", document, null)] = []
+            }
+        ];
+
         return Task.CompletedTask;
     });
 });
