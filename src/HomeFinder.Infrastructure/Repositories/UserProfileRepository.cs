@@ -15,7 +15,7 @@ public class UserProfileRepository(ItemDbContext dbContext) : IUserProfileReposi
 
     public async Task<UserProfile?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await dbContext.UserProfiles.FindAsync(userId, cancellationToken).ConfigureAwait(false);
+        return await dbContext.UserProfiles.FindAsync([userId], cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<UserProfile> AddAsync(UserProfile profile, CancellationToken cancellationToken = default)
