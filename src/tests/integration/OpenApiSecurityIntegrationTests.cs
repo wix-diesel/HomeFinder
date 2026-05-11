@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace IntegrationTests;
 
@@ -15,7 +16,7 @@ public class OpenApiSecurityIntegrationTests : IClassFixture<TestApplicationFact
     [Fact]
     public async Task OpenApiDocument_ExposesBearerSecuritySchemeForSwaggerUi()
     {
-        using var client = _factory.WithWebHostBuilder(builder => builder.UseEnvironment("Development")).CreateClient();
+        using var client = _factory.WithWebHostBuilder(builder => builder.UseEnvironment(Environments.Development)).CreateClient();
 
         var response = await client.GetAsync("/openapi/v1.json");
 

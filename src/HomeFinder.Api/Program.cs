@@ -104,12 +104,13 @@ builder.Services.AddOpenApi(options =>
             Description = "Bearer {token} の形式で入力してください。"
         };
 
-        document.Security ??= [];
-        document.Security.Clear();
-        document.Security.Add(new OpenApiSecurityRequirement
-        {
-            [new OpenApiSecuritySchemeReference("Bearer", document, null)] = []
-        });
+        document.Security =
+        [
+            new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference("Bearer", document, null)] = []
+            }
+        ];
 
         return Task.CompletedTask;
     });
