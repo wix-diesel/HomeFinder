@@ -70,7 +70,8 @@ public class UserProfilesController(
             return BadRequest(new ApiError("INVALID_IMAGE_FORMAT", "画像ファイルを指定してください。"));
         }
 
-        var result = await avatarService.UploadAvatarAsync(oid, file.OpenReadStream(), file.FileName, file.Length, cancellationToken);
+        using var stream = file.OpenReadStream();
+        var result = await avatarService.UploadAvatarAsync(oid, stream, file.FileName, file.Length, cancellationToken);
         if(result.IsSuccessful)
             return NoContent();
         return BadRequest(new ApiError("AVATAR_UPLOAD_FAILED", result.Error?.Message ?? "アバターのアップロードに失敗しました。"));
