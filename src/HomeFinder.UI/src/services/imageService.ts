@@ -35,14 +35,6 @@ export async function uploadImage(itemId: string, file: File): Promise<ImageUplo
 }
 
 /**
- * アイテムの画像 URL を返す（GET /api/items/{itemId}/image のエンドポイント URL）
- */
-export function getImageUrl(itemId: string): string {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
-  return `${baseUrl}/api/items/${itemId}/image`;
-}
-
-/**
  * アイテムIDから画像URLを取得する。
  * 取得不可（404など）の場合は null を返す。
  */

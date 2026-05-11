@@ -17,7 +17,7 @@ const SIZE = 80;
 const imageSrc = ref<string>(PLACEHOLDER);
 const isLoading = ref(false);
 const currentObjectUrl = ref<string | null>(null);
-let loadSequence = 0;
+const loadSequenceCounter = ref(0);
 
 function revokeCurrentObjectUrl() {
   if (!currentObjectUrl.value) return;
@@ -28,7 +28,7 @@ function revokeCurrentObjectUrl() {
 watch(
   [() => props.itemId, () => props.imageUrl],
   async ([id]) => {
-    const currentSequence = ++loadSequence;
+    const currentSequence = ++loadSequenceCounter.value;
     revokeCurrentObjectUrl();
 
     if (props.imageUrl && props.imageUrl.trim().length > 0) {
@@ -41,10 +41,7 @@ watch(
       isLoading.value = true;
       try {
         const resolvedImageUrl = await getImageByItemId(id);
-        if (currentSequence !== loadSequence) {
-          if (resolvedImageUrl) {
-            URL.revokeObjectURL(resolvedImageUrl);
-          }
+        if (currentSequence !== loadSequenceCounter.value) {
           return;
         }
 
@@ -57,7 +54,7 @@ watch(
       } catch {
         imageSrc.value = PLACEHOLDER;
       } finally {
-        if (currentSequence === loadSequence) {
+        if (currentSequence === loadSequenceCounter.value) {
           isLoading.value = false;
         }
       }
