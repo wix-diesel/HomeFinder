@@ -39,6 +39,7 @@ builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddSingleton<IBlobStorageService, AzureBlobStorageService>();
+builder.Services.AddScoped<IAvatarService, AvatarService>();
 builder.Services.AddSingleton<IImageProcessor, ImageSharpImageProcessor>();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
