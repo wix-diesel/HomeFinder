@@ -82,16 +82,25 @@ public class AvatarService : IAvatarService
             };
             return new Result<AvatarDto>(defaultAvatar); 
         }
-        var (avatorContent, avatorContentType) = await blobStorageService.DownloadAsync(userProfile.AvatarImagePath, cancellationToken);
-        var avator = new AvatarDto()
+
+        try
         {
-            IsSet = true,
-            Content = avatorContent,
-            ContentType = avatorContentType, 
-            FileName = Path.GetFileName(userProfile.AvatarImagePath),
-            UploadedAtUtc = userProfile.UpdatedAtUtc
-        };
-        return new Result<AvatarDto>(avator);
+            var (avatorContent, avatorContentType) = await blobStorageService.DownloadAsync(userProfile.AvatarImagePath, cancellationToken);
+            var avator = new AvatarDto()
+            {
+                IsSet = true,
+                Content = avatorContent,
+                ContentType = avatorContentType, 
+                FileName = Path.GetFileName(userProfile.AvatarImagePath),
+                UploadedAtUtc = userProfile.UpdatedAtUtc
+            };
+            return new Result<AvatarDto>(avator);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "アバター取得失敗(Blobダウンロードエラー): EntraId={EntraId}, AvatarImagePath={AvatarImagePath}", entraId, userProfile.AvatarImagePath);
+            return new Result<AvatarDto>(ex);
+        }
     }
 
     public async Task<Result<bool>> UploadAvatarAsync(string entraId, Stream imageStream, string fileName, long fileSizeBytes, CancellationToken cancellationToken = default)
