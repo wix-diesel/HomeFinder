@@ -13,8 +13,8 @@ public interface IAvatarService
     Task<Result<bool>> UploadAvatarAsync(string entraId, Stream imageStream, string fileName, long fileSizeBytes, CancellationToken cancellationToken = default);
 
     // ユーザーのアバターを取得する
-    Task<Result<AvatarDto>> GetAvatarByUserIdAsync(string entraId, CancellationToken cancellationToken = default);
+    Task<Result<AvatarDto>> GetAvatarByEntraIdAsync(string entraId, CancellationToken cancellationToken = default);
 
     // ユーザーのアバターを削除する
-    Task<Result<bool>> DeleteAvatarByUserIdAsync(string entraId, CancellationToken cancellationToken = default);
+    Task<Result<bool>> DeleteAvatarByEntraIdAsync(string entraId, CancellationToken cancellationToken = default);
 }
