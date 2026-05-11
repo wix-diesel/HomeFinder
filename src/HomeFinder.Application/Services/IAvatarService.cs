@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using HomeFinder.Application.Contracts;
 using DotNext;
 
+namespace HomeFinder.Application.Services;
+
 public interface IAvatarService
 {
     // ユーザーのアバターをアップロードする
