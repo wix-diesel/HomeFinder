@@ -14,7 +14,7 @@ namespace HomeFinder.Api.Controllers
     /// </summary>
     [ApiController]
     [Route("api/categories")]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,Admin")]
     [Produces("application/json")]
     public class CategoriesController : ControllerBase
     {

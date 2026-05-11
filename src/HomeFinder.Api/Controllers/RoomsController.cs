@@ -10,7 +10,7 @@ namespace HomeFinder.Api.Controllers;
 
 [ApiController]
 [Route("api/rooms")]
-[Authorize(Roles = "User")]
+[Authorize(Roles = "User,Admin")]
 public class RoomsController(IRoomService roomService, ILogger<RoomsController> logger) : ControllerBase
 {
     [HttpGet]
