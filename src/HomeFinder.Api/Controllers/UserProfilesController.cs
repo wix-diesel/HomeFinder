@@ -87,7 +87,7 @@ public class UserProfilesController(
             return Unauthorized(new ApiError("UNAUTHORIZED", "認証情報を確認できませんでした。"));
         }
         
-        var result = await avatarService.GetAvatarByUserIdAsync(oid, cancellationToken);
+        var result = await avatarService.GetAvatarByEntraIdAsync(oid, cancellationToken);
         if (!result.IsSuccessful)
         {
             if (result.Error is EntraIdNotFoundException)

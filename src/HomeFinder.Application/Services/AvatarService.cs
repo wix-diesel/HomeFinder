@@ -56,16 +56,16 @@ public class AvatarService : IAvatarService
         this.logger = logger;
     }
 
-    public Task<Result<bool>> DeleteAvatarByUserIdAsync(string entraId, CancellationToken cancellationToken = default)
+    public Task<Result<bool>> DeleteAvatarByEntraIdAsync(string entraId, CancellationToken cancellationToken = default)
     {
         // 未実装例外を送出すると呼び出し時に 500 エラーになるため、
         // 現時点では呼び出し側契約どおり Result として失敗を返す
         logger.LogError("アバター削除は未実装です: EntraId={EntraId}", entraId);
         return Task.FromResult(new Result<bool>(
-            new NotSupportedException("DeleteAvatarByUserIdAsync は未実装です。必要な場合は DB 更新と Blob 削除を含む削除処理を実装してください。")));
+            new NotSupportedException("DeleteAvatarByEntraIdAsync は未実装です。必要な場合は DB 更新と Blob 削除を含む削除処理を実装してください。")));
     }
 
-    public async Task<Result<AvatarDto>> GetAvatarByUserIdAsync(string entraId, CancellationToken cancellationToken = default)
+    public async Task<Result<AvatarDto>> GetAvatarByEntraIdAsync(string entraId, CancellationToken cancellationToken = default)
     {
         var userProfile = await userProfileRepository.GetByEntraObjectIdAsync(entraId, cancellationToken);
         if (userProfile is null)
