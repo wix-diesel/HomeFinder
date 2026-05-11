@@ -146,13 +146,9 @@ public class AvatarService : IAvatarService
             cancellationToken);
 
         // --- データベース更新 ---
-        if (userProfile is null)
-        {
-            logger.LogWarning("アバターアップロード失敗(ユーザープロファイルなし): UserId={UserId}", userId);
-            return new Result<bool>(new UserProfileNotFoundException(userId));
-        }
         var oldAvatarPath = userProfile.AvatarImagePath;
         userProfile.AvatarImagePath = blobName;
+        userProfile.UpdatedAtUtc = DateTime.UtcNow;
         await userProfileRepository.UpdateAsync(userProfile, cancellationToken);
 
         if(!string.IsNullOrEmpty(oldAvatarPath))
