@@ -147,7 +147,7 @@ public class AvatarService : IAvatarService
 
         // --- Blob アップロード ---
         var contentType = $"image/{fileFormat}";
-        var blobName = $"avators/{userId}/{fileName}";
+        var blobName = $"avatars/{userId}/{fileName}";
         var blobUri = await AzureBlobHelper.ExecuteBlobWithRetryAsync(
             ct => blobStorageService.UploadAsync(blobName, uploadStream, contentType, ct),
             "Upload",
@@ -160,7 +160,7 @@ public class AvatarService : IAvatarService
         userProfile.UpdatedAtUtc = DateTime.UtcNow;
         await userProfileRepository.UpdateAsync(userProfile, cancellationToken);
 
-        if(!string.IsNullOrEmpty(oldAvatarPath))
+        if(!string.IsNullOrEmpty(oldAvatarPath) && oldAvatarPath != blobName)
             await blobStorageService.DeleteAsync(oldAvatarPath, cancellationToken);
 
         logger.LogInformation("アバターアップロード完了: UserId={UserId}, AvatarUri={blobName}", userId, blobName);
