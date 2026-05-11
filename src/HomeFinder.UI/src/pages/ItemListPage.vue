@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ItemCard from '../components/ItemCard.vue';
 import ItemListTable from '../components/ItemListTable.vue';
@@ -59,6 +59,14 @@ const toastMessage = computed(() => {
 
 const visibleCategories = computed(() => categories.value.filter((c) => c.id !== 'all'));
 
+function revokeObjectUrls(imageUrls: Record<string, string | null>) {
+  Object.values(imageUrls).forEach((url) => {
+    if (url && url.startsWith('blob:')) {
+      URL.revokeObjectURL(url);
+    }
+  });
+}
+
 async function loadItems() {
   loading.value = true;
   errorMessage.value = '';
@@ -70,10 +78,15 @@ async function loadItems() {
       .filter((item) => item.imageId && item.imageId.trim().length > 0)
       .map((item) => item.id);
 
-    imageUrlsByItemId.value = targetIds.length > 0
+    const nextImageUrlsByItemId = targetIds.length > 0
       ? await getImagesByItemIds(targetIds)
       : {};
+
+    revokeObjectUrls(imageUrlsByItemId.value);
+    imageUrlsByItemId.value = nextImageUrlsByItemId;
   } catch {
+    revokeObjectUrls(imageUrlsByItemId.value);
+    imageUrlsByItemId.value = {};
     errorMessage.value = uiText.list.failureTitle;
   } finally {
     loading.value = false;
@@ -91,6 +104,10 @@ function navigateToCreate() {
 
 onMounted(async () => {
   await loadItems();
+});
+
+onBeforeUnmount(() => {
+  revokeObjectUrls(imageUrlsByItemId.value);
 });
 </script>
 

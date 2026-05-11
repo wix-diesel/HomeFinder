@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { getImageUrl } from '../services/imageService';
+import { onBeforeUnmount, ref, watch } from 'vue';
+import { getImageByItemId } from '../services/imageService';
 
 const props = defineProps<{
   /** アイテム ID（API エンドポイント URL 用）。未指定の場合はプレースホルダーを表示 */
@@ -20,20 +20,52 @@ const DISPLAY_SIZE = 600;
 const imageSrc = ref<string>(PLACEHOLDER);
 const isLoading = ref(false);
 const hasError = ref(false);
+const currentObjectUrl = ref<string | null>(null);
+let loadSequence = 0;
+
+function revokeCurrentObjectUrl() {
+  if (!currentObjectUrl.value) return;
+  URL.revokeObjectURL(currentObjectUrl.value);
+  currentObjectUrl.value = null;
+}
 
 watch(
-  () => props.imageId,
-  (imageId) => {
-    if (imageId) {
-      // imageId をキャッシュバスト用クエリパラメータとして付与し、
-      // 画像差し替え後にブラウザキャッシュが再利用されないようにする
-      imageSrc.value = `${getImageUrl(props.itemId)}?v=${imageId}`;
-      isLoading.value = true;
-      hasError.value = false;
-    } else {
+  [() => props.itemId, () => props.imageId],
+  async ([itemId, imageId]) => {
+    const currentSequence = ++loadSequence;
+    revokeCurrentObjectUrl();
+
+    if (!imageId) {
       imageSrc.value = PLACEHOLDER;
       isLoading.value = false;
       hasError.value = false;
+      return;
+    }
+
+    isLoading.value = true;
+    hasError.value = false;
+    try {
+      const resolvedImageUrl = await getImageByItemId(itemId);
+      if (currentSequence !== loadSequence) {
+        if (resolvedImageUrl) {
+          URL.revokeObjectURL(resolvedImageUrl);
+        }
+        return;
+      }
+
+      if (resolvedImageUrl) {
+        imageSrc.value = resolvedImageUrl;
+        currentObjectUrl.value = resolvedImageUrl;
+      } else {
+        imageSrc.value = PLACEHOLDER;
+      }
+    } catch {
+      imageSrc.value = PLACEHOLDER;
+      hasError.value = true;
+    } finally {
+      if (currentSequence === loadSequence) {
+        isLoading.value = false;
+      }
     }
   },
   { immediate: true },
@@ -47,8 +79,13 @@ function onLoad() {
 function onError() {
   isLoading.value = false;
   hasError.value = true;
+  revokeCurrentObjectUrl();
   imageSrc.value = PLACEHOLDER;
 }
+
+onBeforeUnmount(() => {
+  revokeCurrentObjectUrl();
+});
 </script>
 
 <template>

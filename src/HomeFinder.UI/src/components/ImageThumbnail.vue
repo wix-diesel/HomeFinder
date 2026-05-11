@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { getImageUrl } from '../services/imageService';
+import { onBeforeUnmount, ref, watch } from 'vue';
+import { getImageByItemId } from '../services/imageService';
 
 const props = defineProps<{
   /** アイテム ID。null の場合はプレースホルダーを表示 */
@@ -16,10 +16,21 @@ const SIZE = 80;
 
 const imageSrc = ref<string>(PLACEHOLDER);
 const isLoading = ref(false);
+const currentObjectUrl = ref<string | null>(null);
+let loadSequence = 0;
+
+function revokeCurrentObjectUrl() {
+  if (!currentObjectUrl.value) return;
+  URL.revokeObjectURL(currentObjectUrl.value);
+  currentObjectUrl.value = null;
+}
 
 watch(
   [() => props.itemId, () => props.imageUrl],
-  ([id]) => {
+  async ([id]) => {
+    const currentSequence = ++loadSequence;
+    revokeCurrentObjectUrl();
+
     if (props.imageUrl && props.imageUrl.trim().length > 0) {
       imageSrc.value = props.imageUrl;
       isLoading.value = false;
@@ -27,8 +38,29 @@ watch(
     }
 
     if (id) {
-      imageSrc.value = getImageUrl(id);
       isLoading.value = true;
+      try {
+        const resolvedImageUrl = await getImageByItemId(id);
+        if (currentSequence !== loadSequence) {
+          if (resolvedImageUrl) {
+            URL.revokeObjectURL(resolvedImageUrl);
+          }
+          return;
+        }
+
+        if (resolvedImageUrl) {
+          imageSrc.value = resolvedImageUrl;
+          currentObjectUrl.value = resolvedImageUrl;
+        } else {
+          imageSrc.value = PLACEHOLDER;
+        }
+      } catch {
+        imageSrc.value = PLACEHOLDER;
+      } finally {
+        if (currentSequence === loadSequence) {
+          isLoading.value = false;
+        }
+      }
     } else {
       imageSrc.value = PLACEHOLDER;
       isLoading.value = false;
@@ -43,8 +75,13 @@ function onLoad() {
 
 function onError() {
   isLoading.value = false;
+  revokeCurrentObjectUrl();
   imageSrc.value = PLACEHOLDER;
 }
+
+onBeforeUnmount(() => {
+  revokeCurrentObjectUrl();
+});
 </script>
 
 <template>
