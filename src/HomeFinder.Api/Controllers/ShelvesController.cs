@@ -9,7 +9,7 @@ namespace HomeFinder.Api.Controllers;
 
 [ApiController]
 [Route("api/rooms/{roomId:guid}/shelves")]
-[Authorize(Roles = "User")]
+[Authorize(Roles = "User,Admin")]
 public class ShelvesController(IShelfService shelfService, ILogger<ShelvesController> logger) : ControllerBase
 {
     [HttpPost]
