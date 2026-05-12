@@ -39,7 +39,11 @@ export async function uploadImage(itemId: string, file: File): Promise<ImageUplo
  * 取得不可（404など）の場合は null を返す。
  */
 export async function getImageByItemId(itemId: string): Promise<string | null> {
-  const response = await apiClient.apiFetch(`/api/items/${itemId}/image`, { method: 'GET' });
+  const response = await apiClient.apiFetch(`/api/items/${itemId}/image`, {
+    method: 'GET',
+    // 同一 URL でも毎回サーバー再検証を行い、差し替え直後の古い画像キャッシュ利用を防ぐ
+    cache: 'no-cache',
+  });
   if (!response.ok) {
     if (response.status === 404) {
       return null;
