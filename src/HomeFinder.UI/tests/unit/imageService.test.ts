@@ -23,7 +23,10 @@ describe('imageService', () => {
 
     const imageUrl = await getImageByItemId('item-1');
 
-    expect(mockApiFetch).toHaveBeenCalledWith('/api/items/item-1/image', { method: 'GET' });
+    expect(mockApiFetch).toHaveBeenCalledWith('/api/items/item-1/image', {
+      method: 'GET',
+      cache: 'no-cache',
+    });
     expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
     expect(imageUrl).toBe('blob:test-image-url');
   });
