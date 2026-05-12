@@ -100,6 +100,9 @@ router.beforeEach(async (to, _from) => {
   const authStore = useAuthStore();
 
   const requiresAuth = to.meta.requiresAuth !== false;
+  if (requiresAuth && !authStore.isAuthenticated && !authStore.isInitialized) {
+    await authStore.initialize();
+  }
 
   if (requiresAuth && !authStore.isAuthenticated) {
     // (1) 未認証でアクセス → /login?returnUrl=<元パス> へリダイレクト

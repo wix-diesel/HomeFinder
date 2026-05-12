@@ -14,7 +14,7 @@ vi.mock('../../../src/services/msalService', () => ({
 
 // Vue Router をモック
 vi.mock('vue-router', () => ({
-  useRouter: vi.fn(() => ({ push: vi.fn() })),
+  useRouter: vi.fn(() => ({ push: vi.fn(), replace: vi.fn() })),
 }));
 
 describe('authStore', () => {
@@ -30,6 +30,7 @@ describe('authStore', () => {
       expect(store.user).toBeNull();
       expect(store.isLoading).toBe(false);
       expect(store.error).toBeNull();
+      expect(store.isInitialized).toBe(false);
     });
 
     it('isAuthenticated が false', async () => {
@@ -115,6 +116,21 @@ describe('authStore', () => {
 
       expect(store.user).not.toBeNull();
       expect(store.user?.name).toBe('Test User');
+    });
+
+    it('2回呼んでも初回のみMSALを呼び出す', async () => {
+      const { msalService } = await import('../../../src/services/msalService');
+      vi.mocked(msalService.handleRedirectPromise).mockResolvedValueOnce(null);
+      vi.mocked(msalService.acquireTokenSilent).mockResolvedValueOnce(null);
+
+      const { useAuthStore } = await import('../../../src/stores/authStore');
+      const store = useAuthStore();
+      await store.initialize();
+      await store.initialize();
+
+      expect(msalService.handleRedirectPromise).toHaveBeenCalledTimes(1);
+      expect(msalService.acquireTokenSilent).toHaveBeenCalledTimes(1);
+      expect(store.isInitialized).toBe(true);
     });
   });
 });
