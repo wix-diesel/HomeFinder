@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ItemListTable from '../../../src/components/ItemListTable.vue';
 
 const { mockGetImageByItemId } = vi.hoisted(() => ({
@@ -18,6 +18,33 @@ describe('ItemListTable', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetImageByItemId.mockResolvedValue('blob:item-image-url');
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        private callback: IntersectionObserverCallback;
+
+        constructor(callback: IntersectionObserverCallback) {
+          this.callback = callback;
+        }
+
+        observe() {
+          this.callback([{ isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+        }
+
+        disconnect() {}
+        unobserve() {}
+        takeRecords() {
+          return [];
+        }
+        root = null;
+        rootMargin = '0px';
+        thresholds = [];
+      },
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('imageUrl が未解決の場合は認証付きで解決したサムネイルURLを表示する', async () => {
@@ -36,6 +63,7 @@ describe('ItemListTable', () => {
         ],
       },
     });
+    await Promise.resolve();
     await Promise.resolve();
     await wrapper.vm.$nextTick();
 

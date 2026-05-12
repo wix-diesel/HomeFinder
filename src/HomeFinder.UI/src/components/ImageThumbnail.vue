@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { getImageByItemId } from '../services/imageService';
 
 const props = defineProps<{
@@ -18,6 +18,9 @@ const imageSrc = ref<string>(PLACEHOLDER);
 const isLoading = ref(false);
 const currentObjectUrl = ref<string | null>(null);
 const loadSequenceCounter = ref(0);
+const thumbnailRef = ref<HTMLElement | null>(null);
+const shouldLoad = ref(false);
+let intersectionObserver: IntersectionObserver | null = null;
 
 function revokeCurrentObjectUrl() {
   if (!currentObjectUrl.value) return;
@@ -25,14 +28,43 @@ function revokeCurrentObjectUrl() {
   currentObjectUrl.value = null;
 }
 
+function startLazyLoadObservation() {
+  if (shouldLoad.value) return;
+
+  if (typeof IntersectionObserver === 'undefined') {
+    shouldLoad.value = true;
+    return;
+  }
+
+  if (!thumbnailRef.value) return;
+
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      shouldLoad.value = true;
+      intersectionObserver?.disconnect();
+      intersectionObserver = null;
+    },
+    { rootMargin: '100px' },
+  );
+
+  intersectionObserver.observe(thumbnailRef.value);
+}
+
 watch(
-  [() => props.itemId, () => props.imageUrl],
+  [() => props.itemId, () => props.imageUrl, () => shouldLoad.value],
   async ([id]) => {
     const currentSequence = ++loadSequenceCounter.value;
     revokeCurrentObjectUrl();
 
     if (props.imageUrl && props.imageUrl.trim().length > 0) {
       imageSrc.value = props.imageUrl;
+      isLoading.value = false;
+      return;
+    }
+
+    if (!shouldLoad.value) {
+      imageSrc.value = PLACEHOLDER;
       isLoading.value = false;
       return;
     }
@@ -66,6 +98,14 @@ watch(
   { immediate: true },
 );
 
+onMounted(() => {
+  startLazyLoadObservation();
+});
+
+watch(thumbnailRef, () => {
+  startLazyLoadObservation();
+});
+
 function onLoad() {
   isLoading.value = false;
 }
@@ -77,12 +117,14 @@ function onError() {
 }
 
 onBeforeUnmount(() => {
+  intersectionObserver?.disconnect();
+  intersectionObserver = null;
   revokeCurrentObjectUrl();
 });
 </script>
 
 <template>
-  <div class="image-thumbnail">
+  <div ref="thumbnailRef" class="image-thumbnail">
     <div v-if="isLoading" class="image-thumbnail__skeleton"></div>
     <img
       v-show="!isLoading"

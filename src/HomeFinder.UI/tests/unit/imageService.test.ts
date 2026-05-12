@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockApiFetch } = vi.hoisted(() => ({
   mockApiFetch: vi.fn(),
@@ -12,10 +12,17 @@ vi.mock('../../src/services/apiClient', () => ({
 
 import { getImageByItemId, ImageServiceError } from '../../src/services/imageService';
 
+const createObjectUrlSpy = vi.spyOn(URL, 'createObjectURL');
+
 describe('imageService', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test-image-url');
+    mockApiFetch.mockClear();
+    createObjectUrlSpy.mockClear();
+    createObjectUrlSpy.mockReturnValue('blob:test-image-url');
+  });
+
+  afterAll(() => {
+    createObjectUrlSpy.mockRestore();
   });
 
   it('画像取得時に認証付きAPI呼び出しを行い object URL を返す', async () => {
@@ -27,7 +34,7 @@ describe('imageService', () => {
       method: 'GET',
       cache: 'no-cache',
     });
-    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+    expect(createObjectUrlSpy).toHaveBeenCalledTimes(1);
     expect(imageUrl).toBe('blob:test-image-url');
   });
 
