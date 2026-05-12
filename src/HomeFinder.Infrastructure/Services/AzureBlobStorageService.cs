@@ -2,7 +2,6 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using HomeFinder.Application.Services;
 using HomeFinder.Core.Errors;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace HomeFinder.Infrastructure.Services;
@@ -15,27 +14,10 @@ public class AzureBlobStorageService : IBlobStorageService
     private readonly BlobContainerClient _containerClient;
     private readonly ILogger<AzureBlobStorageService> _logger;
 
-    public AzureBlobStorageService(IConfiguration configuration, ILogger<AzureBlobStorageService> logger)
+    public AzureBlobStorageService(BlobContainerClient containerClient, ILogger<AzureBlobStorageService> logger)
     {
+        _containerClient = containerClient;
         _logger = logger;
-        var connectionString = configuration.GetConnectionString("AzureBlobStorage")
-            ?? throw new InvalidOperationException("AzureBlobStorage 接続文字列が設定されていません。");
-        var containerName = configuration["AzureBlobStorage:ContainerName"] ?? "images";
-
-        // AzureBlobStorage:ServiceVersion が設定されている場合は、指定されたAPIバージョンを使用する。
-        // Azuriteなど最新APIバージョン非対応の環境向けに旧バージョンを指定できる。
-        // 設定が未指定または無効な値の場合はSDKのデフォルトバージョンにフォールバックする。
-        var serviceVersionStr = configuration["AzureBlobStorage:ServiceVersion"];
-        if (!string.IsNullOrEmpty(serviceVersionStr)
-            && Enum.TryParse<BlobClientOptions.ServiceVersion>(serviceVersionStr, out var serviceVersion))
-        {
-            var clientOptions = new BlobClientOptions(serviceVersion);
-            _containerClient = new BlobContainerClient(connectionString, containerName, clientOptions);
-        }
-        else
-        {
-            _containerClient = new BlobContainerClient(connectionString, containerName);
-        }
     }
 
     /// <inheritdoc />
