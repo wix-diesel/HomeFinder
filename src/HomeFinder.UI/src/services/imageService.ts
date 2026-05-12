@@ -35,21 +35,15 @@ export async function uploadImage(itemId: string, file: File): Promise<ImageUplo
 }
 
 /**
- * アイテムの画像 URL を返す（GET /api/items/{itemId}/image のエンドポイント URL）
- * 実際のダウンロードはブラウザの <img> タグに任せる
- */
-export function getImageUrl(itemId: string): string {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
-  return `${baseUrl}/api/items/${itemId}/image`;
-}
-
-/**
  * アイテムIDから画像URLを取得する。
  * 取得不可（404など）の場合は null を返す。
  */
 export async function getImageByItemId(itemId: string): Promise<string | null> {
-  const url = getImageUrl(itemId);
-  const response = await apiClient.apiFetch(`/api/items/${itemId}/image`, { method: 'HEAD' });
+  const response = await apiClient.apiFetch(`/api/items/${itemId}/image`, {
+    method: 'GET',
+    // 同一 URL でも毎回サーバー再検証を行い、差し替え直後の古い画像キャッシュ利用を防ぐ
+    cache: 'no-cache',
+  });
   if (!response.ok) {
     if (response.status === 404) {
       return null;
@@ -57,7 +51,8 @@ export async function getImageByItemId(itemId: string): Promise<string | null> {
     throw new ImageServiceError('画像の取得に失敗しました。', 'GET_IMAGE_FAILED');
   }
 
-  return url;
+  const imageBlob = await response.blob();
+  return URL.createObjectURL(imageBlob);
 }
 
 /**

@@ -8,7 +8,6 @@ import { listStateMessages } from '../constants/stateMessagesJa';
 import { uiText } from '../constants/uiText';
 import type { Item } from '../models/item';
 import { getItems } from '../services/itemService';
-import { getImagesByItemIds } from '../services/imageService';
 
 const items = ref<Item[]>([]);
 const loading = ref(true);
@@ -18,7 +17,6 @@ const selectedCategory = ref<'all' | string>('all');
 const desktopViewMode = ref<'card' | 'table'>('card');
 const route = useRoute();
 const router = useRouter();
-const imageUrlsByItemId = ref<Record<string, string | null>>({});
 
 // カテゴリ未設定アイテムのフォールバック識別子
 const UNCLASSIFIED_ID = 'unclassified';
@@ -44,13 +42,6 @@ const filteredItems = computed(() => {
   });
 });
 
-const filteredItemsWithImageUrl = computed(() => {
-  return filteredItems.value.map((item) => ({
-    ...item,
-    imageUrl: imageUrlsByItemId.value[item.id] ?? null,
-  }));
-});
-
 const toastMessage = computed(() => {
   if (route.query.created === '1') return uiText.create.successToast;
   if (route.query.updated === '1') return uiText.edit.successToast;
@@ -64,15 +55,6 @@ async function loadItems() {
   errorMessage.value = '';
   try {
     items.value = await getItems();
-
-    // 画像を持つアイテムのみ対象に、URL をバルク解決してキャッシュする
-    const targetIds = items.value
-      .filter((item) => item.imageId && item.imageId.trim().length > 0)
-      .map((item) => item.id);
-
-    imageUrlsByItemId.value = targetIds.length > 0
-      ? await getImagesByItemIds(targetIds)
-      : {};
   } catch {
     errorMessage.value = uiText.list.failureTitle;
   } finally {
@@ -174,7 +156,7 @@ onMounted(async () => {
     />
 
     <StatePanel
-      v-else-if="filteredItemsWithImageUrl.length === 0"
+      v-else-if="filteredItems.length === 0"
       :state-type="listStateMessages.empty.stateType"
       :title-ja="listStateMessages.empty.titleJa"
       :description-ja="listStateMessages.empty.descriptionJa"
@@ -183,16 +165,16 @@ onMounted(async () => {
     />
 
     <div v-else class="mobile-list">
-      <ItemCard v-for="item in filteredItemsWithImageUrl" :key="item.id" :item="item" />
+      <ItemCard v-for="item in filteredItems" :key="item.id" :item="item" />
     </div>
 
     <ItemListTable
-      v-if="filteredItemsWithImageUrl.length > 0 && desktopViewMode === 'table'"
+      v-if="filteredItems.length > 0 && desktopViewMode === 'table'"
       class="desktop-table"
-      :items="filteredItemsWithImageUrl"
+      :items="filteredItems"
     />
-    <div v-else-if="filteredItemsWithImageUrl.length > 0" class="desktop-cards">
-      <ItemCard v-for="item in filteredItemsWithImageUrl" :key="`desktop-${item.id}`" :item="item" />
+    <div v-else-if="filteredItems.length > 0" class="desktop-cards">
+      <ItemCard v-for="item in filteredItems" :key="`desktop-${item.id}`" :item="item" />
     </div>
 
     <button type="button" class="create-fab" @click="navigateToCreate">+</button>

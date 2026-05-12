@@ -1,13 +1,67 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ItemListTable from '../../../src/components/ItemListTable.vue';
+
+const { mockGetImageByItemId } = vi.hoisted(() => ({
+  mockGetImageByItemId: vi.fn(),
+}));
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
+vi.mock('../../../src/services/imageService', () => ({
+  getImageByItemId: mockGetImageByItemId,
+}));
+
+/**
+ * IntersectionObserver の非同期コールバック発火と、
+ * その後の画像取得 Promise 解決を待つ。
+ * Promise.resolve() はマイクロタスク（watch / queueMicrotask）を進め、
+ * setTimeout(0) は次のタスクキューまで進めて描画反映完了を待つ。
+ */
+async function waitForLazyLoadAndFetch() {
+  await Promise.resolve();
+  await Promise.resolve();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 describe('ItemListTable', () => {
-  it('imageUrl が未解決でも item.id を使ってサムネイルURLを生成する', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetImageByItemId.mockResolvedValue('blob:item-image-url');
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        private callback: IntersectionObserverCallback;
+
+        constructor(callback: IntersectionObserverCallback) {
+          this.callback = callback;
+        }
+
+        observe() {
+          queueMicrotask(() => {
+            this.callback([{ isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+          });
+        }
+
+        disconnect() {}
+        unobserve() {}
+        takeRecords() {
+          return [];
+        }
+        root = null;
+        rootMargin = '0px';
+        thresholds = [];
+      },
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('imageUrl が未解決の場合は認証付きで解決したサムネイルURLを表示する', async () => {
     const wrapper = mount(ItemListTable, {
       props: {
         items: [
@@ -23,8 +77,11 @@ describe('ItemListTable', () => {
         ],
       },
     });
+    await waitForLazyLoadAndFetch();
+    await wrapper.vm.$nextTick();
 
     const img = wrapper.find('img');
-    expect(img.attributes('src')).toContain('/api/items/item-1/image');
+    expect(mockGetImageByItemId).toHaveBeenCalledWith('item-1');
+    expect(img.attributes('src')).toContain('blob:item-image-url');
   });
 });
