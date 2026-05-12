@@ -26,7 +26,12 @@ describe('imageService', () => {
   });
 
   it('画像取得時に認証付きAPI呼び出しを行い object URL を返す', async () => {
-    mockApiFetch.mockResolvedValue(new Response(new Blob(['image-bytes']), { status: 200 }));
+    const imageBlob = new Blob(['image-bytes']);
+    mockApiFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      blob: vi.fn().mockResolvedValue(imageBlob),
+    } as unknown as Response);
 
     const imageUrl = await getImageByItemId('item-1');
 
@@ -35,11 +40,15 @@ describe('imageService', () => {
       cache: 'no-cache',
     });
     expect(createObjectUrlSpy).toHaveBeenCalledTimes(1);
+    expect(createObjectUrlSpy).toHaveBeenCalledWith(imageBlob);
     expect(imageUrl).toBe('blob:test-image-url');
   });
 
   it('404 の場合は null を返す', async () => {
-    mockApiFetch.mockResolvedValue(new Response(null, { status: 404 }));
+    mockApiFetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+    } as Response);
 
     const imageUrl = await getImageByItemId('item-404');
 
@@ -47,7 +56,10 @@ describe('imageService', () => {
   });
 
   it('404 以外の失敗は ImageServiceError を投げる', async () => {
-    mockApiFetch.mockResolvedValue(new Response(null, { status: 500 }));
+    mockApiFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+    } as Response);
 
     await expect(getImageByItemId('item-500')).rejects.toBeInstanceOf(ImageServiceError);
   });
