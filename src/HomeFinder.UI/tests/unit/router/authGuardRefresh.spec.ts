@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const initializeMock = vi.fn<() => Promise<void>>();
+const initializeMock = vi.fn();
 const authState = {
   isAuthenticated: false,
   isInitialized: false,
@@ -38,5 +38,19 @@ describe('router auth guard (ページ再読み込み時のセッション復元
 
     expect(initializeMock).toHaveBeenCalledTimes(1);
     expect(router.currentRoute.value.path).toBe('/items');
+  });
+
+  it('初期化後も未認証ならログイン画面へリダイレクトされる', async () => {
+    initializeMock.mockImplementation(async () => {
+      authState.isInitialized = true;
+    });
+    const router = (await import('../../../src/router')).default;
+
+    await router.push('/items');
+    await router.isReady();
+
+    expect(initializeMock).toHaveBeenCalledTimes(1);
+    expect(router.currentRoute.value.path).toBe('/login');
+    expect(router.currentRoute.value.query.returnUrl).toBe('/items');
   });
 });

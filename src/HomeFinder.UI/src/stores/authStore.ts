@@ -122,7 +122,7 @@ export const useAuthStore = defineStore('auth', () => {
    * キャッシュがない場合は user = null のまま（ナビゲーションガードがログインページへ誘導する）。
    */
   async function initialize(): Promise<void> {
-    if (isInitialized.value) return;
+    if (isInitialized.value) return Promise.resolve();
     if (initializePromise) return initializePromise;
 
     initializePromise = (async () => {
