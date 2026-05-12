@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Azure.Storage.Blobs;
 using HomeFinder.Api.Errors;
 using HomeFinder.Infrastructure.Data;
 using Microsoft.Identity.Web;
@@ -39,6 +40,23 @@ builder.Services.AddScoped<IImageRepository, ImageRepository>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+// BlobContainerClient を構成設定に基づき生成し、Singleton として DI 登録する。
+// AzureBlobStorage:ServiceVersion が指定されている場合は指定バージョンを使用する（Azurite 対応）。
+// 設定が未指定または無効な値の場合は SDK のデフォルトバージョンにフォールバックする。
+builder.Services.AddSingleton(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var connectionString = config.GetConnectionString("AzureBlobStorage")
+        ?? throw new InvalidOperationException("AzureBlobStorage 接続文字列が設定されていません。");
+    var containerName = config["AzureBlobStorage:ContainerName"] ?? "images";
+    var serviceVersionStr = config["AzureBlobStorage:ServiceVersion"];
+    if (!string.IsNullOrEmpty(serviceVersionStr)
+        && Enum.TryParse<BlobClientOptions.ServiceVersion>(serviceVersionStr, out var serviceVersion))
+    {
+        return new BlobContainerClient(connectionString, containerName, new BlobClientOptions(serviceVersion));
+    }
+    return new BlobContainerClient(connectionString, containerName);
+});
 builder.Services.AddSingleton<IBlobStorageService, AzureBlobStorageService>();
 builder.Services.AddScoped<IAvatarService, AvatarService>();
 builder.Services.AddSingleton<IImageProcessor, ImageSharpImageProcessor>();
