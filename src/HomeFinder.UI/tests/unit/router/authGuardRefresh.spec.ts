@@ -18,7 +18,7 @@ vi.mock('../../../src/stores/authStore', () => ({
   }),
 }));
 
-describe('router auth guard (F5時セッション復元)', () => {
+describe('router auth guard (ページ再読み込み時のセッション復元)', () => {
   beforeEach(() => {
     vi.resetModules();
     initializeMock.mockReset();
