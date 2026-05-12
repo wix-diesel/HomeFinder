@@ -45,22 +45,28 @@ describe('imageService', () => {
   });
 
   it('404 の場合は null を返す', async () => {
+    const blobMock = vi.fn();
     mockApiFetch.mockResolvedValue({
       ok: false,
       status: 404,
+      blob: blobMock,
     } as Response);
 
     const imageUrl = await getImageByItemId('item-404');
 
     expect(imageUrl).toBeNull();
+    expect(blobMock).not.toHaveBeenCalled();
   });
 
   it('404 以外の失敗は ImageServiceError を投げる', async () => {
+    const blobMock = vi.fn();
     mockApiFetch.mockResolvedValue({
       ok: false,
       status: 500,
+      blob: blobMock,
     } as Response);
 
     await expect(getImageByItemId('item-500')).rejects.toBeInstanceOf(ImageServiceError);
+    expect(blobMock).not.toHaveBeenCalled();
   });
 });
