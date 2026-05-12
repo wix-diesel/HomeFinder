@@ -14,6 +14,18 @@ vi.mock('../../../src/services/imageService', () => ({
   getImageByItemId: mockGetImageByItemId,
 }));
 
+/**
+ * IntersectionObserver の非同期コールバック発火と、
+ * その後の画像取得 Promise 解決を待つ。
+ * Promise.resolve() はマイクロタスク（watch / queueMicrotask）を進め、
+ * setTimeout(0) は次のタスクキューまで進めて描画反映完了を待つ。
+ */
+async function waitForLazyLoadAndFetch() {
+  await Promise.resolve();
+  await Promise.resolve();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 describe('ItemListTable', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -28,7 +40,9 @@ describe('ItemListTable', () => {
         }
 
         observe() {
-          this.callback([{ isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+          queueMicrotask(() => {
+            this.callback([{ isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+          });
         }
 
         disconnect() {}
@@ -63,8 +77,7 @@ describe('ItemListTable', () => {
         ],
       },
     });
-    await Promise.resolve();
-    await Promise.resolve();
+    await waitForLazyLoadAndFetch();
     await wrapper.vm.$nextTick();
 
     const img = wrapper.find('img');

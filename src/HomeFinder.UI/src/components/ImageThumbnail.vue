@@ -21,6 +21,7 @@ const loadSequenceCounter = ref(0);
 const thumbnailRef = ref<HTMLElement | null>(null);
 const shouldLoad = ref(false);
 let intersectionObserver: IntersectionObserver | null = null;
+let resolveImageQueued = false;
 
 function revokeCurrentObjectUrl() {
   if (!currentObjectUrl.value) return;
@@ -38,71 +39,83 @@ function startLazyLoadObservation() {
 
   if (!thumbnailRef.value) return;
 
-  intersectionObserver = new IntersectionObserver(
+  const observer = new IntersectionObserver(
     (entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
       shouldLoad.value = true;
-      intersectionObserver?.disconnect();
+      observer.disconnect();
       intersectionObserver = null;
     },
     { rootMargin: '100px' },
   );
 
-  intersectionObserver.observe(thumbnailRef.value);
+  intersectionObserver = observer;
+  observer.observe(thumbnailRef.value);
 }
 
-watch(
-  [() => props.itemId, () => props.imageUrl, () => shouldLoad.value],
-  async ([id]) => {
-    const currentSequence = ++loadSequenceCounter.value;
-    revokeCurrentObjectUrl();
+async function resolveImage() {
+  const currentSequence = ++loadSequenceCounter.value;
+  revokeCurrentObjectUrl();
 
-    if (props.imageUrl && props.imageUrl.trim().length > 0) {
-      imageSrc.value = props.imageUrl;
-      isLoading.value = false;
+  if (props.imageUrl && props.imageUrl.trim().length > 0) {
+    imageSrc.value = props.imageUrl;
+    isLoading.value = false;
+    return;
+  }
+
+  if (!shouldLoad.value) {
+    imageSrc.value = PLACEHOLDER;
+    isLoading.value = false;
+    return;
+  }
+
+  const id = props.itemId;
+  if (!id) {
+    imageSrc.value = PLACEHOLDER;
+    isLoading.value = false;
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    const resolvedImageUrl = await getImageByItemId(id);
+    if (currentSequence !== loadSequenceCounter.value) {
       return;
     }
 
-    if (!shouldLoad.value) {
-      imageSrc.value = PLACEHOLDER;
-      isLoading.value = false;
-      return;
-    }
-
-    if (id) {
-      isLoading.value = true;
-      try {
-        const resolvedImageUrl = await getImageByItemId(id);
-        if (currentSequence !== loadSequenceCounter.value) {
-          return;
-        }
-
-        if (resolvedImageUrl) {
-          imageSrc.value = resolvedImageUrl;
-          currentObjectUrl.value = resolvedImageUrl;
-        } else {
-          imageSrc.value = PLACEHOLDER;
-        }
-      } catch {
-        imageSrc.value = PLACEHOLDER;
-      } finally {
-        if (currentSequence === loadSequenceCounter.value) {
-          isLoading.value = false;
-        }
-      }
+    if (resolvedImageUrl) {
+      imageSrc.value = resolvedImageUrl;
+      currentObjectUrl.value = resolvedImageUrl;
     } else {
       imageSrc.value = PLACEHOLDER;
+    }
+  } catch {
+    imageSrc.value = PLACEHOLDER;
+  } finally {
+    if (currentSequence === loadSequenceCounter.value) {
       isLoading.value = false;
     }
-  },
-  { immediate: true },
-);
+  }
+}
 
-onMounted(() => {
-  startLazyLoadObservation();
+function scheduleResolveImage() {
+  if (resolveImageQueued) return;
+  resolveImageQueued = true;
+  queueMicrotask(() => {
+    resolveImageQueued = false;
+    void resolveImage();
+  });
+}
+
+watch([() => props.itemId, () => props.imageUrl], () => {
+  scheduleResolveImage();
+}, { immediate: true });
+
+watch(shouldLoad, () => {
+  scheduleResolveImage();
 });
 
-watch(thumbnailRef, () => {
+onMounted(() => {
   startLazyLoadObservation();
 });
 
