@@ -44,6 +44,8 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUser | null>(null);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
+  const isInitialized = ref(false);
+  let initializePromise: Promise<void> | null = null;
 
   // ゲッター
   const isAuthenticated = computed(() => user.value !== null);
@@ -120,40 +122,50 @@ export const useAuthStore = defineStore('auth', () => {
    * キャッシュがない場合は user = null のまま（ナビゲーションガードがログインページへ誘導する）。
    */
   async function initialize(): Promise<void> {
-    isLoading.value = true;
-    try {
-      // loginRedirect() 復帰時の結果を先に処理する
-      const redirectResult = await msalService.handleRedirectPromise();
-      if (redirectResult) {
-        user.value = extractUser(redirectResult);
-        const returnUrl = sanitizeReturnUrl(redirectResult.state);
-        console.info('[Auth] リダイレクトログイン成功');
-        await router.replace(returnUrl || '/');
-        return;
-      }
+    if (isInitialized.value) return Promise.resolve();
+    if (initializePromise) return initializePromise;
 
-      const result = await msalService.acquireTokenSilent();
-      if (result) {
-        user.value = extractUser(result);
-        console.info('[Auth] セッション復元成功');
+    initializePromise = (async () => {
+      isLoading.value = true;
+      try {
+        // loginRedirect() 復帰時の結果を先に処理する
+        const redirectResult = await msalService.handleRedirectPromise();
+        if (redirectResult) {
+          user.value = extractUser(redirectResult);
+          const returnUrl = sanitizeReturnUrl(redirectResult.state);
+          console.info('[Auth] リダイレクトログイン成功');
+          await router.replace(returnUrl || '/');
+          return;
+        }
+
+        const result = await msalService.acquireTokenSilent();
+        if (result) {
+          user.value = extractUser(result);
+          console.info('[Auth] セッション復元成功');
+        }
+      } catch (err) {
+        // MSAL 初期化エラーの場合は詳細をログ出力
+        if (err instanceof Error && err.message.includes('VITE_AZURE')) {
+          console.error('[Auth] MSAL 設定エラー:', err.message);
+          error.value = err.message;
+        } else {
+          console.warn('[Auth] セッション復元失敗', err);
+        }
+      } finally {
+        isLoading.value = false;
+        isInitialized.value = true;
+        initializePromise = null;
       }
-    } catch (err) {
-      // MSAL 初期化エラーの場合は詳細をログ出力
-      if (err instanceof Error && err.message.includes('VITE_AZURE')) {
-        console.error('[Auth] MSAL 設定エラー:', err.message);
-        error.value = err.message;
-      } else {
-        console.warn('[Auth] セッション復元失敗', err);
-      }
-    } finally {
-      isLoading.value = false;
-    }
+    })();
+
+    return initializePromise;
   }
 
   return {
     user,
     isLoading,
     error,
+    isInitialized,
     isAuthenticated,
     login,
     logout,
