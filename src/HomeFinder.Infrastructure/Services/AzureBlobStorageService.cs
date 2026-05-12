@@ -21,7 +21,21 @@ public class AzureBlobStorageService : IBlobStorageService
         var connectionString = configuration.GetConnectionString("AzureBlobStorage")
             ?? throw new InvalidOperationException("AzureBlobStorage 接続文字列が設定されていません。");
         var containerName = configuration["AzureBlobStorage:ContainerName"] ?? "images";
-        _containerClient = new BlobContainerClient(connectionString, containerName);
+
+        // AzureBlobStorage:ServiceVersion が設定されている場合は、指定されたAPIバージョンを使用する。
+        // Azuriteなど最新APIバージョン非対応の環境向けに旧バージョンを指定できる。
+        // 設定が未指定または無効な値の場合はSDKのデフォルトバージョンにフォールバックする。
+        var serviceVersionStr = configuration["AzureBlobStorage:ServiceVersion"];
+        if (!string.IsNullOrEmpty(serviceVersionStr)
+            && Enum.TryParse<BlobClientOptions.ServiceVersion>(serviceVersionStr, out var serviceVersion))
+        {
+            var clientOptions = new BlobClientOptions(serviceVersion);
+            _containerClient = new BlobContainerClient(connectionString, containerName, clientOptions);
+        }
+        else
+        {
+            _containerClient = new BlobContainerClient(connectionString, containerName);
+        }
     }
 
     /// <inheritdoc />
