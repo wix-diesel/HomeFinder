@@ -6,7 +6,7 @@
 
 ## Content Quality
 
-- [ ] No implementation details (languages, frameworks, APIs)
+- [x] No implementation details (languages, frameworks, APIs)
 - [x] Focused on user value and business needs
 - [x] Written for non-technical stakeholders
 - [x] All mandatory sections completed
@@ -27,17 +27,9 @@
 - [x] All functional requirements have clear acceptance criteria
 - [x] User scenarios cover primary flows
 - [x] Feature meets measurable outcomes defined in Success Criteria
-- [ ] No implementation details leak into specification
+- [x] No implementation details leak into specification
 
 ## Notes
 
-- Failing items:
-  - "No implementation details" and "No implementation details leak into specification" fail because the spec explicitly references "楽天 RapidAPI" as the data source. Quotation from spec:
-
-    "システムは楽天 RapidAPIを用いてJANコードで商品検索を行うこと"
-
-  - If avoiding the mention of a specific provider is required, replace the explicit provider name with a generic description (e.g., "外部商品検索API").
-
-- All other checklist items pass. Proceed to planning unless the provider mention needs to be removed or generalized.
-
-- Items marked incomplete require spec updates before `/speckit.clarify` or `/speckit.plan`
+- 2026-05-14 更新: 仕様内のプロバイダ固有名を「外部商品検索API」に一般化し、実装詳細の漏れを解消。
+- すべてのチェック項目が完了。
