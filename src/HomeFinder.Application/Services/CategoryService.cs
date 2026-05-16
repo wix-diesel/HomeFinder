@@ -3,12 +3,12 @@
 using DotNext;
 using HomeFinder.Application.Contracts;
 using HomeFinder.Application.Repositories;
+using HomeFinder.Application.Utils;
 using HomeFinder.Core.Errors;
 using HomeFinder.Core.Entities;
 using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Globalization;
 
 namespace HomeFinder.Application.Services
 {
@@ -92,6 +92,9 @@ namespace HomeFinder.Application.Services
                     Id = Guid.NewGuid(),
                     Name = request.Name.Trim(),
                     NormalizedName = normalizedName,
+                    Source = "manual",
+                    ExternalId = null,
+                    CreatedBy = "system:category-service",
                     Icon = request.Icon,
                     Color = request.Color,
                     IsReserved = false,
@@ -210,12 +213,7 @@ namespace HomeFinder.Application.Services
         /// </summary>
         private static string NormalizeName(string name)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Name cannot be empty");
-
-            var trimmed = name.Trim();
-            var normalized = trimmed.Normalize(NormalizationForm.FormKC);
-            return normalized.ToLower(CultureInfo.InvariantCulture);
+            return CategoryNormalizer.Normalize(name);
         }
 
         /// <summary>
@@ -228,6 +226,9 @@ namespace HomeFinder.Application.Services
                 Id = category.Id,
                 Name = category.Name,
                 NormalizedName = category.NormalizedName,
+                Source = category.Source,
+                ExternalId = category.ExternalId,
+                CreatedBy = category.CreatedBy,
                 Icon = category.Icon,
                 Color = category.Color,
                 IsReserved = category.IsReserved,

@@ -41,6 +41,7 @@ builder.Services.AddScoped<IImageRepository, ImageRepository>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddScoped<IItemLookupService, ItemLookupService>();
 builder.Services.AddHttpClient<IJanProductSearchService, JanProductSearchService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(10);

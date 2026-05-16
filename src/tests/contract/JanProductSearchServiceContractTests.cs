@@ -131,7 +131,10 @@ public class JanProductSearchServiceContractTests
             Timeout = TimeSpan.FromSeconds(3),
         };
 
-        return new JanProductSearchService(httpClient, configuration, NullLogger<JanProductSearchService>.Instance);
+        return new JanProductSearchService(
+            httpClient,
+            configuration,
+            NullLogger<JanProductSearchService>.Instance);
     }
 
     private sealed class StubHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> resolver) : HttpMessageHandler
@@ -139,4 +142,5 @@ public class JanProductSearchServiceContractTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             => Task.FromResult(resolver(request));
     }
+
 }

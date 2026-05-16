@@ -95,3 +95,67 @@ https://openapi.rakuten.co.jp/ichibaproduct/api/Product/Search/20250801?format=j
 - Service Interface: `src/HomeFinder.Application/Services/IJanProductSearchService.cs`
 - Service Implementation: `src/HomeFinder.Infrastructure/Services/JanProductSearchService.cs`
 - Validator: `src/HomeFinder.Application/Helper/JanValidator.cs`
+
+---
+
+## リリースノート（v2.0.0予定）
+
+### 📌 概要
+バーコード読み込みによる商品情報の自動取得機能を実装した新バージョンです。
+既存 API との互換性を保ちながら、カテゴリの自動登録機能を追加しました。
+
+### 🎯 新機能
+
+#### 1. カテゴリ自動登録
+- **対象エンドポイント**: `GET /api/items/lookup` (新規追加)
+- **動作**: バーコード検索で得られた商品情報から、カテゴリ名を取得し、自動的に登録
+- **処理フロー**:
+  1. バーコード → 商品情報取得（楽天 API）
+  2. 商品名からカテゴリ候補を抽出
+  3. 正規化して既存カテゴリの重複確認
+  4. 新規なら追加、既存なら再利用
+
+#### 2. エラーハンドリング強化
+- `409 Conflict`: カテゴリ同時登録時の UNIQUE 制約違反 → 既存を再取得
+- `429 Too Many Requests`: 外部 API レート制限 → 自動リトライ対応
+- `503 Service Unavailable`: 外部 API タイムアウト → 詳細エラー応答
+- `400 Bad Request`: 不正なリクエスト形式 → 詳細エラー応答
+
+#### 3. 監査ログ追加
+- カテゴリ自動登録イベントを `CategoryImportLogger` で記録
+- 同時登録による競合・リトライの追跡が可能
+- 運用時の問題調査に活用
+
+### ✅ 互換性
+
+**既存エンドポイント: `GET /api/products/{jan}`**
+- ✓ 動作変更なし（後方互換性を維持）
+- ✓ レスポンス形式は変更なし
+- ✓ 既存クライアント対応不要
+
+**新規エンドポイント: `GET /api/items/lookup`**
+- カテゴリ自動登録を含むレスポンス
+- 既存フローに影響なし
+
+### 🔧 移行ガイド
+
+#### クライアント側対応（オプション）
+- 新しい `/api/items/lookup` エンドポイントを利用する場合、返却されるカテゴリ情報をそのまま使用
+- 既存の `/api/products/{jan}` を継続使用する場合、対応不要
+
+#### サーバー側デプロイ
+1. データベースマイグレーション実行: `dotnet ef database update --project src/HomeFinder.Infrastructure`
+2. アプリケーション再起動
+3. ロギング設定確認: `appsettings.json` の `Logging` セクションが適切か確認
+
+### 📊 パフォーマンス
+- 外部 API タイムアウト: 3秒（リトライ最大 1回）
+- カテゴリ登録: 正規化 + DB クエリで平均 < 100ms
+
+### 🐛 既知の制限
+- カテゴリ候補の抽出は楽天 API の返却値に依存（抽出率は環境による）
+- 複数言語のカテゴリ名は英数字のみを正規化対象
+
+### 📝 参考ドキュメント
+- [実装計画](../specs/015-barcode-category-autofill/plan.md)
+- [仕様書](../specs/015-barcode-category-autofill/spec.md)

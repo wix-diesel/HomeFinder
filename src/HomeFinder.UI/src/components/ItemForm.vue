@@ -146,7 +146,36 @@ function setupWarnings(result: { name: string | null; manufacturer: string | nul
   }
 
   if (result.name && (result.manufacturer == null || result.price == null)) {
-    lookupWarning.value = '価格またはメーカーが未取得です。警告を確認した上で保存できます。';
+    const warning = '価格またはメーカーが未取得です。警告を確認した上で保存できます。';
+    lookupWarning.value = lookupWarning.value ? `${lookupWarning.value} ${warning}` : warning;
+  }
+}
+
+function applyFetchedCategory(result: { categoryId: string | null; categoryName: string | null }) {
+  if (!result.categoryId) {
+    return;
+  }
+
+  if (!categories.value.some((category) => category.id === result.categoryId)) {
+    categories.value.push({
+      id: result.categoryId,
+      name: result.categoryName ?? '未分類',
+      normalizedName: (result.categoryName ?? '未分類').toLowerCase(),
+      icon: null,
+      color: null,
+      isReserved: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  if (!formState.categoryId) {
+    formState.categoryId = result.categoryId;
+    return;
+  }
+
+  if (formState.categoryId !== result.categoryId) {
+    lookupWarning.value = 'カテゴリは既存入力を優先しました。必要に応じてカテゴリを変更してください。';
   }
 }
 
@@ -194,6 +223,7 @@ async function lookupByJan(rawJan: string) {
       applyFetchedValues(fetched);
     }
 
+    applyFetchedCategory(result);
     setupWarnings(result);
     formState.barcodeLookupStatus = 'success';
   } catch (error) {

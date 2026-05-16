@@ -29,6 +29,21 @@ namespace HomeFinder.Application.Contracts
         public string NormalizedName { get; set; } = string.Empty;
 
         /// <summary>
+        /// カテゴリーの作成元
+        /// </summary>
+        public string Source { get; set; } = "manual";
+
+        /// <summary>
+        /// 外部システムのカテゴリー識別子
+        /// </summary>
+        public string? ExternalId { get; set; }
+
+        /// <summary>
+        /// 作成者識別子
+        /// </summary>
+        public string CreatedBy { get; set; } = "system";
+
+        /// <summary>
         /// Material Symbols Outlined アイコン名
         /// 例: "restaurant", "book", "home" など
         /// </summary>

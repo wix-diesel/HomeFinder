@@ -19,4 +19,19 @@ public class JanProductDto
     /// 価格。取得できない場合は null。
     /// </summary>
     public decimal? Price { get; set; }
+
+    /// <summary>
+    /// カテゴリー ID。未解決の場合は null。
+    /// </summary>
+    public Guid? CategoryId { get; set; }
+
+    /// <summary>
+    /// カテゴリー表示名。取得できない場合は null。
+    /// </summary>
+    public string? CategoryName { get; set; }
+
+    /// <summary>
+    /// 外部カテゴリー識別子。取得できない場合は null。
+    /// </summary>
+    public string? CategoryExternalId { get; set; }
 }

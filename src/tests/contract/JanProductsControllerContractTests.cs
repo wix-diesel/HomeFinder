@@ -13,8 +13,8 @@ public class JanProductsControllerContractTests
     [Fact]
     public async Task SearchByJan_InvalidJan_ReturnsBadRequest()
     {
-        var controller = new JanProductsController(new StubJanProductSearchService(_ =>
-            Task.FromResult(new Result<JanProductDto>(new JanProductNotFoundException("dummy")))));
+        var controller = new JanProductsController(new StubItemLookupService(_ =>
+            Task.FromResult(new Result<ItemLookupResultDto>(new JanProductNotFoundException("dummy")))));
 
         var response = await controller.SearchByJan("abc", CancellationToken.None);
 
@@ -26,8 +26,8 @@ public class JanProductsControllerContractTests
     [Fact]
     public async Task SearchByJan_ProductFound_ReturnsOk()
     {
-        var controller = new JanProductsController(new StubJanProductSearchService(_ =>
-            Task.FromResult(new Result<JanProductDto>(new JanProductDto
+        var controller = new JanProductsController(new StubItemLookupService(_ =>
+            Task.FromResult(new Result<ItemLookupResultDto>(new ItemLookupResultDto
             {
                 Name = "テスト商品",
                 Manufacturer = "メーカー",
@@ -41,13 +41,48 @@ public class JanProductsControllerContractTests
         Assert.Equal("テスト商品", payload.Name);
         Assert.Equal("メーカー", payload.Manufacturer);
         Assert.Equal(1980m, payload.Price);
+        // 既存クライアント互換: 既存フィールドはそのまま取得できる。
+        Assert.Null(payload.CategoryId);
+        Assert.Null(payload.CategoryName);
+        Assert.Null(payload.CategoryExternalId);
+    }
+
+    [Fact]
+    public async Task SearchByJan_ProductFound_WithCategoryMetadata_RemainsBackwardCompatible()
+    {
+        var categoryId = Guid.NewGuid();
+        var controller = new JanProductsController(new StubItemLookupService(_ =>
+            Task.FromResult(new Result<ItemLookupResultDto>(new ItemLookupResultDto
+            {
+                Name = "テスト商品",
+                Manufacturer = "メーカー",
+                Price = 1980m,
+                CategoryId = categoryId,
+                CategoryName = "食品",
+                CategoryExternalId = "12345",
+            }))));
+
+        var response = await controller.SearchByJan("4901234567890", CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(response.Result);
+        var payload = Assert.IsType<JanProductDto>(ok.Value);
+
+        // 互換性確認: 既存3項目が維持される。
+        Assert.Equal("テスト商品", payload.Name);
+        Assert.Equal("メーカー", payload.Manufacturer);
+        Assert.Equal(1980m, payload.Price);
+
+        // 拡張項目は追加情報として受け取れる。
+        Assert.Equal(categoryId, payload.CategoryId);
+        Assert.Equal("食品", payload.CategoryName);
+        Assert.Equal("12345", payload.CategoryExternalId);
     }
 
     [Fact]
     public async Task SearchByJan_Ean8ProductFound_ReturnsOk()
     {
-        var controller = new JanProductsController(new StubJanProductSearchService(_ =>
-            Task.FromResult(new Result<JanProductDto>(new JanProductDto
+        var controller = new JanProductsController(new StubItemLookupService(_ =>
+            Task.FromResult(new Result<ItemLookupResultDto>(new ItemLookupResultDto
             {
                 Name = "EAN8商品",
                 Manufacturer = "メーカーB",
@@ -71,7 +106,7 @@ public class JanProductsControllerContractTests
     [InlineData("unknown", 500)]
     public async Task SearchByJan_ErrorMapping_ReturnsExpectedStatus(string mode, int expectedStatus)
     {
-        var controller = new JanProductsController(new StubJanProductSearchService(_ =>
+        var controller = new JanProductsController(new StubItemLookupService(_ =>
         {
             Exception error = mode switch
             {
@@ -81,7 +116,7 @@ public class JanProductsControllerContractTests
                 "auth" => new ExternalProductApiAuthenticationException("auth"),
                 _ => new ExternalProductApiException("unknown"),
             };
-            return Task.FromResult(new Result<JanProductDto>(error));
+            return Task.FromResult(new Result<ItemLookupResultDto>(error));
         }));
 
         var response = await controller.SearchByJan("4901234567890", CancellationToken.None);
@@ -90,10 +125,10 @@ public class JanProductsControllerContractTests
         Assert.Equal(expectedStatus, objectResult.StatusCode);
     }
 
-    private sealed class StubJanProductSearchService(
-        Func<string, Task<Result<JanProductDto>>> resolver) : IJanProductSearchService
+    private sealed class StubItemLookupService(
+        Func<string, Task<Result<ItemLookupResultDto>>> resolver) : IItemLookupService
     {
-        public Task<Result<JanProductDto>> SearchByJanAsync(string jan, CancellationToken cancellationToken = default)
+        public Task<Result<ItemLookupResultDto>> LookupByBarcode(string jan, CancellationToken cancellationToken = default)
             => resolver(jan);
     }
 }
