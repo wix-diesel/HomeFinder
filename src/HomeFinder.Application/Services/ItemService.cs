@@ -164,6 +164,8 @@ public class ItemService(
             item.Barcode = request.Barcode?.Trim();
             item.Price = request.Price;
             item.CategoryId = request.CategoryId;
+            // 非追跡 + Include で読み込んだ既存ナビゲーションが FK を上書きしないように明示的に切り離す
+            item.Category = null;
             item.UpdatedAtUtc = operationTime;
 
             if (!string.Equals(previousName, normalizedName, StringComparison.Ordinal))
