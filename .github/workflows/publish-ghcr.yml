@@ -1,0 +1,82 @@
+name: Publish Containers to GHCR
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  # main ブランチの publish 実行を直列化し、古い実行を打ち切る
+  group: publish-ghcr-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-api:
+    name: Publish API Container
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: GitHub Container Registry にログイン
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: API イメージのメタデータを生成
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/homefinder-api
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: API イメージをビルドしてプッシュ
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/HomeFinder.Api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  publish-ui:
+    name: Publish UI Container
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: GitHub Container Registry にログイン
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: UI イメージのメタデータを生成
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/homefinder-ui
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: UI イメージをビルドしてプッシュ
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/HomeFinder.UI/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
