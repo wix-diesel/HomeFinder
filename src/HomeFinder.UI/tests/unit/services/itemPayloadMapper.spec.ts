@@ -157,7 +157,25 @@ describe('toUpdateItemRequest', () => {
     });
   });
 
-  it('空文字フィールドはpayloadに含めない', () => {
+  it('カテゴリIDの前後空白を除去して送信する', () => {
+    const request = toUpdateItemRequest({
+      name: 'テストアイテム',
+      quantity: 1,
+      categoryId: ' 550e8400-e29b-41d4-a716-446655440001 ',
+      manufacturer: '',
+      priceInput: '',
+      note: '',
+      barcode: '',
+      description: '',
+      isSubmitting: false,
+      fieldErrors: {},
+      submitError: null,
+    });
+
+    expect(request.categoryId).toBe('550e8400-e29b-41d4-a716-446655440001');
+  });
+
+  it('カテゴリ未選択時は categoryId を null で送信する', () => {
     const request = toUpdateItemRequest({
       name: 'テストアイテム',
       quantity: 1,
@@ -172,7 +190,7 @@ describe('toUpdateItemRequest', () => {
       submitError: null,
     });
 
-    expect(Object.prototype.hasOwnProperty.call(request, 'categoryId')).toBe(false);
+    expect(request.categoryId).toBeNull();
     expect(Object.prototype.hasOwnProperty.call(request, 'manufacturer')).toBe(false);
     expect(Object.prototype.hasOwnProperty.call(request, 'price')).toBe(false);
     expect(Object.prototype.hasOwnProperty.call(request, 'note')).toBe(false);
