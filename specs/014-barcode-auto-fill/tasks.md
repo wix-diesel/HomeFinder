@@ -16,9 +16,9 @@
 
 **目的**: バーコード自動入力機能の実装・検証に必要な土台を準備する。
 
-- [ ] T001 feature 文書の最終整合を確認し実装対象を固定する（specs/014-barcode-auto-fill/spec.md, specs/014-barcode-auto-fill/plan.md, specs/014-barcode-auto-fill/contracts/barcode-product-lookup-api.md）
-- [ ] T002 バーコード機能用テストファイル雛形を作成する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts, src/HomeFinder.UI/tests/unit/services/productLookupService.spec.ts, src/HomeFinder.UI/tests/unit/composables/useBarcodeScanner.spec.ts）
-- [ ] T003 [P] バーコード関連 UI 文言キーを追加する（src/HomeFinder.UI/src/constants/uiText.ts）
+- [X] T001 feature 文書の最終整合を確認し実装対象を固定する（specs/014-barcode-auto-fill/spec.md, specs/014-barcode-auto-fill/plan.md, specs/014-barcode-auto-fill/contracts/barcode-product-lookup-api.md）
+- [X] T002 バーコード機能用テストファイル雛形を作成する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts, src/HomeFinder.UI/tests/unit/services/productLookupService.spec.ts, src/HomeFinder.UI/tests/unit/composables/useBarcodeScanner.spec.ts）
+- [X] T003 [P] バーコード関連 UI 文言キーを追加する（src/HomeFinder.UI/src/constants/uiText.ts）
 
 ---
 
@@ -28,12 +28,12 @@
 
 **⚠️ 重要**: このフェーズ完了までユーザーストーリー実装を開始しない。
 
-- [ ] T004 JAN 入力検証ユーティリティを実装する（src/HomeFinder.UI/src/utils/jan.ts）
-- [ ] T005 商品検索 API クライアントの型とエラーモデルを実装する（src/HomeFinder.UI/src/services/productLookupService.ts）
-- [ ] T006 [P] 商品検索 API の 3 秒タイムアウトとエラーコードマッピングを実装する（src/HomeFinder.UI/src/services/productLookupService.ts）
-- [ ] T007 バーコード読み取りセッション状態モデルを追加する（src/HomeFinder.UI/src/models/itemRegistrationFormState.ts）
-- [ ] T008 [P] productLookupService の単体テストを実装する（src/HomeFinder.UI/tests/unit/services/productLookupService.spec.ts）
-- [ ] T009 JAN 検索 API の契約回帰テストケースを追加する（src/tests/contract/JanProductsControllerContractTests.cs）
+- [X] T004 JAN 入力検証ユーティリティを実装する（src/HomeFinder.UI/src/utils/jan.ts）
+- [X] T005 商品検索 API クライアントの型とエラーモデルを実装する（src/HomeFinder.UI/src/services/productLookupService.ts）
+- [X] T006 [P] 商品検索 API の 3 秒タイムアウトとエラーコードマッピングを実装する（src/HomeFinder.UI/src/services/productLookupService.ts）
+- [X] T007 バーコード読み取りセッション状態モデルを追加する（src/HomeFinder.UI/src/models/itemRegistrationFormState.ts）
+- [X] T008 [P] productLookupService の単体テストを実装する（src/HomeFinder.UI/tests/unit/services/productLookupService.spec.ts）
+- [X] T009 JAN 検索 API の契約回帰テストケースを追加する（src/tests/contract/JanProductsControllerContractTests.cs）
 
 **チェックポイント**: 検索基盤・入力検証・回帰テスト土台が揃い、各ストーリーへ着手可能。
 
@@ -46,16 +46,16 @@
 
 ### テスト（US1）
 
-- [ ] T010 [P] [US1] カメラ読み取り開始/停止と成功遷移の composable テストを実装する（src/HomeFinder.UI/tests/unit/composables/useBarcodeScanner.spec.ts）
-- [ ] T011 [P] [US1] ItemForm のカメラ起動と自動入力反映テストを実装する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
+- [X] T010 [P] [US1] カメラ読み取り開始/停止と成功遷移の composable テストを実装する（src/HomeFinder.UI/tests/unit/composables/useBarcodeScanner.spec.ts）
+- [X] T011 [P] [US1] ItemForm のカメラ起動と自動入力反映テストを実装する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
 
 ### 実装（US1）
 
-- [ ] T012 [P] [US1] カメラ権限取得・ストリーム制御・BarcodeDetector 読み取り処理を実装する（src/HomeFinder.UI/src/composables/useBarcodeScanner.ts）
-- [ ] T013 [P] [US1] カメラプレビューと読み取り結果イベントを持つダイアログを実装する（src/HomeFinder.UI/src/components/BarcodeScannerDialog.vue）
-- [ ] T014 [US1] ItemForm にカメラアイコン、ダイアログ起動、読み取り成功時の JAN 反映処理を実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
-- [ ] T015 [US1] 読み取り成功後に productLookupService を呼び出して商品名・メーカー・価格を反映する（src/HomeFinder.UI/src/components/ItemForm.vue）
-- [ ] T016 [US1] 作成/編集画面のフォーム初期値とバーコード自動入力の整合を確認し必要な連携修正を行う（src/HomeFinder.UI/src/pages/ItemCreatePage.vue）
+- [X] T012 [P] [US1] カメラ権限取得・ストリーム制御・BarcodeDetector 読み取り処理を実装する（src/HomeFinder.UI/src/composables/useBarcodeScanner.ts）
+- [X] T013 [P] [US1] カメラプレビューと読み取り結果イベントを持つダイアログを実装する（src/HomeFinder.UI/src/components/BarcodeScannerDialog.vue）
+- [X] T014 [US1] ItemForm にカメラアイコン、ダイアログ起動、読み取り成功時の JAN 反映処理を実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
+- [X] T015 [US1] 読み取り成功後に productLookupService を呼び出して商品名・メーカー・価格を反映する（src/HomeFinder.UI/src/components/ItemForm.vue）
+- [X] T016 [US1] 作成/編集画面のフォーム初期値とバーコード自動入力の整合を確認し必要な連携修正を行う（src/HomeFinder.UI/src/pages/ItemCreatePage.vue）
 
 **チェックポイント**: US1 のみでカメラ読み取り起点の自動入力が動作し、単独でデモ可能。
 
@@ -68,14 +68,14 @@
 
 ### テスト（US2）
 
-- [ ] T017 [P] [US2] 手入力 Enter で検索起動する ItemForm テストを実装する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
-- [ ] T018 [P] [US2] JAN 形式不正時に API 呼び出しを抑止するテストを実装する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
+- [X] T017 [P] [US2] 手入力 Enter で検索起動する ItemForm テストを実装する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
+- [X] T018 [P] [US2] JAN 形式不正時に API 呼び出しを抑止するテストを実装する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
 
 ### 実装（US2）
 
-- [ ] T019 [US2] ItemForm のバーコード欄 Enter ハンドリングを実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
-- [ ] T020 [US2] JAN 形式バリデーション失敗時のエラー表示と再入力導線を実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
-- [ ] T021 [US2] 手入力検索結果の反映をカメラ経路と共通化する（src/HomeFinder.UI/src/components/ItemForm.vue, src/HomeFinder.UI/src/services/productLookupService.ts）
+- [X] T019 [US2] ItemForm のバーコード欄 Enter ハンドリングを実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
+- [X] T020 [US2] JAN 形式バリデーション失敗時のエラー表示と再入力導線を実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
+- [X] T021 [US2] 手入力検索結果の反映をカメラ経路と共通化する（src/HomeFinder.UI/src/components/ItemForm.vue, src/HomeFinder.UI/src/services/productLookupService.ts）
 
 **チェックポイント**: US2 のみで手入力運用が成立し、カメラ無し環境でも価値提供できる。
 
@@ -88,18 +88,18 @@
 
 ### テスト（US3）
 
-- [ ] T022 [P] [US3] タイムアウト・未検出・レートリミットの表示テストを実装する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
-- [ ] T023 [P] [US3] 差分選択（既存値/取得値）と保存可否ルールのテストを実装する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
-- [ ] T024 [P] [US3] 同時 1 件制御と 500ms クールダウンのテストを実装する（src/HomeFinder.UI/tests/unit/composables/useBarcodeScanner.spec.ts）
+- [X] T022 [P] [US3] タイムアウト・未検出・レートリミットの表示テストを実装する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
+- [X] T023 [P] [US3] 差分選択（既存値/取得値）と保存可否ルールのテストを実装する（src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
+- [X] T024 [P] [US3] 同時 1 件制御と 500ms クールダウンのテストを実装する（src/HomeFinder.UI/tests/unit/composables/useBarcodeScanner.spec.ts）
 
 ### 実装（US3）
 
-- [ ] T025 [US3] API エラーコード別メッセージと手動再試行 UI を実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
-- [ ] T026 [US3] 既存入力値と取得値の差分表示および項目単位採用 UI を実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
-- [ ] T027 [US3] 商品名欠損時の保存不可と価格/メーカー欠損時の警告表示ルールを実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
-- [ ] T028 [US3] 連続入力時の前回検索キャンセル、同時 1 件制限、完了後 500ms クールダウンを実装する（src/HomeFinder.UI/src/composables/useBarcodeScanner.ts, src/HomeFinder.UI/src/components/ItemForm.vue）
-- [ ] T029 [US3] バーコード関連文言を最終調整し UX 表示を統一する（src/HomeFinder.UI/src/constants/uiText.ts）
-- [ ] T030 [US3] 失敗理由に応じた推奨アクション表示（再試行/手動入力継続）を実装する（src/HomeFinder.UI/src/components/ItemForm.vue, src/HomeFinder.UI/src/constants/uiText.ts）
+- [X] T025 [US3] API エラーコード別メッセージと手動再試行 UI を実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
+- [X] T026 [US3] 既存入力値と取得値の差分表示および項目単位採用 UI を実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
+- [X] T027 [US3] 商品名欠損時の保存不可と価格/メーカー欠損時の警告表示ルールを実装する（src/HomeFinder.UI/src/components/ItemForm.vue）
+- [X] T028 [US3] 連続入力時の前回検索キャンセル、同時 1 件制限、完了後 500ms クールダウンを実装する（src/HomeFinder.UI/src/composables/useBarcodeScanner.ts, src/HomeFinder.UI/src/components/ItemForm.vue）
+- [X] T029 [US3] バーコード関連文言を最終調整し UX 表示を統一する（src/HomeFinder.UI/src/constants/uiText.ts）
+- [X] T030 [US3] 失敗理由に応じた推奨アクション表示（再試行/手動入力継続）を実装する（src/HomeFinder.UI/src/components/ItemForm.vue, src/HomeFinder.UI/src/constants/uiText.ts）
 
 **チェックポイント**: 失敗時の復旧導線とデータ品質ルールが成立し、US3 単独で受け入れ可能。
 
@@ -109,13 +109,13 @@
 
 **目的**: ドキュメント更新と最終検証を完了する。
 
-- [ ] T031 [P] 契約と quickstart の最終整合を反映する（specs/014-barcode-auto-fill/contracts/barcode-product-lookup-api.md, specs/014-barcode-auto-fill/quickstart.md）
-- [ ] T032 テスト実行手順を実施して結果を記録する（src/HomeFinder.UI/tests/unit/, src/tests/contract/contract.csproj）
-- [ ] T033 実装内容を反映して仕様差分を最終確認する（specs/014-barcode-auto-fill/spec.md, specs/014-barcode-auto-fill/plan.md, specs/014-barcode-auto-fill/tasks.md）
-- [ ] T034 [P] SC-001 測定タスク: 主要3項目入力が 30 秒以内に完了できるか計測し記録する（specs/014-barcode-auto-fill/quickstart.md, src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
-- [ ] T035 [P] SC-002 測定タスク: 有効JAN入力時の自動入力成功率 95% 以上を検証し記録する（specs/014-barcode-auto-fill/quickstart.md, src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
-- [ ] T036 [P] SC-003 測定タスク: 失敗/未検出時に 10 秒以内で次アクション選択可能か検証し記録する（specs/014-barcode-auto-fill/quickstart.md, src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
-- [ ] T037 [P] SC-004 測定タスク: 手動運用比 30% 以上の入力時間短縮を計測し記録する（specs/014-barcode-auto-fill/quickstart.md, src/HomeFinder.UI/tests/unit/components/ItemForm.barcode.spec.ts）
+- [X] T031 [P] 契約と quickstart の最終整合を反映する（specs/014-barcode-auto-fill/contracts/barcode-product-lookup-api.md, specs/014-barcode-auto-fill/quickstart.md）
+- [X] T032 テスト実行手順を実施して結果を記録する（src/HomeFinder.UI/tests/unit/, src/tests/contract/contract.csproj）
+- [X] T033 実装内容を反映して仕様差分を最終確認する（specs/014-barcode-auto-fill/spec.md, specs/014-barcode-auto-fill/plan.md, specs/014-barcode-auto-fill/tasks.md）
+- [X] T034 [P] SC-001 測定タスク: 主要3項目入力が 30 秒以内に完了できるか計測し記録する（specs/014-barcode-auto-fill/quickstart.md, src/HomeFinder.UI/tests/unit/components/ItemForm.sc-metrics.spec.ts）
+- [X] T035 [P] SC-002 測定タスク: 有効JAN入力時の自動入力成功率 95% 以上を検証し記録する（specs/014-barcode-auto-fill/quickstart.md, src/HomeFinder.UI/tests/unit/components/ItemForm.sc-metrics.spec.ts）
+- [X] T036 [P] SC-003 測定タスク: 失敗/未検出時に 10 秒以内で次アクション選択可能か検証し記録する（specs/014-barcode-auto-fill/quickstart.md, src/HomeFinder.UI/tests/unit/components/ItemForm.sc-metrics.spec.ts）
+- [X] T037 [P] SC-004 測定タスク: 手動運用比 30% 以上の入力時間短縮を計測し記録する（specs/014-barcode-auto-fill/quickstart.md, src/HomeFinder.UI/tests/unit/components/ItemForm.sc-metrics.spec.ts）
 
 ---
 

@@ -43,6 +43,26 @@ public class JanProductsControllerContractTests
         Assert.Equal(1980m, payload.Price);
     }
 
+    [Fact]
+    public async Task SearchByJan_Ean8ProductFound_ReturnsOk()
+    {
+        var controller = new JanProductsController(new StubJanProductSearchService(_ =>
+            Task.FromResult(new Result<JanProductDto>(new JanProductDto
+            {
+                Name = "EAN8商品",
+                Manufacturer = "メーカーB",
+                Price = null,
+            }))));
+
+        var response = await controller.SearchByJan("49012345", CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(response.Result);
+        var payload = Assert.IsType<JanProductDto>(ok.Value);
+        Assert.Equal("EAN8商品", payload.Name);
+        Assert.Equal("メーカーB", payload.Manufacturer);
+        Assert.Null(payload.Price);
+    }
+
     [Theory]
     [InlineData("notfound", 404)]
     [InlineData("ratelimit", 429)]

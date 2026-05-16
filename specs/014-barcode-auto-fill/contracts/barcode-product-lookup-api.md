@@ -34,10 +34,10 @@
 
 | Status | Code | frontend の扱い |
 |---|---|---|
-| 400 | `VALIDATION_ERROR` | JAN形式エラーとして表示（再入力促進） |
-| 404 | `PRODUCT_NOT_FOUND` | 商品未検出メッセージ表示 |
-| 429 | `RATE_LIMITED` | 混雑メッセージ表示、手動再試行を案内 |
-| 500 | `UPSTREAM_AUTH_FAILED` / `INTERNAL_SERVER_ERROR` | 取得失敗メッセージ表示 |
+| 400 | `VALIDATION_ERROR` | フォーム送信エラー領域に形式エラー表示、再入力を促す |
+| 404 | `PRODUCT_NOT_FOUND` | フォーム送信エラー領域に未検出表示、手動入力継続を案内 |
+| 429 | `RATE_LIMITED` | フォーム送信エラー領域に混雑表示、手動再試行を案内 |
+| 500 | `UPSTREAM_AUTH_FAILED` / `INTERNAL_SERVER_ERROR` | フォーム送信エラー領域に取得失敗表示 |
 | 503 | `UPSTREAM_TIMEOUT` | 3秒以内失敗表示、手動再試行のみ |
 
 ## frontend 振る舞い契約
@@ -52,6 +52,7 @@
 - API 呼び出しは 3 秒でタイムアウト扱いにする
 - 自動再試行は行わない
 - 再試行はユーザー操作（ボタン/再実行）でのみ実施する
+- 失敗理由に応じて推奨アクション（再試行/手動入力継続）を表示する
 
 ### 3. 競合時の値反映
 
