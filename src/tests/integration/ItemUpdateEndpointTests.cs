@@ -165,6 +165,15 @@ public class ItemUpdateEndpointTests : IClassFixture<TestApplicationFactory>
         Assert.NotNull(updated);
         Assert.Equal(foodCategory.Id, updated!.CategoryId);
         Assert.Equal("食器", updated.CategoryName);
+
+        // 更新レスポンスだけでなく、再取得結果でもカテゴリ変更が永続化されていることを確認する
+        var getResponse = await _client.GetAsync($"/api/items/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+
+        var reloaded = await getResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(reloaded);
+        Assert.Equal(foodCategory.Id, reloaded!.CategoryId);
+        Assert.Equal("食器", reloaded.CategoryName);
     }
 
     [Fact]
