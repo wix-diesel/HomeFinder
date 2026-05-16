@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+concurrency:
+  # main ブランチの publish 実行を直列化し、古い実行を打ち切る
+  group: publish-ghcr-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   packages: write
