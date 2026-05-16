@@ -66,7 +66,7 @@ export const uiText = {
       barcode: {
         label: 'バーコード',
         placeholder: '例: 4901234567890',
-        helper: '任意です。',
+        helper: 'Enter で検索、カメラでも読み取りできます。',
       },
       description: {
         label: '説明',
@@ -78,6 +78,16 @@ export const uiText = {
         placeholder: '任意',
         helper: '任意です。',
       },
+    },
+    barcode: {
+      openCamera: 'カメラで読み取る',
+      scannerTitle: 'バーコードを読み取る',
+      lookupErrorTitle: '商品情報の取得に失敗しました',
+      lookupWarningTitle: '一部項目が未取得です',
+      applyDiff: '選択内容を反映する',
+      keepCurrent: '現在値を使う',
+      useFetched: '取得値を使う',
+      retryLookup: '再検索',
     },
   },
   settings: {
