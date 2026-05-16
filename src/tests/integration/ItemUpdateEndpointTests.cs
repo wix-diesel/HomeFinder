@@ -108,10 +108,18 @@ public class ItemUpdateEndpointTests : IClassFixture<TestApplicationFactory>
         Assert.NotNull(updated);
         Assert.Equal(foodCategory.Id, updated!.CategoryId);
         Assert.Equal("食器", updated.CategoryName);
+
+        // 再取得して DB 永続化結果も検証する
+        var reloadedResponse = await _client.GetAsync($"/api/items/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, reloadedResponse.StatusCode);
+        var reloaded = await reloadedResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(reloaded);
+        Assert.Equal(foodCategory.Id, reloaded!.CategoryId);
+        Assert.Equal("食器", reloaded.CategoryName);
     }
 
     [Fact]
-    public async Task UpdateItem_Returns200_WithCorrectCategoryName_WhenCategoryChangesFromExistingCategory()
+    public async Task UpdateItem_ChangesCategory_FromExistingToAnother()
     {
         var categoriesResponse = await _client.GetAsync("/api/categories");
         Assert.Equal(HttpStatusCode.OK, categoriesResponse.StatusCode);
