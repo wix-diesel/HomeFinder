@@ -8,5 +8,5 @@
 
 <!-- SPECKIT START -->
 ## Speckit Plan Context
-- 現在の計画: `/specs/012-user-settings/plan.md`
+- 現在の計画: `/specs/014-barcode-auto-fill/plan.md`
 <!-- SPECKIT END -->
