@@ -64,11 +64,7 @@ export function toUpdateItemRequest(formState: ItemRegistrationFormState): Updat
   }
 
   const normalizedCategoryId = formState.categoryId.trim();
-  if (normalizedCategoryId) {
-    payload.categoryId = normalizedCategoryId;
-  } else {
-    payload.categoryId = null;
-  }
+  payload.categoryId = normalizedCategoryId || null;
 
   return payload;
 }
