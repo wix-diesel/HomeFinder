@@ -9,8 +9,15 @@
 
 この機能は、バーコードを起点に商品情報とカテゴリー情報を同時に取得し、商品登録フォームへ自動で反映することで、登録作業の時間短縮と入力ミス低減を達成します。バックエンドは既存のバーコード検索APIを拡張して楽天APIの仕様に合わせ、取得したカテゴリーが未登録の場合は自動で新規登録します。
 
+実装方針（A1）:
+
+- `014-barcode-auto-fill` を親機能として拡張し、015 はカテゴリ関連の差分機能として統合実装する。
+
 計画のフェーズ:
 
+- Phase 0: 調査
+- Phase 1: 設計
+- Phase 2: 実装
 
 成果物: `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, `tasks.md`
 
@@ -70,10 +77,11 @@ Agent context update:
 
 ### バックエンド
 
-- Application 層に `IItemLookupService.LookupByBarcode(string jan)` を追加
+- Application 層に `IItemLookupService.LookupByBarcode(string jan)` を追加（返り値は `DotNext.Result<ItemLookupResult>`）
 - Infrastructure 層で楽天API クライアントを実装し、レスポンスを DTO にマッピング
 - 自動カテゴリ登録ロジック: 取得した `categoryName` を正規化して存在チェック、存在しなければ `Category` を作成（UNIQUE 衝突時は再取得/返却）
 - API エンドポイントの拡張と契約テスト（xUnit）を追加
+- `GET /api/items/lookup` 処理内でカテゴリ自動登録まで完結させる（フロントの追加 API 呼び出しを不要化）
 
 ### DB
 
@@ -91,6 +99,7 @@ Agent context update:
 - 受け入れテスト: ユーザーストーリーごとの End-to-End テスト（簡易：API のモック + フロントのユニット）
 - 契約テスト: `contracts/` に基づく API 契約テスト（xUnit）
 - DB テスト: マイグレーションの検証、重複登録シナリオの統合テスト
+- メトリクス検証: SC-001/SC-002/SC-003 を測定するイベント収集と閾値検証テスト
 
 ## Deliverables
 
@@ -107,10 +116,6 @@ Agent context update:
 ## 実行上の注意
 
 - 既存のバーコード検索APIを破壊しないよう、契約を厳密に守ること。既存クライアントに影響を与えない後方互換性を維持する。
-<!--
-  ACTION REQUIRED: このセクションの内容をプロジェクトの技術詳細に置き換えること。
-  ここの構造はイテレーションプロセスを導くための参考として提示されています。
--->
 
 **言語/バージョン**: C# / .NET 10（バックエンド）、TypeScript + Vue 3（フロントエンド）
 **主要依存関係**: ASP.NET Core Web API、Entity Framework Core、SQL Server、Vue 3、Axios
@@ -150,34 +155,21 @@ specs/015-barcode-category-autofill/
 ```
 
 ### ソースコード (リポジトリルート)
-<!--
-  ACTION REQUIRED: 下記のプレースホルダーをこの機能の具体的なレイアウトに置き換えること。
-  未使用のオプションを削除し、実際のパスで展開すること。
-  最終的な計画にはオプションラベルを含めないこと。
--->
 
 ```text
 src/
-├── HomeFinder.Api/Controllers/ItemsController.cs   # lookup エンドポイントの拡張
-├── HomeFinder.Application/Services/IItemLookupService.cs
-├── HomeFinder.Infrastructure/External/RakutenClient.cs
+├── HomeFinder.Api/Controllers/JanProductsController.cs   # lookup エンドポイントの拡張
+├── HomeFinder.Application/Services/IJanProductSearchService.cs
+├── HomeFinder.Infrastructure/Services/JanProductSearchService.cs
 ├── HomeFinder.Infrastructure/Repositories/CategoryRepository.cs
-└── HomeFinder.Infrastructure/Migrations/XXXX_AddCategoryNormalized.cs
+└── HomeFinder.Infrastructure/Data/Migrations/XXXX_AddCategoryMetadata.cs
 
-frontend/
-├── src/components/ItemRegister.vue
-└── src/services/itemService.ts
-```
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-    └── unit/
+src/HomeFinder.UI/
+├── src/components/ItemForm.vue
+└── src/services/productLookupService.ts
 ```
 
-**構成方針**: [選択した構成を記述し、上記で取得した実際のディレクトリを参照する]
+**構成方針**: 既存の 014 実装経路（`JanProductsController` + `productLookupService.ts` + `ItemForm.vue`）を拡張し、カテゴリ差分を追加する。
 
 ## 複雑性トラッキング
 
@@ -185,5 +177,5 @@ frontend/
 
 | 違反 | 必要理由 | より単純な代替案を退けた理由 |
 |------|----------|------------------------------|
-| [例: 追加レイヤー] | [現在の必要性] | [なぜ標準構成では不十分か] |
+| なし | - | - |
 
