@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Azure.Storage.Blobs;
 using HomeFinder.Api.Errors;
+using HomeFinder.Api.Middleware;
 using HomeFinder.Infrastructure.Data;
 using Microsoft.Identity.Web;
 using HomeFinder.Infrastructure.Repositories;
@@ -40,6 +41,10 @@ builder.Services.AddScoped<IImageRepository, ImageRepository>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddHttpClient<IJanProductSearchService, JanProductSearchService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 // BlobContainerClient を構成設定に基づき生成し、Singleton として DI 登録する。
 // AzureBlobStorage:ServiceVersion が指定されている場合は指定バージョンを使用する（Azurite 対応）。
 // 設定が未指定または無効な値の場合は SDK のデフォルトバージョンにフォールバックする。
@@ -173,21 +178,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseExceptionHandler(handler =>
-{
-    handler.Run(async context =>
-    {
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        context.Response.ContentType = "application/json";
-
-        var payload = JsonSerializer.Serialize(new ApiError(
-            "INTERNAL_SERVER_ERROR",
-            "予期しないエラーが発生しました。",
-            Array.Empty<ApiErrorDetail>()));
-
-        await context.Response.WriteAsync(payload);
-    });
-});
+app.UseMiddleware<ApiExceptionHandlingMiddleware>();
 
 app.UseCors("Frontend");
 app.UseStaticFiles();

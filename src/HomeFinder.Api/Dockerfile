@@ -20,5 +20,13 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 ENV ASPNETCORE_URLS=http://+:8080
+# JanSearch 外部商品検索 API の設定（楽天 Ichiba API）
+ENV JanSearch__ExternalApi__BaseUrl="https://openapi.rakuten.co.jp/ichibaproduct/api/Product/Search/20250801"
+ENV JanSearch__ExternalApi__ApiKey=""
+ENV JanSearch__ExternalApi__ApplicationId=""
+ENV JanSearch__ExternalApi__ApiKeyHeaderName="x-rapidapi-key"
+ENV JanSearch__ExternalApi__ApiKeyQueryParameterName="accessKey"
+ENV JanSearch__ExternalApi__HostHeaderName="x-rapidapi-host"
+ENV JanSearch__ExternalApi__JanQueryParameter="productCode"
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "HomeFinder.Api.dll"]

@@ -1,6 +1,9 @@
 using HomeFinder.Infrastructure.Data;
+using HomeFinder.Application.Contracts;
 using HomeFinder.Application.Services;
+using HomeFinder.Core.Errors;
 using HomeFinder.Core.Entities;
+using DotNext;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -63,6 +66,8 @@ public class TestApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<IImageProcessor>();
             services.AddSingleton<IBlobStorageService, InMemoryBlobStorageService>();
             services.AddSingleton<IImageProcessor, InMemoryImageProcessor>();
+            services.RemoveAll<IJanProductSearchService>();
+            services.AddScoped<IJanProductSearchService, InMemoryJanProductSearchService>();
 
             using var scope = services.BuildServiceProvider().CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
@@ -120,6 +125,28 @@ public class TestApplicationFactory : WebApplicationFactory<Program>
                 db.SaveChanges();
             }
         });
+    }
+}
+
+internal sealed class InMemoryJanProductSearchService : IJanProductSearchService
+{
+    public Task<Result<JanProductDto>> SearchByJanAsync(string jan, CancellationToken cancellationToken = default)
+    {
+        // JAN値ごとに固定応答を返し、統合テストを外部依存なしで安定化させる
+        return jan switch
+        {
+            "4901234567890" => Task.FromResult(new Result<JanProductDto>(new JanProductDto
+            {
+                Name = "統合テスト商品",
+                Manufacturer = "統合テストメーカー",
+                Price = 1234m,
+            })),
+            "0000000000000" => Task.FromResult(new Result<JanProductDto>(new JanProductNotFoundException(jan))),
+            "4290000000000" => Task.FromResult(new Result<JanProductDto>(new ExternalProductApiRateLimitException("rate limited"))),
+            "5000000000000" => Task.FromResult(new Result<JanProductDto>(new ExternalProductApiAuthenticationException("auth failed"))),
+            "5030000000000" => Task.FromResult(new Result<JanProductDto>(new ExternalProductApiTimeoutException("timeout"))),
+            _ => Task.FromResult(new Result<JanProductDto>(new JanProductNotFoundException(jan))),
+        };
     }
 }
 

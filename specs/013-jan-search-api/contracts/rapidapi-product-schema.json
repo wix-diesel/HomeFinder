@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://homefinder.local/specs/013-jan-search-api/contracts/rapidapi-product-schema.json",
+  "title": "JAN Product Response",
+  "type": "object",
+  "required": [
+    "name"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "商品名"
+    },
+    "manufacturer": {
+      "type": "string",
+      "description": "メーカー名"
+    },
+    "price": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "価格（取得できない場合は null）"
+    }
+  },
+  "additionalProperties": false
+}
