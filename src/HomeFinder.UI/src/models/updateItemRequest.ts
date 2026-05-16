@@ -6,5 +6,5 @@ export type UpdateItemRequest = {
   note?: string;
   barcode?: string;
   price?: number;
-  categoryId?: string;
+  categoryId?: string | null;
 };

@@ -157,7 +157,7 @@ describe('toUpdateItemRequest', () => {
     });
   });
 
-  it('空文字フィールドはpayloadに含めない', () => {
+  it('カテゴリ未選択時は categoryId を null で送信する', () => {
     const request = toUpdateItemRequest({
       name: 'テストアイテム',
       quantity: 1,
@@ -172,7 +172,7 @@ describe('toUpdateItemRequest', () => {
       submitError: null,
     });
 
-    expect(Object.prototype.hasOwnProperty.call(request, 'categoryId')).toBe(false);
+    expect(request.categoryId).toBeNull();
     expect(Object.prototype.hasOwnProperty.call(request, 'manufacturer')).toBe(false);
     expect(Object.prototype.hasOwnProperty.call(request, 'price')).toBe(false);
     expect(Object.prototype.hasOwnProperty.call(request, 'note')).toBe(false);

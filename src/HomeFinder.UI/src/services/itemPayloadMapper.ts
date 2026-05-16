@@ -63,9 +63,7 @@ export function toUpdateItemRequest(formState: ItemRegistrationFormState): Updat
     payload.price = priceValue;
   }
 
-  if (formState.categoryId.trim()) {
-    payload.categoryId = formState.categoryId.trim();
-  }
+  payload.categoryId = formState.categoryId.trim() || null;
 
   return payload;
 }
