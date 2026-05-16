@@ -15,6 +15,7 @@ export type ProductLookupErrorCode =
   | 'UPSTREAM_AUTH_FAILED'
   | 'INTERNAL_SERVER_ERROR'
   | 'NETWORK_ERROR'
+  | 'CANCELLED'
   | 'UNKNOWN';
 
 export class ProductLookupError extends Error {
@@ -100,7 +101,8 @@ export async function lookupProductByJan(rawJan: string, options: LookupOptions 
 
     if (error instanceof DOMException && error.name === 'AbortError') {
       if (options.signal?.aborted) {
-        throw new ProductLookupError('検索処理がキャンセルされました。', 'UNKNOWN');
+        // 外部からキャンセルされた場合（連続入力時の前回検索中断など）
+        throw new ProductLookupError('検索処理がキャンセルされました。', 'CANCELLED');
       }
       throw new ProductLookupError('商品情報の取得がタイムアウトしました。', 'UPSTREAM_TIMEOUT', 503);
     }

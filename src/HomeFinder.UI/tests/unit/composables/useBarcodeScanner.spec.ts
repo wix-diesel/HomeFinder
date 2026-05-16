@@ -80,4 +80,77 @@ describe('useBarcodeScanner', () => {
 
     vi.useRealTimers();
   });
+
+  it('BarcodeDetector 未対応時は onError を呼び出しカメラを停止する', async () => {
+    vi.useFakeTimers();
+
+    const tracks = [{ stop: vi.fn() }];
+    const stream = { getTracks: () => tracks } as unknown as MediaStream;
+
+    Object.defineProperty(globalThis.navigator, 'mediaDevices', {
+      value: { getUserMedia: vi.fn().mockResolvedValue(stream) },
+      configurable: true,
+    });
+
+    // BarcodeDetector を未定義にする
+    Object.defineProperty(window, 'BarcodeDetector', {
+      value: undefined,
+      configurable: true,
+    });
+
+    const scanner = useBarcodeScanner(500);
+    const video = document.createElement('video');
+    video.play = vi.fn().mockResolvedValue(undefined);
+    const onDetected = vi.fn();
+    const onError = vi.fn();
+
+    await scanner.startCamera(video, { onDetected, onError });
+
+    expect(onError).toHaveBeenCalledWith('このブラウザはバーコード読み取りに対応していません。');
+    // カメラストリームが停止され isScanning が false になっていること
+    expect(scanner.isScanning.value).toBe(false);
+    expect(tracks[0].stop).toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it('detect() 例外時にループを停止してカメラを解放する', async () => {
+    vi.useFakeTimers();
+
+    const tracks = [{ stop: vi.fn() }];
+    const stream = { getTracks: () => tracks } as unknown as MediaStream;
+
+    Object.defineProperty(globalThis.navigator, 'mediaDevices', {
+      value: { getUserMedia: vi.fn().mockResolvedValue(stream) },
+      configurable: true,
+    });
+
+    class ThrowingDetector {
+      async detect() {
+        throw new Error('検出エラー');
+      }
+    }
+
+    Object.defineProperty(window, 'BarcodeDetector', {
+      value: ThrowingDetector,
+      configurable: true,
+    });
+
+    const scanner = useBarcodeScanner(500);
+    const video = document.createElement('video');
+    video.play = vi.fn().mockResolvedValue(undefined);
+    const onDetected = vi.fn();
+    const onError = vi.fn();
+
+    await scanner.startCamera(video, { onDetected, onError });
+    await vi.advanceTimersByTimeAsync(200);
+
+    expect(onError).toHaveBeenCalledWith('バーコードの読み取りに失敗しました。');
+    // ループが停止されカメラが解放されていること（onError は 1 回だけ呼ばれる）
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(scanner.isScanning.value).toBe(false);
+    expect(tracks[0].stop).toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
 });

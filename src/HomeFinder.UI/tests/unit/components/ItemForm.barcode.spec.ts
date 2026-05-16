@@ -173,4 +173,41 @@ describe('ItemForm barcode', () => {
 
     expect(wrapper.text()).toContain('商品名が取得できなかったため保存できません。');
   });
+
+  it('再検索時に前回の検索結果エラーをクリアする', async () => {
+    // 1回目: name 欠損エラーを発生させる
+    vi.mocked(lookupProductByJan).mockResolvedValueOnce({
+      name: null,
+      manufacturer: 'メーカーA',
+      price: 100,
+    });
+
+    const wrapper = mount(ItemForm);
+    const barcodeInput = wrapper.find('input[name="barcode"]');
+
+    await barcodeInput.setValue('4901234567890');
+    await barcodeInput.trigger('keydown.enter');
+    await Promise.resolve();
+    expect(wrapper.text()).toContain('商品名が取得できなかったため保存できません。');
+
+    // 2回目の検索開始で前回のフィールドエラーがクリアされること（クールダウン中でも）
+    await barcodeInput.trigger('keydown.enter');
+    await Promise.resolve();
+    expect(wrapper.text()).not.toContain('商品名が取得できなかったため保存できません。');
+  });
+
+  it('CANCELLED エラーの場合はエラーメッセージを表示しない', async () => {
+    vi.mocked(lookupProductByJan).mockRejectedValueOnce(new ProductLookupError('キャンセル', 'CANCELLED'));
+
+    const wrapper = mount(ItemForm);
+    const barcodeInput = wrapper.find('input[name="barcode"]');
+
+    await barcodeInput.setValue('4901234567890');
+    await barcodeInput.trigger('keydown.enter');
+    await Promise.resolve();
+
+    // CANCELLED はユーザーに表示しない
+    expect(wrapper.text()).not.toContain('推奨アクション');
+    expect(wrapper.text()).not.toContain('CANCELLED');
+  });
 });

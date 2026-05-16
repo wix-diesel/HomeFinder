@@ -81,6 +81,7 @@ export function useBarcodeScanner(cooldownMs = 500) {
     const detectorCtor = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
     if (!detectorCtor) {
       options.onError('このブラウザはバーコード読み取りに対応していません。');
+      stopCamera(); // カメラストリームを停止して isScanning を false に戻す
       return;
     }
 
@@ -99,6 +100,8 @@ export function useBarcodeScanner(cooldownMs = 500) {
         }
       } catch {
         options.onError('バーコードの読み取りに失敗しました。');
+        stopCamera(); // エラー時はループを停止してカメラを解放する
+        return;
       }
 
       detectTimerId = window.setTimeout(detect, 250);

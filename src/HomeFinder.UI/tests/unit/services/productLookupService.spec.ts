@@ -63,6 +63,23 @@ describe('productLookupService', () => {
     });
   });
 
+  it('外部シグナルによる abort は CANCELLED を返す', async () => {
+    const controller = new AbortController();
+
+    vi.mocked(apiClient.apiFetch).mockImplementationOnce((_path, init) => {
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          reject(new DOMException('Aborted', 'AbortError'));
+        });
+      });
+    });
+
+    const lookupPromise = lookupProductByJan('4901234567890', { signal: controller.signal });
+    controller.abort();
+
+    await expect(lookupPromise).rejects.toMatchObject({ code: 'CANCELLED' });
+  });
+
   it('エラーコードに対応するメッセージと推奨アクションを返す', () => {
     expect(getLookupMessage('PRODUCT_NOT_FOUND')).toContain('見つかりません');
     expect(getLookupRecommendation('UPSTREAM_TIMEOUT')).toContain('再試行');

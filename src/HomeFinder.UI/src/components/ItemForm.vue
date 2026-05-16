@@ -153,7 +153,11 @@ function setupWarnings(result: { name: string | null; manufacturer: string | nul
 async function lookupByJan(rawJan: string) {
   const jan = normalizeJan(rawJan);
   formState.barcode = jan;
+  // バーコード検索に関連するフィールドのエラーをすべてクリア
   formState.fieldErrors.barcode = '';
+  formState.fieldErrors.name = '';
+  formState.fieldErrors.manufacturer = '';
+  formState.fieldErrors.priceInput = '';
   resetLookupMessages();
   mergeCandidates.value = null;
 
@@ -163,7 +167,6 @@ async function lookupByJan(rawJan: string) {
   }
 
   if (isCooldown.value) {
-    lookupRecommendation.value = cooldownText.value;
     return;
   }
 
@@ -172,6 +175,10 @@ async function lookupByJan(rawJan: string) {
   try {
     const result = await executeLatestLookup((signal) => lookupProductByJan(jan, { signal, timeoutMs: 3000 }));
     if (!result) {
+      // クールダウン中か競合により最新の検索に置き換えられた場合は状態を元に戻す
+      if (formState.barcodeLookupStatus === 'searching') {
+        formState.barcodeLookupStatus = isCooldown.value ? 'cooldown' : 'idle';
+      }
       return;
     }
 
@@ -190,6 +197,14 @@ async function lookupByJan(rawJan: string) {
     setupWarnings(result);
     formState.barcodeLookupStatus = 'success';
   } catch (error) {
+    if (error instanceof ProductLookupError && error.code === 'CANCELLED') {
+      // 新しい検索によるキャンセルはUIに表示しない
+      if (formState.barcodeLookupStatus === 'searching') {
+        formState.barcodeLookupStatus = 'idle';
+      }
+      return;
+    }
+
     formState.barcodeLookupStatus = 'error';
     if (error instanceof ProductLookupError) {
       lookupErrorMessage.value = getLookupMessage(error.code);
