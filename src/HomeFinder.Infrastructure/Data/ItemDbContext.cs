@@ -105,10 +105,15 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
             entity.Property(x => x.Name).IsRequired().HasMaxLength(50);
             entity.Property(x => x.NormalizedName).IsRequired().HasMaxLength(50);
             entity.HasIndex(x => x.NormalizedName).IsUnique();
+            entity.Property(x => x.Source).IsRequired().HasMaxLength(50).HasDefaultValue("manual");
+            entity.Property(x => x.ExternalId).HasMaxLength(100);
+            entity.Property(x => x.CreatedBy).IsRequired().HasMaxLength(100).HasDefaultValue("system");
 
             entity.Property(x => x.Icon).HasMaxLength(50);
             entity.Property(x => x.Color).HasMaxLength(7);
             entity.Property(x => x.IsReserved).IsRequired().HasDefaultValue(false);
+
+            entity.HasIndex(x => x.ExternalId);
 
             // UTC 日時フィールド設定
             entity.Property(x => x.CreatedAt)

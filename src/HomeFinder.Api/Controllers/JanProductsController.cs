@@ -10,7 +10,7 @@ namespace HomeFinder.Api.Controllers;
 
 [ApiController]
 [Route("api/products")]
-public class JanProductsController(IJanProductSearchService janProductSearchService) : ControllerBase
+public class JanProductsController(IItemLookupService itemLookupService) : ControllerBase
 {
     [HttpGet("{jan}")]
     [Authorize(Roles = "Items.Read")]
@@ -30,10 +30,18 @@ public class JanProductsController(IJanProductSearchService janProductSearchServ
             }));
         }
 
-        var result = await janProductSearchService.SearchByJanAsync(jan, cancellationToken);
+        var result = await itemLookupService.LookupByBarcode(jan, cancellationToken);
         if (result.IsSuccessful)
         {
-            return Ok(result.Value);
+            return Ok(new JanProductDto
+            {
+                Name = result.Value.Name,
+                Manufacturer = result.Value.Manufacturer,
+                Price = result.Value.Price,
+                CategoryId = result.Value.CategoryId,
+                CategoryName = result.Value.CategoryName,
+                CategoryExternalId = result.Value.CategoryExternalId,
+            });
         }
 
         return result.Error switch

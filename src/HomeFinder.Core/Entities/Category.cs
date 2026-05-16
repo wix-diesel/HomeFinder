@@ -32,6 +32,24 @@ namespace HomeFinder.Core.Entities
         public string NormalizedName { get; set; } = string.Empty;
 
         /// <summary>
+        /// カテゴリーの作成元。
+        /// 例: manual, rakuten, system
+        /// </summary>
+        public string Source { get; set; } = "manual";
+
+        /// <summary>
+        /// 外部システムのカテゴリー識別子。
+        /// 外部連携がない場合は null。
+        /// </summary>
+        public string? ExternalId { get; set; }
+
+        /// <summary>
+        /// 作成者識別子。
+        /// 自動登録時は system:barcode-import などを設定する。
+        /// </summary>
+        public string CreatedBy { get; set; } = "system";
+
+        /// <summary>
         /// Material Symbols Outlined アイコン名
         /// 例: "restaurant", "book", "home" など
         /// </summary>
@@ -87,6 +105,9 @@ namespace HomeFinder.Core.Entities
                     Id = UnclassifiedId,
                     Name = UnclassifiedName,
                     NormalizedName = UnclassifiedName,
+                    Source = "system",
+                    ExternalId = null,
+                    CreatedBy = "system:seed",
                     Icon = null,
                     Color = null,
                     IsReserved = true,

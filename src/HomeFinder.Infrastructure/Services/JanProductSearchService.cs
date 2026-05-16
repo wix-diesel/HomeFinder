@@ -66,15 +66,7 @@ public class JanProductSearchService : IJanProductSearchService
         try
         {
             var requestUri = BuildUri(_baseUrl, _janQueryParameter, jan, _applicationId, _apiKeyQueryParameterName, _apiKey, _additionalQueryParameters);
-            using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-            
-            // APIキーがヘッダーで送信される場合のみヘッダーに追加
-            if (_apiKeyQueryParameterName == null)
-            {
-                request.Headers.TryAddWithoutValidation(_apiKeyHeaderName, _apiKey);
-            }
-
-            using var response = await _httpClient.SendAsync(request, cancellationToken);
+            using var response = await SendWithRetryAsync(requestUri, cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -98,7 +90,7 @@ public class JanProductSearchService : IJanProductSearchService
             }
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            var product = ExtractFirstProduct(json);
+            var product = await ExtractFirstProductAsync(json, cancellationToken);
             if (product == null)
             {
                 return new Result<JanProductDto>(new JanProductNotFoundException(jan));
@@ -116,6 +108,42 @@ public class JanProductSearchService : IJanProductSearchService
             _logger.LogError(ex, "外部 API 呼び出しで予期しないエラーが発生しました。 jan={Jan}", jan);
             return new Result<JanProductDto>(new ExternalProductApiException("外部 API 呼び出しで予期しないエラーが発生しました。"));
         }
+    }
+
+    private async Task<HttpResponseMessage> SendWithRetryAsync(Uri requestUri, CancellationToken cancellationToken)
+    {
+        const int maxAttempts = 2;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+
+                // APIキーがヘッダーで送信される場合のみヘッダーに追加
+                if (_apiKeyQueryParameterName == null)
+                {
+                    request.Headers.TryAddWithoutValidation(_apiKeyHeaderName, _apiKey);
+                }
+
+                var response = await _httpClient.SendAsync(request, cancellationToken);
+                if (response.StatusCode == HttpStatusCode.TooManyRequests && attempt < maxAttempts)
+                {
+                    response.Dispose();
+                    await Task.Delay(TimeSpan.FromMilliseconds(200), cancellationToken);
+                    continue;
+                }
+
+                return response;
+            }
+            catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested && attempt < maxAttempts)
+            {
+                // タイムアウト時は 1 回だけ再試行する。
+                await Task.Delay(TimeSpan.FromMilliseconds(200), cancellationToken);
+            }
+        }
+
+        throw new TaskCanceledException("外部 API 呼び出しがタイムアウトしました。");
     }
 
     private static string GetRequiredSetting(IConfiguration configuration, string key)
@@ -166,7 +194,7 @@ public class JanProductSearchService : IJanProductSearchService
         return builder.Uri;
     }
 
-    private static JanProductDto? ExtractFirstProduct(string json)
+    private static Task<JanProductDto?> ExtractFirstProductAsync(string json, CancellationToken cancellationToken)
     {
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
@@ -193,7 +221,7 @@ public class JanProductSearchService : IJanProductSearchService
 
         if (firstItem is not { } item)
         {
-            return null;
+            return Task.FromResult<JanProductDto?>(null);
         }
 
         // 楽天 API は Products[0].Product の構造で返すため、内側を商品実体として扱う。
@@ -208,7 +236,7 @@ public class JanProductSearchService : IJanProductSearchService
                    ?? GetString(item, "productName");
         if (string.IsNullOrWhiteSpace(name))
         {
-            return null;
+            return Task.FromResult<JanProductDto?>(null);
         }
 
         var manufacturer = GetString(item, "manufacturer")
@@ -221,12 +249,33 @@ public class JanProductSearchService : IJanProductSearchService
                     ?? GetDecimal(item, "minPrice")
                     ?? GetDecimal(item, "salesMinPrice");
 
-        return new JanProductDto
+        var categoryName = GetString(item, "genreName")
+                           ?? GetString(item, "categoryName")
+                           ?? GetString(item, "genre")
+                           ?? GetString(item, "category");
+        var categoryExternalId = GetString(item, "genreId")
+                                 ?? GetString(item, "categoryId")
+                                 ?? GetString(item, "genreCode");
+
+        return Task.FromResult<JanProductDto?>(new JanProductDto
         {
             Name = name,
             Manufacturer = string.IsNullOrWhiteSpace(manufacturer) ? null : manufacturer,
             Price = price,
-        };
+            CategoryId = null,
+            CategoryName = string.IsNullOrWhiteSpace(categoryName) ? null : categoryName,
+            CategoryExternalId = string.IsNullOrWhiteSpace(categoryExternalId) ? null : categoryExternalId,
+        });
+    }
+
+    private static string TrimToMax(string value, int max)
+    {
+        if (value.Length <= max)
+        {
+            return value;
+        }
+
+        return value[..max];
     }
 
     private static bool TryGetArrayFirst(JsonElement element, string propertyName, out JsonElement item)

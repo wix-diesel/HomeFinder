@@ -5,6 +5,9 @@ export type ProductLookupApiResponse = {
   name: string | null;
   manufacturer: string | null;
   price: number | null;
+  categoryId: string | null;
+  categoryName: string | null;
+  categoryExternalId: string | null;
 };
 
 export type ProductLookupErrorCode =
