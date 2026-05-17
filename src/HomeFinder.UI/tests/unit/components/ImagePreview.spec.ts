@@ -28,7 +28,7 @@ describe('ImagePreview', () => {
     const wrapper = mount(ImagePreview, { props: { itemId: 'item-1', imageId: null } });
     const img = wrapper.find('img');
 
-    expect(img.attributes('style')).toContain('height: auto;');
+    expect((img.element as HTMLImageElement).style.height).toBe('auto');
   });
 
   it('imageId がある場合は認証付きで解決した画像URLを使う', async () => {
