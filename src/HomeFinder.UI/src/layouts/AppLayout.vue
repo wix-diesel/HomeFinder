@@ -6,8 +6,6 @@
         <h1>{{ uiText.app.title }}</h1>
       </div>
       <div class="header-actions">
-        <!-- FR-001/FR-008: 歯車アイコンは常時表示される設定遷移導線 -->
-        <SettingsNavigationButton />
         <!-- US4: ログアウトボタン（認証済み時のみ表示） -->
         <button
           v-if="auth.isAuthenticated.value"
@@ -52,10 +50,10 @@
         <span class="material-symbols-outlined nav-icon" aria-hidden="true">add_circle</span>
         <span>{{ uiText.app.createNav }}</span>
       </RouterLink>
-      <a href="#" class="nav-link nav-link--muted" @click.prevent>
-        <span class="material-symbols-outlined nav-icon" aria-hidden="true">person</span>
-        <span>{{ uiText.app.profileNav }}</span>
-      </a>
+      <RouterLink to="/settings" class="nav-link" data-testid="bottom-nav-settings-link">
+        <span class="material-symbols-outlined nav-icon" aria-hidden="true">settings</span>
+        <span>{{ uiText.app.settingsNav }}</span>
+      </RouterLink>
     </nav>
   </div>
 </template>
@@ -64,7 +62,6 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { uiText } from '../constants/uiText';
-import SettingsNavigationButton from '../components/common/SettingsNavigationButton.vue';
 import { useAuth } from '../composables/useAuth';
 import { useUserProfileStore } from '../stores/userProfileStore';
 import AppSnackbar from '../composables/AppSnackbar.vue';
@@ -221,7 +218,4 @@ function goToUserSettings() {
   color: #2563eb;
 }
 
-.nav-link--muted {
-  cursor: default;
-}
 </style>

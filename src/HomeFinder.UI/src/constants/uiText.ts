@@ -3,7 +3,7 @@ export const uiText = {
     title: 'Home Finder',
     listNav: '一覧',
     createNav: '登録',
-    profileNav: 'プロフィール',
+    settingsNav: '設定',
   },
   list: {
     title: '物品一覧',

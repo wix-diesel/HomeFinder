@@ -31,12 +31,6 @@ vi.mock('../../src/stores/userProfileStore', () => ({
   }),
 }));
 
-vi.mock('../../src/components/common/SettingsNavigationButton.vue', () => ({
-  default: {
-    template: '<button />',
-  },
-}));
-
 describe('AppLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -56,5 +50,14 @@ describe('AppLayout', () => {
     await wrapper.get('[data-testid="header-avatar-button"]').trigger('click');
 
     expect(routerPushMock).toHaveBeenCalledWith({ name: 'user-settings' });
+  });
+
+  it('タスクバーに設定画面への導線が表示される', () => {
+    const wrapper = mount(AppLayout);
+    const settingsLink = wrapper.get('[data-testid="bottom-nav-settings-link"]');
+
+    expect(settingsLink.attributes('to')).toBe('/settings');
+    expect(settingsLink.text()).toContain('設定');
+    expect(settingsLink.text()).not.toContain('プロフィール');
   });
 });
