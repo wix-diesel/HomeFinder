@@ -24,6 +24,13 @@ describe('ImagePreview', () => {
     expect(img.attributes('src')).toContain('item-image-unregistered.svg');
   });
 
+  it('表示画像は固定高ではなく、横幅に追従して高さが自動調整される', () => {
+    const wrapper = mount(ImagePreview, { props: { itemId: 'item-1', imageId: null } });
+    const img = wrapper.find('img');
+
+    expect((img.element as HTMLImageElement).style.height).toBe('auto');
+  });
+
   it('imageId がある場合は認証付きで解決した画像URLを使う', async () => {
     const wrapper = mount(ImagePreview, { props: { itemId: 'item-1', imageId: 'img-1' } });
     await Promise.resolve();

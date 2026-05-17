@@ -446,7 +446,6 @@ async function confirmDelete() {
 
 .image-frame {
   position: relative;
-  min-height: 280px;
 }
 
 .item-image {
