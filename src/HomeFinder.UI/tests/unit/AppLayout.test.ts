@@ -1,20 +1,8 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { computed } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMemoryHistory, createRouter } from 'vue-router';
 import AppLayout from '../../src/layouts/AppLayout.vue';
-
-const routerPushMock = vi.fn();
-
-vi.mock('vue-router', () => ({
-  useRouter: () => ({ push: routerPushMock }),
-  RouterView: {
-    template: '<div />',
-  },
-  RouterLink: {
-    props: ['to'],
-    template: '<a><slot /></a>',
-  },
-}));
 
 vi.mock('../../src/composables/useAuth', () => ({
   useAuth: () => ({
@@ -32,12 +20,34 @@ vi.mock('../../src/stores/userProfileStore', () => ({
 }));
 
 describe('AppLayout', () => {
+  function createTestRouter() {
+    return createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/', name: 'home', component: { template: '<div />' } },
+        { path: '/settings', name: 'settings', component: { template: '<div />' } },
+        { path: '/user-settings', name: 'user-settings', component: { template: '<div />' } },
+        { path: '/items', name: 'items', component: { template: '<div />' } },
+        { path: '/items/new', name: 'items-new', component: { template: '<div />' } },
+      ],
+    });
+  }
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('ヘッダーに最新プロフィール情報が表示される', async () => {
-    const wrapper = mount(AppLayout);
+    const router = createTestRouter();
+    await router.push('/');
+    await router.isReady();
+
+    const wrapper = mount(AppLayout, {
+      global: {
+        plugins: [router],
+        stubs: { AppSnackbar: true },
+      },
+    });
     await flushPromises();
 
     expect(wrapper.text()).toContain('ヘッダー表示名');
@@ -45,19 +55,41 @@ describe('AppLayout', () => {
   });
 
   it('ヘッダーアイコンクリックで user-settings へ遷移する', async () => {
-    const wrapper = mount(AppLayout);
+    const router = createTestRouter();
+    await router.push('/');
+    await router.isReady();
+
+    const wrapper = mount(AppLayout, {
+      global: {
+        plugins: [router],
+        stubs: { AppSnackbar: true },
+      },
+    });
 
     await wrapper.get('[data-testid="header-avatar-button"]').trigger('click');
+    await flushPromises();
 
-    expect(routerPushMock).toHaveBeenCalledWith({ name: 'user-settings' });
+    expect(router.currentRoute.value.name).toBe('user-settings');
   });
 
-  it('タスクバーに設定画面への導線が表示される', () => {
-    const wrapper = mount(AppLayout);
+  it('タスクバーの設定導線クリックで settings へ遷移する', async () => {
+    const router = createTestRouter();
+    await router.push('/');
+    await router.isReady();
+
+    const wrapper = mount(AppLayout, {
+      global: {
+        plugins: [router],
+        stubs: { AppSnackbar: true },
+      },
+    });
     const settingsLink = wrapper.get('[data-testid="bottom-nav-settings-link"]');
 
-    expect(settingsLink.attributes('to')).toBe('/settings');
+    expect(settingsLink.attributes('href')).toBe('/settings');
     expect(settingsLink.text()).toContain('設定');
-    expect(settingsLink.text()).not.toContain('プロフィール');
+    await settingsLink.trigger('click');
+    await flushPromises();
+
+    expect(router.currentRoute.value.name).toBe('settings');
   });
 });
