@@ -88,14 +88,14 @@ onBeforeUnmount(() => {
 <template>
   <div class="image-preview" :style="{ width: `${DISPLAY_SIZE}px`, maxWidth: '100%' }">
     <!-- ローディングスケルトン -->
-    <div v-if="isLoading" class="image-preview__skeleton" :style="{ width: `${DISPLAY_SIZE}px`, height: `${DISPLAY_SIZE}px`, maxWidth: '100%' }"></div>
+    <div v-if="isLoading" class="image-preview__skeleton" :style="{ width: `${DISPLAY_SIZE}px`, maxWidth: '100%', aspectRatio: '1 / 1' }"></div>
 
     <img
       v-show="!isLoading"
       :src="imageSrc"
       :alt="alt ?? '物品画像'"
       class="image-preview__img"
-      :style="{ width: `${DISPLAY_SIZE}px`, height: `${DISPLAY_SIZE}px`, maxWidth: '100%' }"
+      :style="{ width: `${DISPLAY_SIZE}px`, maxWidth: '100%', height: 'auto' }"
       @load="onLoad"
       @error="onError"
     />
