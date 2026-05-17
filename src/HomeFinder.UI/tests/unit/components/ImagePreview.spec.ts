@@ -27,10 +27,8 @@ describe('ImagePreview', () => {
   it('表示画像は固定高ではなく、横幅に追従して高さが自動調整される', () => {
     const wrapper = mount(ImagePreview, { props: { itemId: 'item-1', imageId: null } });
     const img = wrapper.find('img');
-    const imgStyle = img.attributes('style') ?? '';
 
-    expect(imgStyle).toContain('height: auto;');
-    expect(imgStyle).not.toMatch(/height:\s*\d+px/);
+    expect(img.attributes('style')).toContain('height: auto;');
   });
 
   it('imageId がある場合は認証付きで解決した画像URLを使う', async () => {

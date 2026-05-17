@@ -88,7 +88,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="image-preview" :style="{ width: `${DISPLAY_SIZE}px`, maxWidth: '100%' }">
     <!-- ローディングスケルトン -->
-    <div v-if="isLoading" class="image-preview__skeleton" :style="{ width: `${DISPLAY_SIZE}px`, maxWidth: '100%', aspectRatio: '1 / 1' }"></div>
+    <div v-if="isLoading" class="image-preview__skeleton" :style="{ width: `${DISPLAY_SIZE}px`, maxWidth: '100%', aspectRatio: '1/1' }"></div>
 
     <img
       v-show="!isLoading"
