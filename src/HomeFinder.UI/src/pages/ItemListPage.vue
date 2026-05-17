@@ -164,7 +164,7 @@ onMounted(async () => {
       @primary-action="clearFilters"
     />
 
-    <div v-else class="mobile-list">
+    <div v-else-if="filteredItems.length > 0 && desktopViewMode === 'card'" class="mobile-list">
       <ItemCard v-for="item in filteredItems" :key="item.id" :item="item" />
     </div>
 
@@ -299,7 +299,7 @@ onMounted(async () => {
 }
 
 .desktop-table {
-  display: none;
+  display: block;
 }
 
 @media (min-width: 900px) {
@@ -320,14 +320,10 @@ onMounted(async () => {
     display: none;
   }
 
-  .desktop-table {
-    display: block;
-  }
 }
 
 @media (max-width: 899px) {
-  .desktop-cards,
-  .desktop-table {
+  .desktop-cards {
     display: none;
   }
 

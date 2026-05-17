@@ -131,6 +131,28 @@ describe('ItemListPage', () => {
     expect(wrapper.find('table').exists()).toBe(true);
   });
 
+  it('表示モードをテーブルにするとカード表示が消える', async () => {
+    vi.mocked(getItems).mockResolvedValue([
+      {
+        id: '1',
+        name: '歯ブラシ',
+        quantity: 2,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      },
+    ]);
+
+    const wrapper = mount(ItemListPage);
+    await flushPromises();
+
+    const toggleButtons = wrapper.findAll('.view-mode-toggle button');
+    await toggleButtons[1].trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('.mobile-list').exists()).toBe(false);
+    expect(wrapper.find('table').exists()).toBe(true);
+  });
+
   it('登録開始ボタンで登録画面へ遷移する', async () => {
     vi.mocked(getItems).mockResolvedValue([]);
 
