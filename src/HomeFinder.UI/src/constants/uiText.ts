@@ -129,8 +129,8 @@ export const uiText = {
     },
     dangerSectionHeading: '危険ゾーン',
     dangerPurgeLabel: '全在庫データを削除',
-    footerVersion: 'v2.4.0 • エンタープライズ版',
-    footerCopyright: '© 2024 HomeFinder',
+    footerVersion: 'v0.9.0',
+    footerCopyright: '© 2026 HomeFinder',
   },
   edit: {
     title: 'アイテム編集',
