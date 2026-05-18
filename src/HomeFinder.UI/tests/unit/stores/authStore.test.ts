@@ -150,7 +150,7 @@ describe('authStore', () => {
       expect(mockLoadProfile).toHaveBeenCalledTimes(1);
     });
 
-    it('セッション復元時にプロフィール読込中ならプロフィール読込をスキップする', async () => {
+    it('プロフィール読込中ならプロフィール読込をスキップする', async () => {
       mockProfileState.isLoading = true;
       const { msalService } = await import('../../../src/services/msalService');
       vi.mocked(msalService.handleRedirectPromise).mockResolvedValueOnce(null);
