@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { msalService } from '../services/msalService';
+import { useUserProfileStore } from './userProfileStore';
 import type { AuthenticationResult } from '@azure/msal-browser';
 
 /** 認証済みユーザー情報 */
@@ -51,7 +52,6 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => user.value !== null);
 
   async function loadUserProfileIfNeeded(): Promise<void> {
-    const { useUserProfileStore } = await import('./userProfileStore');
     const userProfileStore = useUserProfileStore();
     if (!userProfileStore.profile && !userProfileStore.isLoading) {
       await userProfileStore.loadProfile();
