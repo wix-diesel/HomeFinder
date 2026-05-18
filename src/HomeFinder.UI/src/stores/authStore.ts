@@ -51,6 +51,7 @@ export const useAuthStore = defineStore('auth', () => {
   // ゲッター
   const isAuthenticated = computed(() => user.value !== null);
 
+  // 認証済み直後にヘッダー表示用プロフィールが未取得なら先行読込する
   async function loadUserProfileIfNeeded(): Promise<void> {
     const userProfileStore = useUserProfileStore();
     if (!userProfileStore.profile && !userProfileStore.isLoading) {
