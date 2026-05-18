@@ -50,6 +50,14 @@ export const useAuthStore = defineStore('auth', () => {
   // ゲッター
   const isAuthenticated = computed(() => user.value !== null);
 
+  async function loadUserProfileIfNeeded(): Promise<void> {
+    const { useUserProfileStore } = await import('./userProfileStore');
+    const userProfileStore = useUserProfileStore();
+    if (!userProfileStore.profile && !userProfileStore.isLoading) {
+      await userProfileStore.loadProfile();
+    }
+  }
+
   function sanitizeReturnUrl(url: string | null | undefined): string {
     if (!url || typeof url !== 'string') return '/';
     if (!url.startsWith('/')) return '/';
@@ -132,6 +140,7 @@ export const useAuthStore = defineStore('auth', () => {
         const redirectResult = await msalService.handleRedirectPromise();
         if (redirectResult) {
           user.value = extractUser(redirectResult);
+          await loadUserProfileIfNeeded();
           const returnUrl = sanitizeReturnUrl(redirectResult.state);
           console.info('[Auth] リダイレクトログイン成功');
           await router.replace(returnUrl || '/');
@@ -141,6 +150,7 @@ export const useAuthStore = defineStore('auth', () => {
         const result = await msalService.acquireTokenSilent();
         if (result) {
           user.value = extractUser(result);
+          await loadUserProfileIfNeeded();
           console.info('[Auth] セッション復元成功');
         }
       } catch (err) {

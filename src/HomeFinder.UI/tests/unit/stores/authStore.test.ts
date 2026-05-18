@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 
+const mockLoadProfile = vi.fn();
+
 // msalService をモック
 vi.mock('../../../src/services/msalService', () => ({
   msalService: {
@@ -17,10 +19,19 @@ vi.mock('vue-router', () => ({
   useRouter: vi.fn(() => ({ push: vi.fn(), replace: vi.fn() })),
 }));
 
+vi.mock('../../../src/stores/userProfileStore', () => ({
+  useUserProfileStore: vi.fn(() => ({
+    profile: null,
+    isLoading: false,
+    loadProfile: mockLoadProfile,
+  })),
+}));
+
 describe('authStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    mockLoadProfile.mockReset();
   });
 
   describe('初期ステート', () => {
@@ -116,6 +127,24 @@ describe('authStore', () => {
 
       expect(store.user).not.toBeNull();
       expect(store.user?.name).toBe('Test User');
+      expect(mockLoadProfile).toHaveBeenCalledTimes(1);
+    });
+
+    it('リダイレクトログイン成功時: user を復元してプロフィールを読み込む', async () => {
+      const { msalService } = await import('../../../src/services/msalService');
+      vi.mocked(msalService.handleRedirectPromise).mockResolvedValueOnce({
+        account: { homeAccountId: 'oid-123', name: 'Test User', username: 'test@example.com' },
+        idTokenClaims: { oid: 'oid-123', name: 'Test User', preferred_username: 'test@example.com' },
+        state: '/items',
+      } as never);
+
+      const { useAuthStore } = await import('../../../src/stores/authStore');
+      const store = useAuthStore();
+      await store.initialize();
+
+      expect(store.user).not.toBeNull();
+      expect(store.user?.name).toBe('Test User');
+      expect(mockLoadProfile).toHaveBeenCalledTimes(1);
     });
 
     it('2回呼んでも初回のみMSALを呼び出す', async () => {
