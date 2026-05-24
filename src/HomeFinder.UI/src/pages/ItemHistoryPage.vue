@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getItemById } from '../services/itemService';
 import { getItemHistory } from '../services/itemHistoryService';
+import { getRuntimeConfig } from '../services/runtimeConfig';
 import type { ItemDetail } from '../models/itemDetail';
 import type { ItemHistory, PagedItemHistoryResponse } from '../models/itemHistory';
 import { formatUtcToJst } from '../utils/dateTime';
@@ -26,9 +27,10 @@ const historyLoading = ref(false);
 const historyError = ref(false);
 
 // 画像 URL
+const runtimeConfig = getRuntimeConfig();
 const imageUrl = computed(() => {
   if (!item.value?.imageId) return null;
-  const base = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
+  const base = runtimeConfig.VITE_API_BASE_URL ?? 'http://localhost:5000';
   return `${base}/api/items/${item.value.id}/image`;
 });
 
