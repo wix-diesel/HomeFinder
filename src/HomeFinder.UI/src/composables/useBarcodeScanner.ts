@@ -1,5 +1,4 @@
 import { computed, onBeforeUnmount, ref } from 'vue';
-import { BarcodeFormat, BrowserMultiFormatReader } from '@zxing/browser';
 import type { IScannerControls } from '@zxing/browser';
 
 type LookupHandler<T> = (signal: AbortSignal) => Promise<T>;
@@ -85,6 +84,7 @@ export function useBarcodeScanner(cooldownMs = 500) {
 
     const detectorCtor = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
     if (!detectorCtor) {
+      const { BarcodeFormat, BrowserMultiFormatReader } = await import('@zxing/browser');
       const reader = new BrowserMultiFormatReader();
       reader.possibleFormats = [BarcodeFormat.EAN_13, BarcodeFormat.EAN_8];
 
