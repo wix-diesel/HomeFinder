@@ -6,9 +6,11 @@ const {
   BrowserMultiFormatReaderMock,
 } = vi.hoisted(() => {
   const decodeMock = vi.fn();
-  class BrowserMultiFormatReaderFake {
-    possibleFormats: unknown[] = [];
-    decodeFromVideoElement = decodeMock;
+  function BrowserMultiFormatReaderFake() {
+    return {
+      possibleFormats: [],
+      decodeFromVideoElement: decodeMock,
+    };
   }
 
   return {
