@@ -1,7 +1,36 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useBarcodeScanner } from '../../../src/composables/useBarcodeScanner';
 
+const {
+  decodeFromVideoElementMock,
+  BrowserMultiFormatReaderMock,
+} = vi.hoisted(() => {
+  const decodeMock = vi.fn();
+  class BrowserMultiFormatReaderFake {
+    possibleFormats: unknown[] = [];
+    decodeFromVideoElement = decodeMock;
+  }
+
+  return {
+    decodeFromVideoElementMock: decodeMock,
+    BrowserMultiFormatReaderMock: vi.fn(BrowserMultiFormatReaderFake),
+  };
+});
+
+vi.mock('@zxing/browser', () => ({
+  BarcodeFormat: {
+    EAN_13: 'EAN_13',
+    EAN_8: 'EAN_8',
+  },
+  BrowserMultiFormatReader: BrowserMultiFormatReaderMock,
+}));
+
 describe('useBarcodeScanner', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    decodeFromVideoElementMock.mockReset();
+  });
+
   it('直前検索から 500ms 未満はクールダウン状態になる', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
@@ -81,7 +110,7 @@ describe('useBarcodeScanner', () => {
     vi.useRealTimers();
   });
 
-  it('BarcodeDetector 未対応時は onError を呼び出しカメラを停止する', async () => {
+  it('BarcodeDetector 未対応時は ZXing フォールバックで検出できる', async () => {
     vi.useFakeTimers();
 
     const tracks = [{ stop: vi.fn() }];
@@ -98,6 +127,17 @@ describe('useBarcodeScanner', () => {
       configurable: true,
     });
 
+    decodeFromVideoElementMock.mockImplementation(async (_video, callback) => {
+      callback(
+        {
+          getText: () => '4901234567890',
+        },
+        undefined,
+        { stop: vi.fn() },
+      );
+      return { stop: vi.fn() };
+    });
+
     const scanner = useBarcodeScanner(500);
     const video = document.createElement('video');
     video.play = vi.fn().mockResolvedValue(undefined);
@@ -106,8 +146,8 @@ describe('useBarcodeScanner', () => {
 
     await scanner.startCamera(video, { onDetected, onError });
 
-    expect(onError).toHaveBeenCalledWith('このブラウザはバーコード読み取りに対応していません。');
-    // カメラストリームが停止され isScanning が false になっていること
+    expect(onDetected).toHaveBeenCalledWith('4901234567890');
+    expect(onError).not.toHaveBeenCalled();
     expect(scanner.isScanning.value).toBe(false);
     expect(tracks[0].stop).toHaveBeenCalled();
 
