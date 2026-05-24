@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using HomeFinder.Api.Errors;
 using HomeFinder.Api.Middleware;
@@ -27,7 +28,26 @@ builder.Services
     });
 
 builder.Services.AddDbContext<ItemDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var configuration = builder.Configuration;
+    var defaultConnection = configuration.GetConnectionString("DefaultConnection");
+
+    if (!string.IsNullOrWhiteSpace(defaultConnection))
+    {
+        options.UseSqlServer(defaultConnection);
+        return;
+    }
+
+    var sqlServerFqdn = configuration["Sql:ServerFqdn"]
+        ?? throw new InvalidOperationException("Sql:ServerFqdn が設定されていません。");
+    var sqlDatabaseName = configuration["Sql:DatabaseName"]
+        ?? throw new InvalidOperationException("Sql:DatabaseName が設定されていません。");
+
+    var managedIdentityConnectionString =
+        $"Server=tcp:{sqlServerFqdn},1433;Database={sqlDatabaseName};Encrypt=True;TrustServerCertificate=False;Authentication=Active Directory Default;";
+
+    options.UseSqlServer(managedIdentityConnectionString);
+});
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IItemHistoryRepository, ItemHistoryRepository>();
 builder.Services.AddScoped<IItemService, ItemService>();
@@ -52,16 +72,27 @@ builder.Services.AddHttpClient<IJanProductSearchService, JanProductSearchService
 builder.Services.AddSingleton(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-    var connectionString = config.GetConnectionString("AzureBlobStorage")
-        ?? throw new InvalidOperationException("AzureBlobStorage 接続文字列が設定されていません。");
     var containerName = config["AzureBlobStorage:ContainerName"] ?? "images";
     var serviceVersionStr = config["AzureBlobStorage:ServiceVersion"];
-    if (!string.IsNullOrEmpty(serviceVersionStr)
-        && Enum.TryParse<BlobClientOptions.ServiceVersion>(serviceVersionStr, out var serviceVersion))
+    var connectionString = config.GetConnectionString("AzureBlobStorage");
+
+    if (!string.IsNullOrWhiteSpace(connectionString))
     {
-        return new BlobContainerClient(connectionString, containerName, new BlobClientOptions(serviceVersion));
+        if (!string.IsNullOrEmpty(serviceVersionStr)
+            && Enum.TryParse<BlobClientOptions.ServiceVersion>(serviceVersionStr, out var serviceVersion))
+        {
+            return new BlobContainerClient(connectionString, containerName, new BlobClientOptions(serviceVersion));
+        }
+
+        return new BlobContainerClient(connectionString, containerName);
     }
-    return new BlobContainerClient(connectionString, containerName);
+
+    var accountName = config["AzureBlobStorage:AccountName"]
+        ?? throw new InvalidOperationException("AzureBlobStorage:AccountName が設定されていません。");
+    var serviceUri = new Uri($"https://{accountName}.blob.core.windows.net");
+    var blobServiceClient = new BlobServiceClient(serviceUri, new DefaultAzureCredential());
+    // Managed Identity 認証では BlobServiceClient 経由でクライアントを取得する。
+    return blobServiceClient.GetBlobContainerClient(containerName);
 });
 builder.Services.AddSingleton<IBlobStorageService, AzureBlobStorageService>();
 builder.Services.AddScoped<IAvatarService, AvatarService>();
