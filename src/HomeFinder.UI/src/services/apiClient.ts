@@ -1,6 +1,7 @@
 import { InteractionRequiredAuthError } from '@azure/msal-browser';
 import { msalService } from './msalService';
 import { useSnackbarStore } from '../stores/snackbarStore';
+import { getRuntimeConfig } from './runtimeConfig';
 
 /**
  * 集中 API クライアント
@@ -10,7 +11,8 @@ import { useSnackbarStore } from '../stores/snackbarStore';
  * - 401 → サイレントトークン更新を試み、失敗時は /login へリダイレクトする
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
+const runtimeConfig = getRuntimeConfig();
+const API_BASE_URL = runtimeConfig.VITE_API_BASE_URL ?? 'http://localhost:5000';
 
 /**
  * 認証済みの fetch ラッパー

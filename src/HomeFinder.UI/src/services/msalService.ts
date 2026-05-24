@@ -5,14 +5,17 @@ import {
   type Configuration,
   InteractionRequiredAuthError,
 } from '@azure/msal-browser';
+import { getRuntimeConfig } from './runtimeConfig';
+
+const runtimeConfig = getRuntimeConfig();
 
 /**
  * 環境変数の検証
  */
 function validateMsalConfig(): void {
-  const clientId = import.meta.env.VITE_AZURE_CLIENT_ID as string;
-  const tenantId = import.meta.env.VITE_AZURE_TENANT_ID as string;
-  const redirectUri = import.meta.env.VITE_AZURE_REDIRECT_URI as string;
+  const clientId = runtimeConfig.VITE_AZURE_CLIENT_ID as string;
+  const tenantId = runtimeConfig.VITE_AZURE_TENANT_ID as string;
+  const redirectUri = runtimeConfig.VITE_AZURE_REDIRECT_URI as string;
 
   if (!clientId || clientId.includes('-here')) {
     throw new Error(
@@ -37,9 +40,9 @@ function validateMsalConfig(): void {
 // MSAL 設定（環境変数から取得）
 const msalConfig: Configuration = {
   auth: {
-    clientId: import.meta.env.VITE_AZURE_CLIENT_ID as string,
-    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT_ID as string}`,
-    redirectUri: import.meta.env.VITE_AZURE_REDIRECT_URI as string,
+    clientId: runtimeConfig.VITE_AZURE_CLIENT_ID as string,
+    authority: `https://login.microsoftonline.com/${runtimeConfig.VITE_AZURE_TENANT_ID as string}`,
+    redirectUri: runtimeConfig.VITE_AZURE_REDIRECT_URI as string,
   },
   cache: {
     // 24時間セッション対応（SC-006）: localStorage にキャッシュする
@@ -48,13 +51,13 @@ const msalConfig: Configuration = {
 };
 
 // ログイン時に要求するスコープ（環境変数 VITE_AZURE_SCOPES でカンマ区切り指定、未設定時は openid/profile/email）
-const loginScopes: string[] = (import.meta.env.VITE_AZURE_SCOPES as string | undefined)
+const loginScopes: string[] = (runtimeConfig.VITE_AZURE_SCOPES as string | undefined)
   ?.split(',')
   .map((s) => s.trim())
   .filter(Boolean) ?? ['openid', 'profile', 'email'];
 
 // API アクセス用スコープ（VITE_AZURE_API_SCOPE 環境変数から取得する）
-const apiScopes: string[] = (import.meta.env.VITE_AZURE_API_SCOPE as string | undefined)
+const apiScopes: string[] = (runtimeConfig.VITE_AZURE_API_SCOPE as string | undefined)
   ?.split(',')
   .map((s) => s.trim())
   .filter(Boolean) ?? [];
@@ -114,7 +117,7 @@ async function loginPopup(): Promise<AuthenticationResult> {
   return getMsalInstance().loginPopup({
     scopes: loginScopes,
     // ポップアップ戻り先を専用コールバックページに固定する
-    redirectUri: import.meta.env.VITE_AZURE_REDIRECT_URI as string,
+    redirectUri: runtimeConfig.VITE_AZURE_REDIRECT_URI as string,
   });
 }
 
@@ -211,7 +214,7 @@ async function acquireTokenForApi(): Promise<string> {
       const result = await getMsalInstance().acquireTokenPopup({
         scopes: apiScopes,
         account,
-        redirectUri: import.meta.env.VITE_AZURE_REDIRECT_URI as string,
+        redirectUri: runtimeConfig.VITE_AZURE_REDIRECT_URI as string,
       });
       return result.accessToken;
     }
