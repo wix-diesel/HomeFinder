@@ -1,4 +1,5 @@
 import { computed, onBeforeUnmount, ref } from 'vue';
+import type { IScannerControls } from '@zxing/browser';
 
 type LookupHandler<T> = (signal: AbortSignal) => Promise<T>;
 
@@ -23,6 +24,7 @@ export function useBarcodeScanner(cooldownMs = 500) {
   let activeLookupController: AbortController | null = null;
   let detectTimerId: number | null = null;
   let cooldownTimerId: number | null = null;
+  let scannerControls: IScannerControls | null = null;
 
   const isCooldown = computed(() => {
     return cooldownUntil.value > Date.now();
@@ -49,6 +51,8 @@ export function useBarcodeScanner(cooldownMs = 500) {
       window.clearTimeout(detectTimerId);
       detectTimerId = null;
     }
+    scannerControls?.stop();
+    scannerControls = null;
   }
 
   function stopCamera() {
@@ -80,9 +84,31 @@ export function useBarcodeScanner(cooldownMs = 500) {
 
     const detectorCtor = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
     if (!detectorCtor) {
-      options.onError('このブラウザはバーコード読み取りに対応していません。');
-      stopCamera(); // カメラストリームを停止して isScanning を false に戻す
-      return;
+      const { BarcodeFormat, BrowserMultiFormatReader } = await import('@zxing/browser');
+      const reader = new BrowserMultiFormatReader();
+      reader.possibleFormats = [BarcodeFormat.EAN_13, BarcodeFormat.EAN_8];
+
+      try {
+        const controls = await reader.decodeFromVideoElement(target, (result) => {
+          const value = result?.getText()?.trim();
+          if (!value || !isScanning.value) {
+            return;
+          }
+
+          options.onDetected(value);
+          stopCamera();
+        });
+        if (!isScanning.value) {
+          controls.stop();
+          return;
+        }
+        scannerControls = controls;
+        return;
+      } catch {
+        options.onError('バーコードの読み取りに失敗しました。');
+        stopCamera();
+        return;
+      }
     }
 
     const detector = new detectorCtor({ formats: ['ean_13', 'ean_8'] });
