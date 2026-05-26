@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DecodeHintType } from '@zxing/library';
 import { useBarcodeScanner } from '../../../src/composables/useBarcodeScanner';
 
 const {
@@ -31,8 +32,8 @@ vi.mock('@zxing/browser', () => ({
   BrowserMultiFormatReader: BrowserMultiFormatReaderMock,
 }));
 
-vi.mock('@zxing/library/esm/core/DecodeHintType', () => ({
-  default: {
+vi.mock('@zxing/library', () => ({
+  DecodeHintType: {
     TRY_HARDER: 3,
   },
 }));
@@ -41,6 +42,7 @@ describe('useBarcodeScanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     decodeFromVideoElementMock.mockReset();
+    capturedHints.hints = undefined;
   });
 
   it('直前検索から 500ms 未満はクールダウン状態になる', async () => {
@@ -163,7 +165,7 @@ describe('useBarcodeScanner', () => {
     expect(scanner.isScanning.value).toBe(false);
     expect(tracks[0].stop).toHaveBeenCalled();
     // TRY_HARDER ヒントが設定されていることを確認（精度向上設定）
-    expect(capturedHints.hints?.get(3)).toBe(true);
+    expect(capturedHints.hints?.get(DecodeHintType.TRY_HARDER)).toBe(true);
 
     vi.useRealTimers();
   });
