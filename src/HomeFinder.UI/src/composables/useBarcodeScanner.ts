@@ -8,6 +8,7 @@ type BarcodeDetectorLike = {
 };
 
 type BarcodeDetectorCtor = new (options?: { formats?: string[] }) => BarcodeDetectorLike;
+type ExtendedMediaTrackConstraintSet = MediaTrackConstraintSet & { focusMode?: string };
 
 type CameraStartOptions = {
   onDetected: (value: string) => void;
@@ -70,8 +71,16 @@ export function useBarcodeScanner(cooldownMs = 500) {
     }
 
     try {
+      const videoConstraints: MediaTrackConstraints = {
+        facingMode: 'environment',
+        // 高解像度映像でバーコードを鮮明に捉える（iPhone 含む）
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        // iPhone の連続オートフォーカスを有効化（標準外制約のため要素単位で型アサーション）
+        advanced: [{ focusMode: 'continuous' } as ExtendedMediaTrackConstraintSet],
+      };
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: videoConstraints,
       });
       target.srcObject = stream;
       await target.play();
@@ -85,7 +94,10 @@ export function useBarcodeScanner(cooldownMs = 500) {
     const detectorCtor = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
     if (!detectorCtor) {
       const { BarcodeFormat, BrowserMultiFormatReader } = await import('@zxing/browser');
-      const reader = new BrowserMultiFormatReader();
+      const { DecodeHintType } = await import('@zxing/library');
+      // TRY_HARDER を有効化することで、小さいバーコードや斜め読み取りの精度を向上させる
+      const hints = new Map([[DecodeHintType.TRY_HARDER, true]]);
+      const reader = new BrowserMultiFormatReader(hints);
       reader.possibleFormats = [BarcodeFormat.EAN_13, BarcodeFormat.EAN_8];
 
       try {

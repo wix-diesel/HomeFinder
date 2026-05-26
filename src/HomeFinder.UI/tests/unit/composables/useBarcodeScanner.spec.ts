@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DecodeHintType } from '@zxing/library';
 import { useBarcodeScanner } from '../../../src/composables/useBarcodeScanner';
 
 const {
   decodeFromVideoElementMock,
   BrowserMultiFormatReaderMock,
+  capturedHints,
 } = vi.hoisted(() => {
   const decodeMock = vi.fn();
-  function BrowserMultiFormatReaderFake() {
+  const captured: { hints?: Map<unknown, unknown> } = {};
+  function BrowserMultiFormatReaderFake(hints?: Map<unknown, unknown>) {
+    captured.hints = hints;
     return {
       possibleFormats: [],
       decodeFromVideoElement: decodeMock,
@@ -16,6 +20,7 @@ const {
   return {
     decodeFromVideoElementMock: decodeMock,
     BrowserMultiFormatReaderMock: vi.fn(BrowserMultiFormatReaderFake),
+    capturedHints: captured,
   };
 });
 
@@ -27,10 +32,17 @@ vi.mock('@zxing/browser', () => ({
   BrowserMultiFormatReader: BrowserMultiFormatReaderMock,
 }));
 
+vi.mock('@zxing/library', () => ({
+  DecodeHintType: {
+    TRY_HARDER: 3,
+  },
+}));
+
 describe('useBarcodeScanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     decodeFromVideoElementMock.mockReset();
+    capturedHints.hints = undefined;
   });
 
   it('直前検索から 500ms 未満はクールダウン状態になる', async () => {
@@ -152,6 +164,8 @@ describe('useBarcodeScanner', () => {
     expect(onError).not.toHaveBeenCalled();
     expect(scanner.isScanning.value).toBe(false);
     expect(tracks[0].stop).toHaveBeenCalled();
+    // TRY_HARDER ヒントが設定されていることを確認（精度向上設定）
+    expect(capturedHints.hints?.get(DecodeHintType.TRY_HARDER)).toBe(true);
 
     vi.useRealTimers();
   });
