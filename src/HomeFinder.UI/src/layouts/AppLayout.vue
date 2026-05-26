@@ -2,7 +2,7 @@
   <div class="app-layout">
     <header class="app-header">
       <div class="brand">
-        <span class="material-symbols-outlined brand-icon" aria-hidden="true">inventory_2</span>
+        <img :src="appIconPath" alt="" class="brand-icon" aria-hidden="true" />
         <h1>{{ uiText.app.title }}</h1>
       </div>
       <div class="header-actions">
@@ -65,6 +65,7 @@ import { uiText } from '../constants/uiText';
 import { useAuth } from '../composables/useAuth';
 import { useUserProfileStore } from '../stores/userProfileStore';
 import AppSnackbar from '../composables/AppSnackbar.vue';
+import appIconPath from '../assets/icon.png';
 
 const auth = useAuth();
 const router = useRouter();
@@ -111,8 +112,9 @@ function goToUserSettings() {
 }
 
 .brand-icon {
-  color: #2563eb;
-  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .app-header h1 {

@@ -3,7 +3,7 @@
     <!-- ブランドヘッダー -->
     <header class="login-header">
       <div class="brand">
-        <span class="material-symbols-outlined brand-icon" aria-hidden="true">home</span>
+        <img :src="appIconPath" alt="" class="brand-icon" aria-hidden="true" />
         <h1 class="brand-title">Home Finder</h1>
       </div>
     </header>
@@ -79,6 +79,7 @@ import { useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import { msalService } from '../services/msalService';
 import heroImage from '../assets/living_room_interior.png';
+import appIconPath from '../assets/icon.png';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -127,9 +128,9 @@ async function handleLogin() {
 }
 
 .brand-icon {
-  color: #004ac6;
-  font-size: 32px;
-  font-variation-settings: 'FILL' 1;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .brand-title {
