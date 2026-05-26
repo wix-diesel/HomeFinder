@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 
+const mockLoadProfile = vi.fn();
+const mockProfileState = { profile: null as object | null, isLoading: false };
+
 // msalService をモック
 vi.mock('../../../src/services/msalService', () => ({
   msalService: {
@@ -17,10 +20,21 @@ vi.mock('vue-router', () => ({
   useRouter: vi.fn(() => ({ push: vi.fn(), replace: vi.fn() })),
 }));
 
+vi.mock('../../../src/stores/userProfileStore', () => ({
+  useUserProfileStore: vi.fn(() => ({
+    profile: mockProfileState.profile,
+    isLoading: mockProfileState.isLoading,
+    loadProfile: mockLoadProfile,
+  })),
+}));
+
 describe('authStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    mockLoadProfile.mockReset();
+    mockProfileState.profile = null;
+    mockProfileState.isLoading = false;
   });
 
   describe('初期ステート', () => {
@@ -116,6 +130,41 @@ describe('authStore', () => {
 
       expect(store.user).not.toBeNull();
       expect(store.user?.name).toBe('Test User');
+      expect(mockLoadProfile).toHaveBeenCalledTimes(1);
+    });
+
+    it('リダイレクトログイン成功時: プロフィールを自動で読み込む', async () => {
+      const { msalService } = await import('../../../src/services/msalService');
+      vi.mocked(msalService.handleRedirectPromise).mockResolvedValueOnce({
+        account: { homeAccountId: 'oid-123', name: 'Test User', username: 'test@example.com' },
+        idTokenClaims: { oid: 'oid-123', name: 'Test User', preferred_username: 'test@example.com' },
+        state: '/items',
+      } as never);
+
+      const { useAuthStore } = await import('../../../src/stores/authStore');
+      const store = useAuthStore();
+      await store.initialize();
+
+      expect(store.user).not.toBeNull();
+      expect(store.user?.name).toBe('Test User');
+      expect(mockLoadProfile).toHaveBeenCalledTimes(1);
+    });
+
+    it('プロフィール読込中ならプロフィール読込をスキップする', async () => {
+      mockProfileState.isLoading = true;
+      const { msalService } = await import('../../../src/services/msalService');
+      vi.mocked(msalService.handleRedirectPromise).mockResolvedValueOnce(null);
+      vi.mocked(msalService.acquireTokenSilent).mockResolvedValueOnce({
+        account: { homeAccountId: 'oid-123', name: 'Test User', username: 'test@example.com' },
+        idTokenClaims: { oid: 'oid-123', name: 'Test User', preferred_username: 'test@example.com' },
+      } as never);
+
+      const { useAuthStore } = await import('../../../src/stores/authStore');
+      const store = useAuthStore();
+      await store.initialize();
+
+      expect(store.user).not.toBeNull();
+      expect(mockLoadProfile).not.toHaveBeenCalled();
     });
 
     it('2回呼んでも初回のみMSALを呼び出す', async () => {
