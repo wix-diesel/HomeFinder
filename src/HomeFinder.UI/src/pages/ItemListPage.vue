@@ -85,8 +85,8 @@ onMounted(async () => {
       <span class="search-shortcut">⌘K</span>
     </div>
 
-    <label class="visually-hidden" aria-hidden="true">
-      {{ uiText.list.categoryLabel }}
+    <label class="category-filter">
+      <span>{{ uiText.list.categoryLabel }}</span>
       <select v-model="selectedCategory">
         <option value="all">すべて</option>
         <option v-for="category in visibleCategories" :key="category.id" :value="category.id">
@@ -96,27 +96,6 @@ onMounted(async () => {
     </label>
 
     <div class="toolbar">
-      <div class="chips" role="tablist" :aria-label="uiText.list.categoryLabel">
-        <button
-          type="button"
-          class="chip"
-          :class="{ active: selectedCategory === 'all' }"
-          @click="selectedCategory = 'all'"
-        >
-          すべて
-        </button>
-        <button
-          v-for="category in visibleCategories"
-          :key="category.id"
-          type="button"
-          class="chip"
-          :class="{ active: selectedCategory === category.id }"
-          @click="selectedCategory = category.id"
-        >
-          {{ category.name }}
-        </button>
-      </div>
-
       <div class="toolbar-actions">
         <ViewModeToggle
           :card-label="uiText.list.cardView"
@@ -212,44 +191,28 @@ onMounted(async () => {
   padding: 1px 6px;
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.category-filter {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.category-filter span {
+  font-weight: 700;
+}
+
+.category-filter select {
+  border: 1px solid #d2dae5;
+  border-radius: 10px;
+  background: #fff;
+  padding: 9px 12px;
+  font-size: 0.95rem;
 }
 
 .toolbar {
   display: grid;
   gap: 10px;
-}
-
-.chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.chip {
-  border: 1px solid #d2dae5;
-  background: #f7fafc;
-  color: #64748b;
-  border-radius: 999px;
-  padding: 7px 14px;
-  font-size: 0.82rem;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.chip.active {
-  border-color: #2563eb;
-  background: #2563eb;
-  color: #fff;
 }
 
 .toolbar-actions {
