@@ -111,6 +111,35 @@ describe('ItemListPage', () => {
     expect(wrapper.text()).not.toContain('歯ブラシ');
   });
 
+  it('カテゴリーフィルターをプルダウンで表示する', async () => {
+    vi.mocked(getItems).mockResolvedValue([
+      {
+        id: '1',
+        name: '歯ブラシ',
+        categoryId: 'cat-nichiyohin',
+        categoryName: '日用品',
+        quantity: 2,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      },
+      {
+        id: '2',
+        name: '卓上ライト',
+        categoryId: 'cat-kaiden',
+        categoryName: '家電',
+        quantity: 1,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      },
+    ]);
+
+    const wrapper = mount(ItemListPage);
+    await flushPromises();
+
+    expect(wrapper.find('.category-filter select').exists()).toBe(true);
+    expect(wrapper.find('.chips').exists()).toBe(false);
+  });
+
   it('デスクトップ表示切替を操作できる', async () => {
     vi.mocked(getItems).mockResolvedValue([
       {
