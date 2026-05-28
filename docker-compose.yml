@@ -19,6 +19,7 @@ services:
       ConnectionStrings__DefaultConnection: ${HOMEFINDER_SQLSERVER_CONNECTION_STRING:-Server=host.docker.internal,1433;Database=HomeFinderDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True}
       ConnectionStrings__AzureBlobStorage: ${AZURE_BLOB_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountKey=AccountKey;AccountName=devstoreaccount1;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;}      
       AzureBlobStorage__ContainerName: ${AZURE_BLOB_CONTAINER_NAME:-homefinder}
+      Cors__AllowedOrigins: ${HOMEFINDER_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://host.docker.internal:5173}
     ports:
       - "5000:8080"
 
