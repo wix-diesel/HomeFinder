@@ -2,6 +2,7 @@ using System.Text.Json;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using HomeFinder.Api.Errors;
+using HomeFinder.Api.Configuration;
 using HomeFinder.Api.Middleware;
 using HomeFinder.Infrastructure.Data;
 using Microsoft.Identity.Web;
@@ -113,12 +114,14 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
+var corsAllowedOrigins = CorsAllowedOriginsResolver.Resolve(builder.Configuration);
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://host.docker.internal:5173")
+            .WithOrigins(corsAllowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
