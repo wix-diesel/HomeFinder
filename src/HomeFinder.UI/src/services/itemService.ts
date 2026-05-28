@@ -112,5 +112,10 @@ export async function updateItem(id: string, request: UpdateItemRequest | ItemRe
     throw new ItemServiceError('物品更新に失敗しました。');
   }
 
-  return (await response.json()) as Item;
+  const responseText = await response.text();
+  if (!responseText.trim()) {
+    return await getItemById(id);
+  }
+
+  return JSON.parse(responseText) as Item;
 }
