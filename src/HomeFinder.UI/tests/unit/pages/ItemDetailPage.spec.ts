@@ -40,6 +40,10 @@ const mockItem = {
   id: 'item-1',
   name: '歯ブラシ',
   quantity: 2,
+  roomId: null,
+  roomDisplayName: '未設定',
+  shelfId: null,
+  shelfDisplayName: '未設定',
   createdAt: '2026-04-24T10:30:00Z',
   updatedAt: '2026-04-24T10:30:00Z',
   canEdit: true,
@@ -202,6 +206,50 @@ describe('ItemDetailPage', () => {
     await flushPromises();
 
     expect(mockRouterPush).toHaveBeenCalledWith(expect.objectContaining({ name: 'item-list' }));
+  });
+
+  it('詳細情報に部屋と棚を表示する', async () => {
+    vi.mocked(getItemById).mockResolvedValue({
+      ...mockItem,
+      roomId: 'room-1',
+      roomDisplayName: '倉庫A',
+      shelfId: 'shelf-1',
+      shelfDisplayName: '上段',
+    });
+
+    const wrapper = mount(ItemDetailPage);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('部屋');
+    expect(wrapper.text()).toContain('棚');
+    expect(wrapper.text()).toContain('倉庫A');
+    expect(wrapper.text()).toContain('上段');
+  });
+
+  it('削除済み部屋表示を詳細画面に表示する', async () => {
+    vi.mocked(getItemById).mockResolvedValue({
+      ...mockItem,
+      roomId: 'deleted-room-id',
+      roomDisplayName: '削除済み（旧倉庫）',
+    });
+
+    const wrapper = mount(ItemDetailPage);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('削除済み（旧倉庫）');
+  });
+
+  it('削除済み棚表示を詳細画面に表示する', async () => {
+    vi.mocked(getItemById).mockResolvedValue({
+      ...mockItem,
+      shelfId: 'deleted-shelf-id',
+      shelfDisplayName: '削除済み（旧上段）',
+    });
+
+    const wrapper = mount(ItemDetailPage);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('削除済み（旧上段）');
   });
 });
 

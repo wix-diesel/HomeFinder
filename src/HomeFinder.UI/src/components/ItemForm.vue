@@ -5,7 +5,10 @@ import ImageUploader from './ImageUploader.vue';
 import BarcodeScannerDialog from './BarcodeScannerDialog.vue';
 import type { ItemRegistrationFormState } from '../models/itemRegistrationFormState';
 import type { Category } from '../models/category';
+import type { Room, Shelf } from '../models/storageLocation';
 import { categoryService } from '../services/categoryService';
+import { listRooms } from '../services/roomService';
+import { listShelves } from '../services/shelfService';
 import { getLookupMessage, getLookupRecommendation, lookupProductByJan, ProductLookupError } from '../services/productLookupService';
 import { isValidJan, normalizeJan } from '../utils/jan';
 import { useBarcodeScanner } from '../composables/useBarcodeScanner';
@@ -37,6 +40,9 @@ const props = withDefaults(
 );
 
 const categories = ref<Category[]>([]);
+const rooms = ref<Room[]>([]);
+const shelves = ref<Shelf[]>([]);
+const isLocationFieldsDisabled = ref(false);
 const scannerOpen = ref(false);
 const lookupErrorMessage = ref('');
 const lookupRecommendation = ref('');
@@ -59,11 +65,16 @@ const formState = reactive<ItemRegistrationFormState>({
   name: '',
   quantity: null,
   categoryId: '',
+  roomId: '',
+  roomDisplayName: '',
+  shelfId: '',
+  shelfDisplayName: '',
   manufacturer: '',
   priceInput: '',
   note: '',
   barcode: '',
   description: '',
+  locationOptionsError: null,
   isSubmitting: false,
   fieldErrors: {},
   submitError: null,
@@ -81,16 +92,94 @@ watch(
 );
 
 onMounted(async () => {
+  await Promise.all([
+    loadCategories(),
+    loadRooms(),
+  ]);
+
+  if (formState.roomId) {
+    await loadShelvesByRoom(formState.roomId);
+  }
+});
+
+watch(
+  () => formState.roomId,
+  async (newRoomId, oldRoomId) => {
+    if (!newRoomId) {
+      shelves.value = [];
+      formState.shelfId = '';
+      return;
+    }
+
+    if (newRoomId !== oldRoomId) {
+      formState.shelfId = '';
+    }
+
+    await loadShelvesByRoom(newRoomId);
+  },
+);
+
+async function loadCategories() {
   try {
     categories.value = await categoryService.getCategories(true);
   } catch {
     // カテゴリー取得失敗時はフォームを利用可能な状態に保つ
   }
-});
+}
+
+async function loadRooms() {
+  try {
+    rooms.value = await listRooms();
+    isLocationFieldsDisabled.value = false;
+    formState.locationOptionsError = null;
+  } catch {
+    rooms.value = [];
+    shelves.value = [];
+    isLocationFieldsDisabled.value = true;
+    formState.locationOptionsError = uiText.create.location.fetchErrorDescription;
+  }
+}
+
+async function loadShelvesByRoom(roomId: string) {
+  try {
+    shelves.value = await listShelves(roomId);
+    isLocationFieldsDisabled.value = false;
+    formState.locationOptionsError = null;
+  } catch {
+    shelves.value = [];
+    formState.shelfId = '';
+    isLocationFieldsDisabled.value = true;
+    formState.locationOptionsError = uiText.create.location.fetchErrorDescription;
+  }
+}
 
 const hasValidationError = computed(() => Object.values(formState.fieldErrors).some((message) => Boolean(message)));
 const hasMergeChoices = computed(() => Boolean(mergeCandidates.value));
 const hasLookupWarning = computed(() => lookupWarning.value.length > 0);
+const summaryRoomText = computed(() => {
+  const selected = rooms.value.find((room) => room.id === formState.roomId);
+  if (selected) {
+    return selected.name;
+  }
+
+  if (formState.roomDisplayName?.trim()) {
+    return formState.roomDisplayName.trim();
+  }
+
+  return '未設定';
+});
+const summaryShelfText = computed(() => {
+  const selected = shelves.value.find((shelf) => shelf.id === formState.shelfId);
+  if (selected) {
+    return selected.name;
+  }
+
+  if (formState.shelfDisplayName?.trim()) {
+    return formState.shelfDisplayName.trim();
+  }
+
+  return '未設定';
+});
 const cooldownText = computed(() => {
   if (!isCooldown.value) {
     return '';
@@ -324,6 +413,10 @@ function validate(): boolean {
     formState.fieldErrors.name = '商品名が未取得のため保存できません。';
   }
 
+  if (formState.shelfId.trim() && !formState.roomId.trim()) {
+    formState.fieldErrors.shelfId = '棚を設定する場合は部屋を選択してください。';
+  }
+
   return !hasValidationError.value;
 }
 
@@ -385,6 +478,13 @@ function onRetry(): void {
           :description-ja="lookupWarning"
         />
 
+        <StatePanel
+          v-if="formState.locationOptionsError"
+          state-type="validation_error"
+          :title-ja="uiText.create.location.fetchErrorTitle"
+          :description-ja="formState.locationOptionsError"
+        />
+
         <p v-if="cooldownText" class="cooldown-note">{{ cooldownText }}</p>
 
         <div class="field-two">
@@ -422,6 +522,37 @@ function onRetry(): void {
               <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
             </select>
             <small class="helper">{{ uiText.create.fields.category.helper }}</small>
+          </label>
+
+          <label class="form-field">
+            <span class="form-field__label">{{ uiText.create.fields.room.label }}</span>
+            <select
+              name="roomId"
+              :value="formState.roomId"
+              :disabled="isLocationFieldsDisabled"
+              @change="(event) => (formState.roomId = (event.target as HTMLSelectElement).value)"
+            >
+              <option value="">{{ uiText.create.fields.room.placeholder }}</option>
+              <option v-for="room in rooms" :key="room.id" :value="room.id">{{ room.name }}</option>
+            </select>
+            <small class="helper">{{ uiText.create.fields.room.helper }}</small>
+          </label>
+        </div>
+
+        <div class="field-two">
+          <label class="form-field">
+            <span class="form-field__label">{{ uiText.create.fields.shelf.label }}</span>
+            <select
+              name="shelfId"
+              :value="formState.shelfId"
+              :disabled="isLocationFieldsDisabled || !formState.roomId"
+              @change="(event) => (formState.shelfId = (event.target as HTMLSelectElement).value)"
+            >
+              <option value="">{{ uiText.create.fields.shelf.placeholder }}</option>
+              <option v-for="shelf in shelves" :key="shelf.id" :value="shelf.id">{{ shelf.name }}</option>
+            </select>
+            <small class="helper">{{ uiText.create.fields.shelf.helper }}</small>
+            <small v-if="formState.fieldErrors.shelfId" class="error">{{ formState.fieldErrors.shelfId }}</small>
           </label>
 
           <label class="form-field">
@@ -528,16 +659,16 @@ function onRetry(): void {
         <h3>登録サマリー</h3>
         <dl>
           <div>
-            <dt>状態</dt>
-            <dd>下書き</dd>
+            <dt>カテゴリ</dt>
+            <dd>{{ categories.find((category) => category.id === formState.categoryId)?.name ?? '未設定' }}</dd>
           </div>
           <div>
-            <dt>保存先</dt>
-            <dd>倉庫 A-12</dd>
+            <dt>部屋</dt>
+            <dd>{{ summaryRoomText }}</dd>
           </div>
           <div>
-            <dt>公開範囲</dt>
-            <dd>社内のみ</dd>
+            <dt>棚</dt>
+            <dd>{{ summaryShelfText }}</dd>
           </div>
         </dl>
       </aside>

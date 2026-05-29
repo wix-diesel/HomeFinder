@@ -1,15 +1,20 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using HomeFinder.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IntegrationTests;
 
 public class ItemDetailEndpointTests : IClassFixture<TestApplicationFactory>
 {
     private readonly HttpClient _client;
+    private readonly TestApplicationFactory _factory;
 
     public ItemDetailEndpointTests(TestApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
     }
 
@@ -95,6 +100,58 @@ public class ItemDetailEndpointTests : IClassFixture<TestApplicationFactory>
         Assert.EndsWith("Z", updatedAt!, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task GetItemById_ReturnsDeletedDisplayNames_WhenReferencedRoomAndShelfAreSoftDeleted()
+    {
+        var roomResponse = await _client.PostAsJsonAsync("/api/rooms", new { name = $"削除部屋_{Guid.NewGuid():N}", description = "統合テスト" });
+        Assert.Equal(HttpStatusCode.Created, roomResponse.StatusCode);
+        var room = await roomResponse.Content.ReadFromJsonAsync<RoomResponse>();
+        Assert.NotNull(room);
+
+        var shelfResponse = await _client.PostAsJsonAsync($"/api/rooms/{room!.Id}/shelves", new { name = $"削除棚_{Guid.NewGuid():N}", description = "統合テスト" });
+        Assert.Equal(HttpStatusCode.Created, shelfResponse.StatusCode);
+        var shelf = await shelfResponse.Content.ReadFromJsonAsync<ShelfResponse>();
+        Assert.NotNull(shelf);
+
+        var createResponse = await _client.PostAsJsonAsync("/api/items", new
+        {
+            name = $"削除済み表示テスト_{Guid.NewGuid():N}",
+            quantity = 1,
+            roomId = room.Id,
+            shelfId = shelf!.Id,
+        });
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
+            var roomEntity = await db.Rooms.IgnoreQueryFilters().SingleAsync(x => x.Id == room.Id);
+            var shelfEntity = await db.Shelves.IgnoreQueryFilters().SingleAsync(x => x.Id == shelf.Id);
+
+            roomEntity.IsDeleted = true;
+            roomEntity.UpdatedAtUtc = DateTime.UtcNow;
+            shelfEntity.IsDeleted = true;
+            shelfEntity.UpdatedAtUtc = DateTime.UtcNow;
+
+            await db.SaveChangesAsync();
+        }
+
+        var detailResponse = await _client.GetAsync($"/api/items/{created!.Id}");
+        Assert.Equal(HttpStatusCode.OK, detailResponse.StatusCode);
+
+        var json = await detailResponse.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var roomDisplayName = doc.RootElement.GetProperty("roomDisplayName").GetString();
+        var shelfDisplayName = doc.RootElement.GetProperty("shelfDisplayName").GetString();
+
+        Assert.Equal($"削除済み（{room.Name}）", roomDisplayName);
+        Assert.Equal($"削除済み（{shelf.Name}）", shelfDisplayName);
+    }
+
     public sealed record ItemResponse(Guid Id, string Name, int Quantity, DateTime CreatedAt, DateTime UpdatedAt);
     public sealed record ItemDetailResponse(Guid Id, string Name, int Quantity, bool CanEdit, bool CanDelete);
+    public sealed record RoomResponse(Guid Id, string Name);
+    public sealed record ShelfResponse(Guid Id, Guid RoomId, string Name);
 }

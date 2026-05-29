@@ -71,6 +71,17 @@ public class ItemDetailApiContractTests
         Assert.Contains("message", text);
     }
 
+    [Fact]
+    public void ItemDetailApiContract_MustDefineRoomShelfDisplayRules_ForFeature016()
+    {
+        var text = LoadFeature016Contract();
+
+        Assert.Contains("## GET /api/items/{itemId}", text);
+        Assert.Contains("\"roomDisplayName\": \"string\"", text);
+        Assert.Contains("\"shelfDisplayName\": \"string\"", text);
+        Assert.Contains("削除済み（元の名称）", text);
+    }
+
     private static string LoadContract(string filename)
     {
         var path = Path.GetFullPath(
@@ -78,6 +89,17 @@ public class ItemDetailApiContractTests
                 AppContext.BaseDirectory,
                 "..", "..", "..", "..", "..", "..",
                 "specs", "006-item-detail-page", "contracts", filename));
+        return File.ReadAllText(path);
+    }
+
+    private static string LoadFeature016Contract()
+    {
+        var path = Path.GetFullPath(
+            Path.Combine(
+                AppContext.BaseDirectory,
+                "..", "..", "..", "..", "..", "..",
+                "specs", "016-item-storage-location", "contracts", "item-storage-location-api.md"));
+
         return File.ReadAllText(path);
     }
 }

@@ -23,6 +23,14 @@ public class RoomRepository(ItemDbContext dbContext) : IRoomRepository
             .FirstOrDefaultAsync(x => x.Id == roomId, cancellationToken);
     }
 
+    public async Task<Room?> GetRoomByIdIncludingDeletedAsync(Guid roomId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Rooms
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == roomId, cancellationToken);
+    }
+
     public Task<bool> CheckDuplicateNameAsync(string name, Guid? excludeRoomId = null, CancellationToken cancellationToken = default)
     {
         var query = dbContext.Rooms.Where(x => x.Name == name);

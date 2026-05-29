@@ -8,4 +8,5 @@ public enum ItemHistoryChangeType
     PriceUpdated = 3,
     NameUpdated = 4,
     CategoryUpdated = 5,
+    LocationUpdated = 6,
 }

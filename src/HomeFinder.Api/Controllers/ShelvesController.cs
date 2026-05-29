@@ -12,6 +12,32 @@ namespace HomeFinder.Api.Controllers;
 [Authorize(Roles = "User,Admin")]
 public class ShelvesController(IShelfService shelfService, ILogger<ShelvesController> logger) : ControllerBase
 {
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<object>> GetShelves(Guid roomId, CancellationToken cancellationToken)
+    {
+        var result = await shelfService.ListShelvesAsync(roomId, cancellationToken);
+        if (result.IsSuccessful)
+        {
+            var payload = new
+            {
+                shelves = result.Value
+                    .OrderBy(x => x.Name)
+                    .Select(x => new ShelfDto(x.Id, x.RoomId, x.Name, x.Description, x.CreatedAtUtc, x.UpdatedAtUtc))
+                    .ToArray()
+            };
+
+            return Ok(payload);
+        }
+
+        logger.LogError(result.Error, "Failed to get shelves for room {RoomId}", roomId);
+        return StatusCode(StatusCodes.Status500InternalServerError, new ApiError(
+            "INTERNAL_SERVER_ERROR",
+            "予期しないエラーが発生しました。",
+            Array.Empty<ApiErrorDetail>()));
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(ShelfDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]

@@ -13,6 +13,8 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
         return await dbContext.Items
             .AsNoTracking()
             .Include(x => x.Category)
+            .Include(x => x.Room)
+            .Include(x => x.Shelf)
             .OrderByDescending(x => x.CreatedAtUtc)
             .ToListAsync(cancellationToken);
     }
@@ -22,6 +24,8 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
         return await dbContext.Items
             .AsNoTracking()
             .Include(x => x.Category)
+            .Include(x => x.Room)
+            .Include(x => x.Shelf)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
@@ -58,11 +62,11 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
                 throw new ItemNameConflictException(item.Name);
             }
 
-            // FK 制約違反（存在しないカテゴリーIDなど）は ArgumentException に変換する
+            // FK 制約違反（存在しないカテゴリー/部屋/棚IDなど）は ArgumentException に変換する
             if (innerMsg.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase)
                 || innerMsg.Contains("REFERENCES", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("存在しないカテゴリーIDが指定されました。", nameof(item));
+                throw new ArgumentException("存在しないカテゴリーIDまたは部屋/棚IDが指定されました。", nameof(item));
             }
 
             throw;

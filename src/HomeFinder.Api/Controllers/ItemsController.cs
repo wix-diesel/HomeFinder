@@ -146,9 +146,13 @@ public class ItemsController(IItemService itemService) : ControllerBase
             return NotFound(ApiError.ItemUpdateNotFound());
         }
 
-        if (result.Error is ArgumentException)
+        if (result.Error is ArgumentException argumentException)
         {
-            return BadRequest(ApiError.ValidationError(Array.Empty<ApiErrorDetail>()));
+            var details = new[]
+            {
+                new ApiErrorDetail(argumentException.ParamName ?? "request", argumentException.Message),
+            };
+            return BadRequest(ApiError.ValidationError(details));
         }
 
         if (result.Error is ItemNameConflictException)
