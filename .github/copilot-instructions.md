@@ -8,5 +8,5 @@
 
 <!-- SPECKIT START -->
 ## Speckit Plan Context
-- 現在の計画: `/specs/015-barcode-category-autofill/plan.md`
+- 現在の計画: `/specs/016-item-storage-location/plan.md`
 <!-- SPECKIT END -->
