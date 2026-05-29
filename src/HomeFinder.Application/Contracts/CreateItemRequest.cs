@@ -44,4 +44,14 @@ public class CreateItemRequest
     /// カテゴリー ID（任意）
     /// </summary>
     public Guid? CategoryId { get; set; }
+
+    /// <summary>
+    /// 部屋 ID（任意）
+    /// </summary>
+    public Guid? RoomId { get; set; }
+
+    /// <summary>
+    /// 棚 ID（任意）
+    /// </summary>
+    public Guid? ShelfId { get; set; }
 }

@@ -22,6 +22,14 @@ public class ShelfRepository(ItemDbContext dbContext) : IShelfRepository
             .FirstOrDefaultAsync(x => x.Id == shelfId, cancellationToken);
     }
 
+    public async Task<Shelf?> GetShelfByIdIncludingDeletedAsync(Guid shelfId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Shelves
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == shelfId, cancellationToken);
+    }
+
     public Task<bool> CheckDuplicateNameAsync(Guid roomId, string name, Guid? excludeShelfId = null, CancellationToken cancellationToken = default)
     {
         var query = dbContext.Shelves.Where(x => x.RoomId == roomId && x.Name == name);

@@ -10,6 +10,10 @@ export type ItemDetail = {
   price?: number | null;
   categoryId?: string | null;
   categoryName?: string | null;
+  roomId?: string | null;
+  roomDisplayName?: string | null;
+  shelfId?: string | null;
+  shelfDisplayName?: string | null;
   createdAt: string;
   updatedAt: string;
   canEdit: boolean;

@@ -32,6 +32,8 @@ const priceText = computed(() =>
   item.value?.price != null ? `¥${item.value.price.toLocaleString('ja-JP')}` : null,
 );
 const categoryBadgeText = computed(() => item.value?.categoryName?.trim() || '未分類');
+const roomText = computed(() => item.value?.roomDisplayName?.trim() || '未設定');
+const shelfText = computed(() => item.value?.shelfDisplayName?.trim() || '未設定');
 const itemImageAlt = computed(() => (item.value ? `${item.value.name} の画像` : '未登録画像'));
 
 // アイテム詳細を取得する
@@ -231,6 +233,14 @@ async function confirmDelete() {
               <div class="spec-row" v-if="item.categoryName">
                 <dt>{{ uiText.detail.fieldLabels.category }}</dt>
                 <dd>{{ item.categoryName }}</dd>
+              </div>
+              <div class="spec-row">
+                <dt>{{ uiText.detail.fieldLabels.room }}</dt>
+                <dd>{{ roomText }}</dd>
+              </div>
+              <div class="spec-row">
+                <dt>{{ uiText.detail.fieldLabels.shelf }}</dt>
+                <dd>{{ shelfText }}</dd>
               </div>
               <div class="spec-row" v-if="item.manufacturer">
                 <dt>{{ uiText.detail.fieldLabels.manufacturer }}</dt>

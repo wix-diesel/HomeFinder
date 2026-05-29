@@ -1,5 +1,12 @@
 # API 契約: アイテム保管場所（部屋・棚）
 
+## 実装対象 API 一覧
+
+- GET /api/items/{itemId}
+- PUT /api/items/{itemId}
+- GET /api/rooms
+- GET /api/rooms/{roomId}/shelves
+
 ## 共通
 
 - Content-Type: application/json
@@ -87,6 +94,11 @@
 - 404 Not Found: itemId が存在しない
 - 409 Conflict: 同時更新競合など
 
+主な code:
+- `VALIDATION_ERROR`（棚のみ指定、部屋棚不整合、存在しない部屋・棚指定）
+- `ITEM_NOT_FOUND`
+- `ITEM_NAME_CONFLICT`
+
 ---
 
 ## GET /api/rooms
@@ -140,3 +152,9 @@
 - 候補取得（部屋または棚）の API が失敗した場合、部屋・棚入力のみ無効化する
 - 同時に、部屋・棚以外の項目は更新可能状態を維持する
 - 入力無効化時はユーザーに再試行導線を表示する
+
+## 実装同期メモ
+
+- 編集画面サマリーは「保存先」を廃止し、「部屋」「棚」を別行表示とする
+- 詳細画面の詳細情報セクションで `roomDisplayName` / `shelfDisplayName` を表示する
+- 削除済み参照の表示は API 返却値を優先し、フロント側で表示語を上書きしない

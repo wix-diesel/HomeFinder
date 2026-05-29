@@ -7,4 +7,6 @@ export type UpdateItemRequest = {
   barcode?: string;
   price?: number;
   categoryId?: string | null;
+  roomId?: string | null;
+  shelfId?: string | null;
 };

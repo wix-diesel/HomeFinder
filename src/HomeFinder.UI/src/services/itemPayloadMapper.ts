@@ -33,6 +33,14 @@ export function toCreateItemRequest(formState: ItemRegistrationFormState): Creat
     payload.categoryId = formState.categoryId.trim();
   }
 
+  if ('roomId' in formState) {
+    payload.roomId = formState.roomId?.trim() || null;
+  }
+
+  if ('shelfId' in formState) {
+    payload.shelfId = formState.shelfId?.trim() || null;
+  }
+
   return payload;
 }
 
@@ -65,6 +73,13 @@ export function toUpdateItemRequest(formState: ItemRegistrationFormState): Updat
 
   const normalizedCategoryId = formState.categoryId.trim();
   payload.categoryId = normalizedCategoryId || null;
+  if ('roomId' in formState) {
+    payload.roomId = formState.roomId?.trim() || null;
+  }
+
+  if ('shelfId' in formState) {
+    payload.shelfId = formState.shelfId?.trim() || null;
+  }
 
   return payload;
 }

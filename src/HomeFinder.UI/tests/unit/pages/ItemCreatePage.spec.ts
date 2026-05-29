@@ -76,6 +76,23 @@ describe('ItemCreatePage (登録モード)', () => {
 
     expect(pushMock).toHaveBeenCalledWith({ path: '/items', query: { created: '1' } });
   });
+
+  it('サマリー文言で保存先を使用せず部屋と棚を表示する', async () => {
+    vi.mocked(createItem).mockResolvedValue({
+      id: 'new-id',
+      name: '石鹸',
+      quantity: 1,
+      createdAt: '2026-04-24T10:30:00Z',
+      updatedAt: '2026-04-24T10:30:00Z',
+    });
+
+    const wrapper = mount(ItemCreatePage);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('部屋');
+    expect(wrapper.text()).toContain('棚');
+    expect(wrapper.text()).not.toContain('保存先');
+  });
 });
 
 describe('ItemCreatePage (編集モード)', () => {

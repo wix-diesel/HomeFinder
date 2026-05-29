@@ -20,6 +20,7 @@ export default defineConfigWithVueTs(
     '**/dist/**',
     '**/dist-ssr/**',
     '**/coverage/**',
+    '**/*.min.js',
   ]),
 
   ...pluginVue.configs['flat/essential'],

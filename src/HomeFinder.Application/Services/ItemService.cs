@@ -11,6 +11,8 @@ public class ItemService(
     IItemRepository itemRepository,
     IItemHistoryRepository itemHistoryRepository,
     ICategoryRepository categoryRepository,
+    IRoomRepository roomRepository,
+    IShelfRepository shelfRepository,
     IImageRepository imageRepository,
     IBlobStorageService blobStorageService,
     ILogger<ItemService> logger) : IItemService
@@ -20,7 +22,19 @@ public class ItemService(
         try
         {
             var items = await itemRepository.GetAllAsync(cancellationToken);
-            return items.Select(MapToDto).ToArray();
+            var result = items.Select(item =>
+            {
+                var roomDisplayName = item.RoomId is null
+                    ? "未設定"
+                    : item.Room?.Name;
+                var shelfDisplayName = item.ShelfId is null
+                    ? "未設定"
+                    : item.Shelf?.Name;
+
+                return MapToDto(item, roomDisplayName, shelfDisplayName);
+            }).ToArray();
+
+            return result;
         }
         catch (Exception ex)
         {
@@ -39,7 +53,8 @@ public class ItemService(
                 return new Result<ItemDto>(new ItemNotFoundException(id));
             }
 
-            return MapToDto(item);
+            var dto = await MapToDtoWithLocationAsync(item, cancellationToken);
+            return dto;
         }
         catch (Exception ex)
         {
@@ -84,6 +99,35 @@ public class ItemService(
             }
 
             var now = DateTime.UtcNow;
+
+            if (request.ShelfId is not null && request.RoomId is null)
+            {
+                return new Result<ItemDto>(new ArgumentException("棚を設定する場合は部屋の設定が必須です。", nameof(request)));
+            }
+
+            if (request.RoomId is not null)
+            {
+                var room = await roomRepository.GetRoomByIdAsync(request.RoomId.Value, cancellationToken);
+                if (room is null)
+                {
+                    return new Result<ItemDto>(new ArgumentException("指定された部屋は存在しません。", nameof(request)));
+                }
+            }
+
+            if (request.ShelfId is not null)
+            {
+                var shelf = await shelfRepository.GetShelfByIdAsync(request.ShelfId.Value, cancellationToken);
+                if (shelf is null)
+                {
+                    return new Result<ItemDto>(new ArgumentException("指定された棚は存在しません。", nameof(request)));
+                }
+
+                if (request.RoomId != shelf.RoomId)
+                {
+                    return new Result<ItemDto>(new ArgumentException("指定された棚は選択中の部屋に属していません。", nameof(request)));
+                }
+            }
+
             var item = new Item
             {
                 Id = Guid.NewGuid(),
@@ -95,6 +139,8 @@ public class ItemService(
                 Barcode = request.Barcode?.Trim(),
                 Price = request.Price,
                 CategoryId = request.CategoryId,
+                RoomId = request.RoomId,
+                ShelfId = request.ShelfId,
                 CreatedAtUtc = now,
                 UpdatedAtUtc = now,
             };
@@ -117,7 +163,7 @@ public class ItemService(
                 await itemHistoryRepository.AddRangeAsync(histories, cancellationToken);
             }, cancellationToken);
 
-            return MapToDto(item);
+            return await MapToDtoWithLocationAsync(item, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -151,10 +197,40 @@ public class ItemService(
             var previousQuantity = item.Quantity;
             var previousPrice = item.Price;
             var previousCategoryId = item.CategoryId;
+            var previousRoomId = item.RoomId;
+            var previousShelfId = item.ShelfId;
 
             var operationTime = DateTime.UtcNow;
 
             var changedHistories = new List<ItemHistory>();
+
+            if (request.ShelfId is not null && request.RoomId is null)
+            {
+                return new Result<ItemDto>(new ArgumentException("棚を設定する場合は部屋の設定が必須です。", nameof(request)));
+            }
+
+            if (request.RoomId is not null)
+            {
+                var room = await roomRepository.GetRoomByIdAsync(request.RoomId.Value, cancellationToken);
+                if (room is null)
+                {
+                    return new Result<ItemDto>(new ArgumentException("指定された部屋は存在しません。", nameof(request)));
+                }
+            }
+
+            if (request.ShelfId is not null)
+            {
+                var shelf = await shelfRepository.GetShelfByIdAsync(request.ShelfId.Value, cancellationToken);
+                if (shelf is null)
+                {
+                    return new Result<ItemDto>(new ArgumentException("指定された棚は存在しません。", nameof(request)));
+                }
+
+                if (request.RoomId != shelf.RoomId)
+                {
+                    return new Result<ItemDto>(new ArgumentException("指定された棚は選択中の部屋に属していません。", nameof(request)));
+                }
+            }
 
             item.Name = normalizedName;
             item.Quantity = request.Quantity;
@@ -164,8 +240,12 @@ public class ItemService(
             item.Barcode = request.Barcode?.Trim();
             item.Price = request.Price;
             item.CategoryId = request.CategoryId;
+            item.RoomId = request.RoomId;
+            item.ShelfId = request.ShelfId;
             // 非追跡 + Include で読み込んだ既存ナビゲーションが FK を上書きしないように明示的に切り離す
             item.Category = null;
+            item.Room = null;
+            item.Shelf = null;
             item.UpdatedAtUtc = operationTime;
 
             if (!string.Equals(previousName, normalizedName, StringComparison.Ordinal))
@@ -230,6 +310,44 @@ public class ItemService(
                 });
             }
 
+            if (previousRoomId != request.RoomId)
+            {
+                var roomName = "未設定";
+                if (request.RoomId is not null)
+                {
+                    var room = await roomRepository.GetRoomByIdIncludingDeletedAsync(request.RoomId.Value, cancellationToken);
+                    roomName = room?.Name ?? request.RoomId.Value.ToString();
+                }
+
+                changedHistories.Add(new ItemHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = item.Id,
+                    ChangeType = ItemHistoryChangeType.LocationUpdated,
+                    Description = $"部屋が\"{roomName}\"に変更されました",
+                    OccurredAtUtc = operationTime,
+                });
+            }
+
+            if (previousShelfId != request.ShelfId)
+            {
+                var shelfName = "未設定";
+                if (request.ShelfId is not null)
+                {
+                    var shelf = await shelfRepository.GetShelfByIdIncludingDeletedAsync(request.ShelfId.Value, cancellationToken);
+                    shelfName = shelf?.Name ?? request.ShelfId.Value.ToString();
+                }
+
+                changedHistories.Add(new ItemHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = item.Id,
+                    ChangeType = ItemHistoryChangeType.LocationUpdated,
+                    Description = $"棚が\"{shelfName}\"に変更されました",
+                    OccurredAtUtc = operationTime,
+                });
+            }
+
             // DB制約違反（UNIQUE/FK）はリポジトリ側でドメイン例外に変換される
             await itemRepository.ExecuteInTransactionAsync(async () =>
             {
@@ -243,9 +361,13 @@ public class ItemService(
 
             // Category ナビゲーションプロパティを最新化するために再取得する
             var reloaded = await itemRepository.GetByIdAsync(id, cancellationToken);
-            return reloaded is null
-                ? new Result<ItemDto>(new ItemNotFoundException(id))
-                : MapToDto(reloaded);
+            if (reloaded is null)
+            {
+                return new Result<ItemDto>(new ItemNotFoundException(id));
+            }
+
+            var mapped = await MapToDtoWithLocationAsync(reloaded, cancellationToken);
+            return mapped;
         }
         catch (Exception ex)
         {
@@ -297,7 +419,7 @@ public class ItemService(
         }
     }
 
-    private static ItemDto MapToDto(Item item)
+    private ItemDto MapToDto(Item item, string? roomDisplayName = null, string? shelfDisplayName = null)
     {
         return new ItemDto(
             item.Id,
@@ -310,9 +432,63 @@ public class ItemService(
             item.Price,
             item.CategoryId,
             item.Category?.Name,
+            item.RoomId,
+            roomDisplayName,
+            item.ShelfId,
+            shelfDisplayName,
             item.ImageId,
             item.CreatedAtUtc,
             item.UpdatedAtUtc);
+    }
+
+    private async Task<ItemDto> MapToDtoWithLocationAsync(Item item, CancellationToken cancellationToken)
+    {
+        var roomDisplayName = await ResolveRoomDisplayNameAsync(item, cancellationToken);
+        var shelfDisplayName = await ResolveShelfDisplayNameAsync(item, cancellationToken);
+
+        return MapToDto(item, roomDisplayName, shelfDisplayName);
+    }
+
+    private async Task<string> ResolveRoomDisplayNameAsync(Item item, CancellationToken cancellationToken)
+    {
+        if (item.RoomId is null)
+        {
+            return "未設定";
+        }
+
+        if (item.Room is not null)
+        {
+            return item.Room.Name;
+        }
+
+        var room = await roomRepository.GetRoomByIdIncludingDeletedAsync(item.RoomId.Value, cancellationToken);
+        if (room is null)
+        {
+            return "未設定";
+        }
+
+        return room.IsDeleted ? $"削除済み（{room.Name}）" : room.Name;
+    }
+
+    private async Task<string> ResolveShelfDisplayNameAsync(Item item, CancellationToken cancellationToken)
+    {
+        if (item.ShelfId is null)
+        {
+            return "未設定";
+        }
+
+        if (item.Shelf is not null)
+        {
+            return item.Shelf.Name;
+        }
+
+        var shelf = await shelfRepository.GetShelfByIdIncludingDeletedAsync(item.ShelfId.Value, cancellationToken);
+        if (shelf is null)
+        {
+            return "未設定";
+        }
+
+        return shelf.IsDeleted ? $"削除済み（{shelf.Name}）" : shelf.Name;
     }
 
     /// <summary>

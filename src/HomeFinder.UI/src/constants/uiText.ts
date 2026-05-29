@@ -53,6 +53,16 @@ export const uiText = {
         placeholder: 'カテゴリを選択',
         helper: 'カテゴリを選択してください。',
       },
+      room: {
+        label: '部屋',
+        placeholder: '部屋を選択',
+        helper: '未設定のまま保存できます。',
+      },
+      shelf: {
+        label: '棚',
+        placeholder: '棚を選択',
+        helper: '棚を設定する場合は部屋を先に選択してください。',
+      },
       manufacturer: {
         label: 'メーカー',
         placeholder: '例: ソニー',
@@ -88,6 +98,10 @@ export const uiText = {
       keepCurrent: '現在値を使う',
       useFetched: '取得値を使う',
       retryLookup: '再検索',
+    },
+    location: {
+      fetchErrorTitle: '部屋・棚候補の取得に失敗しました',
+      fetchErrorDescription: '部屋・棚入力のみ無効化しました。その他項目は保存できます。',
     },
   },
   settings: {
@@ -172,6 +186,8 @@ export const uiText = {
       name: '名称',
       quantity: '数量',
       category: 'カテゴリ',
+      room: '部屋',
+      shelf: '棚',
       manufacturer: 'メーカー',
       price: '価格',
       barcode: 'バーコード',

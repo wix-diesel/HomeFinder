@@ -88,6 +88,12 @@ export async function createItem(request: CreateItemRequest | ItemRegistrationFo
 
 export async function updateItem(id: string, request: UpdateItemRequest | ItemRegistrationFormState): Promise<Item> {
   const payload: UpdateItemRequest = 'fieldErrors' in request ? toUpdateItemRequest(request) : request;
+
+  if ('fieldErrors' in request) {
+    payload.roomId = request.roomId.trim() || null;
+    payload.shelfId = request.shelfId.trim() || null;
+  }
+
   const response = await apiClient.apiFetch(`/api/items/${id}`, {
     method: 'PUT',
     headers: {

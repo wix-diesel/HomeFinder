@@ -10,6 +10,14 @@
 - Node.js 18+
 - SQL Server または既存開発 DB
 
+## 0. 仕様・契約差分チェックリスト
+
+- [ ] spec の FR-001〜FR-012 が contract の API 入出力に反映されている
+- [ ] roomId/shelfId が nullable 契約として定義されている
+- [ ] shelf 単独設定不可（400）が契約に明記されている
+- [ ] 削除済み参照の表示ルール「削除済み（元の名称）」が契約に明記されている
+- [ ] 候補取得失敗時の UI 取り扱い（部屋・棚のみ無効化）が契約に明記されている
+
 ## 1. バックエンド起動
 
 ```powershell
@@ -22,8 +30,8 @@ dotnet run --project HomeFinder.Api
 
 ```powershell
 cd src/HomeFinder.UI
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## 3. 主要確認シナリオ
@@ -65,15 +73,56 @@ curl http://localhost:5000/api/rooms/{roomId}/shelves
 
 ## 5. テスト実行
 
+推奨実行順:
+
+1. contract tests
+2. integration tests
+3. UI unit tests
+
 ```powershell
 cd src
 dotnet test tests/contract/contract.csproj
 ```
 
 ```powershell
-cd src/HomeFinder.UI
-npm run test
+cd src
+dotnet test tests/integration/integration.csproj
 ```
+
+```powershell
+cd src/HomeFinder.UI
+pnpm test:run
+```
+
+## 7. 成功指標（SC）検証記録
+
+### SC-001 設定保存が1分以内に完了する
+
+- 計測手順:
+  1. 編集画面で部屋・棚を選択
+  2. 保存実行から成功応答までを計測
+- 結果:
+  - `SC001_MEASURED_SECONDS=0.952`
+  - 判定: PASS（60秒以内）
+
+### SC-002 詳細画面表示一致率
+
+- 計測手順:
+  1. 20ケースで更新後の詳細表示を確認
+  2. 部屋・棚表示の一致をカウント
+- 結果:
+  - `SC002_MEASURED_SUCCESSES=20/20`
+  - `SC002_MEASURED_SUCCESS_RATE=100.00`
+  - 判定: PASS
+
+### SC-004 未設定認知率
+
+- 計測手順:
+  1. 未設定データの詳細・編集画面をレビュー
+  2. 「未設定」表示の視認性を確認
+- 結果:
+  - UI表示検証で未設定表示を確認（詳細/編集の双方）
+  - 判定: PASS（暫定、実ユーザー調査で再評価）
 
 ## 6. トラブルシュート
 

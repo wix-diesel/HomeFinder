@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace IntegrationTests;
 
@@ -243,6 +244,85 @@ public class ItemUpdateEndpointTests : IClassFixture<TestApplicationFactory>
         Assert.Equal(10, updated!.Quantity);
     }
 
+    [Fact]
+    public async Task UpdateItem_Returns400_WhenOnlyShelfIdIsSpecified()
+    {
+        var room = await CreateRoomAsync("US1_部屋");
+        var shelf = await CreateShelfAsync(room.Id, "US1_棚");
+
+        var createPayload = new { name = $"棚単独指定テスト_{Guid.NewGuid():N}", quantity = 1 };
+        var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        var updatePayload = new
+        {
+            name = created!.Name,
+            quantity = created.Quantity,
+            roomId = (Guid?)null,
+            shelfId = shelf.Id,
+        };
+        var response = await _client.PutAsJsonAsync($"/api/items/{created.Id}", updatePayload);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateItem_Returns200_WhenRoomAndShelfAreNull()
+    {
+        var room = await CreateRoomAsync("US1_退避部屋");
+        var shelf = await CreateShelfAsync(room.Id, "US1_退避棚");
+
+        var createPayload = new
+        {
+            name = $"部屋棚解除テスト_{Guid.NewGuid():N}",
+            quantity = 1,
+            roomId = room.Id,
+            shelfId = shelf.Id,
+        };
+        var createResponse = await _client.PostAsJsonAsync("/api/items", createPayload);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ItemResponse>();
+        Assert.NotNull(created);
+
+        var updatePayload = new
+        {
+            name = created!.Name,
+            quantity = 2,
+            roomId = (Guid?)null,
+            shelfId = (Guid?)null,
+        };
+
+        var response = await _client.PutAsJsonAsync($"/api/items/{created.Id}", updatePayload);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var rawJson = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(rawJson);
+        Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("roomId").ValueKind);
+        Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("shelfId").ValueKind);
+    }
+
+    private async Task<RoomResponse> CreateRoomAsync(string name)
+    {
+        var response = await _client.PostAsJsonAsync("/api/rooms", new { name, description = "統合テスト" });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var room = await response.Content.ReadFromJsonAsync<RoomResponse>();
+        Assert.NotNull(room);
+        return room!;
+    }
+
+    private async Task<ShelfResponse> CreateShelfAsync(Guid roomId, string name)
+    {
+        var response = await _client.PostAsJsonAsync($"/api/rooms/{roomId}/shelves", new { name, description = "統合テスト" });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var shelf = await response.Content.ReadFromJsonAsync<ShelfResponse>();
+        Assert.NotNull(shelf);
+        return shelf!;
+    }
+
     public sealed record ItemResponse(
         Guid Id,
         string Name,
@@ -252,4 +332,6 @@ public class ItemUpdateEndpointTests : IClassFixture<TestApplicationFactory>
         string? CategoryName);
     public sealed record ErrorResponse(string Code, string Message);
     public sealed record CategoryResponse(Guid Id, string Name);
+    public sealed record RoomResponse(Guid Id, string Name);
+    public sealed record ShelfResponse(Guid Id, Guid RoomId, string Name);
 }

@@ -7,4 +7,6 @@ export type CreateItemRequest = {
   barcode?: string;
   price?: number;
   categoryId?: string;
+  roomId?: string | null;
+  shelfId?: string | null;
 };

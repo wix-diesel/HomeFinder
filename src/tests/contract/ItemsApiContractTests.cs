@@ -32,9 +32,31 @@ public class ItemsApiContractTests
         Assert.Contains("ISO 8601 UTC (`Z`) 形式", text);
     }
 
+    [Fact]
+    public void ItemsApiContract_MustDefinePutRequestWithRoomAndShelf_ForFeature016()
+    {
+        var text = LoadFeature016Contract();
+
+        Assert.Contains("## PUT /api/items/{itemId}", text);
+        Assert.Contains("\"roomId\": \"guid|null\"", text);
+        Assert.Contains("\"shelfId\": \"guid|null\"", text);
+        Assert.Contains("shelfId が非 null の場合、roomId は必須", text);
+        Assert.Contains("400 Bad Request", text);
+    }
+
     private static string LoadContract(string filename)
     {
         var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "specs", "001-item-inventory", "contracts", filename));
+        return File.ReadAllText(path);
+    }
+
+    private static string LoadFeature016Contract()
+    {
+        var path = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory,
+            "..", "..", "..", "..", "..", "..",
+            "specs", "016-item-storage-location", "contracts", "item-storage-location-api.md"));
+
         return File.ReadAllText(path);
     }
 }
