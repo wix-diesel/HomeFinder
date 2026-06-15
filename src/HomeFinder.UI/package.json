@@ -12,22 +12,22 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@azure/msal-browser": "^5.12.0",
+    "@azure/msal-browser": "^5.13.0",
     "@zxing/browser": "0.2.0",
     "@zxing/library": "0.23.0",
     "pinia": "^3.0.4",
-    "vue": "^3.5.35",
+    "vue": "^3.5.38",
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.2",
+    "@types/node": "^25.9.3",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/test-utils": "^2.4.11",
     "@vue/tsconfig": "^0.9.1",
     "jsdom": "^29.1.1",
     "typescript": "~6.0.2",
     "vite": "^8.0.16",
-    "vitest": "^4.1.8",
-    "vue-tsc": "^3.3.4"
+    "vitest": "^4.1.9",
+    "vue-tsc": "^3.3.5"
   }
 }
