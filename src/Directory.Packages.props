@@ -1,8 +1,12 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <!-- DefaultAzureCredential 型が Azure.Core へ移動したため、古い Azure.Identity 1.17.2 と型が衝突する。
+         型フォワードで衝突を回避する新しい Azure.Identity に固定する。 -->
+    <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="DotNext" Version="6.3.0" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.29.0" />
