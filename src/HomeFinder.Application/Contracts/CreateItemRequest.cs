@@ -9,7 +9,7 @@ public class CreateItemRequest
     [MinLength(1)]
     public string Name { get; set; } = string.Empty;
 
-    [Range(1, int.MaxValue)]
+    [Range(0, int.MaxValue)]
     public int Quantity { get; set; }
 
     /// <summary>

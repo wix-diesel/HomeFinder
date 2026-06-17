@@ -45,8 +45,8 @@ export const uiText = {
       },
       quantity: {
         label: '数量',
-        placeholder: '1',
-        helper: '1以上の整数を入力してください。',
+        placeholder: '0',
+        helper: '0以上の整数を入力してください。',
       },
       category: {
         label: 'カテゴリ',
@@ -161,7 +161,7 @@ export const uiText = {
   },
   errors: {
     nameRequired: '物品名称は必須です。',
-    quantityInvalid: '数量は1以上の整数で入力してください。',
+    quantityInvalid: '数量は0以上の整数で入力してください。',
     priceInvalid: '価格は0以上の数値で入力してください。',
     validationSummary: '入力内容に誤りがあります。',
     submitFailed: '物品登録に失敗しました。',
