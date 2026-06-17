@@ -87,7 +87,7 @@ public class ItemService(
         try
         {
             var normalizedName = (request.Name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 1)
+            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 0)
             {
                 return new Result<ItemDto>(new ArgumentException("入力内容に誤りがあります。", nameof(request)));
             }
@@ -176,7 +176,7 @@ public class ItemService(
         try
         {
             var normalizedName = (request.Name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 1)
+            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 0)
             {
                 return new Result<ItemDto>(new ArgumentException("入力内容に誤りがあります。", nameof(request)));
             }

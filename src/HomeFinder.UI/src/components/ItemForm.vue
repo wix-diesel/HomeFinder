@@ -394,7 +394,7 @@ function validate(): boolean {
     formState.fieldErrors.name = uiText.errors.nameRequired;
   }
 
-  if (formState.quantity === null || !Number.isInteger(formState.quantity) || formState.quantity < 1) {
+  if (formState.quantity === null || !Number.isInteger(formState.quantity) || formState.quantity < 0) {
     formState.fieldErrors.quantity = uiText.errors.quantityInvalid;
   }
 

@@ -17,7 +17,7 @@ public class ItemSchemaContractTests
         Assert.Contains("\"required\": [\"id\", \"name\", \"quantity\", \"createdAt\", \"updatedAt\"]", text);
         Assert.Contains("\"additionalProperties\": false", text);
         Assert.Contains("`name` はアプリ内で一意", text);
-        Assert.Contains("`quantity` は 1 以上", text);
+        Assert.Contains("`quantity` は 0 以上", text);
     }
 
     private static string LoadContract(string filename)

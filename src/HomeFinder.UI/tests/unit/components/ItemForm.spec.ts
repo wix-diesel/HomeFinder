@@ -33,7 +33,7 @@ describe('ItemForm', () => {
     await wrapper.find('form').trigger('submit.prevent');
 
     expect(wrapper.text()).toContain('物品名称は必須です。');
-    expect(wrapper.text()).toContain('数量は1以上の整数で入力してください。');
+    expect(wrapper.text()).toContain('数量は0以上の整数で入力してください。');
   });
 
   it('送信中は主要ボタンが無効化される', () => {

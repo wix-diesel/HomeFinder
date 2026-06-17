@@ -39,11 +39,11 @@ describe('ItemCreatePage (登録モード)', () => {
     const wrapper = mount(ItemCreatePage);
 
     await wrapper.find('input[name="name"]').setValue('');
-    await wrapper.find('input[name="quantity"]').setValue('0');
+    await wrapper.find('input[name="quantity"]').setValue('-1');
     await wrapper.find('form').trigger('submit.prevent');
 
     expect(wrapper.text()).toContain('物品名称は必須です。');
-    expect(wrapper.text()).toContain('数量は1以上の整数で入力してください。');
+    expect(wrapper.text()).toContain('数量は0以上の整数で入力してください。');
   });
 
   it('API 409エラー時にメッセージを表示する', async () => {
