@@ -10,6 +10,7 @@ using HomeFinder.Infrastructure.Repositories;
 using HomeFinder.Infrastructure.Services;
 using HomeFinder.Application.Repositories;
 using HomeFinder.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // JWT Bearer 認証（Azure Entra アプリロール検証）を登録する
 builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
-builder.Services.AddAuthorization();
+// 既定で全エンドポイントに認証を要求するフォールバックポリシーを設定する。
+// 各アクションへの [Authorize] 付与漏れがあっても匿名公開されないようにする（fail-safe）。
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build());
 
 builder.Services
     .AddControllers()

@@ -14,12 +14,22 @@ services:
       dockerfile: src/HomeFinder.Api/Dockerfile
     container_name: homefinder-backend
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      # 本番デプロイ時は ASPNETCORE_ENVIRONMENT=Production を指定すること。
+      # Development のままだと Swagger UI / OpenAPI ドキュメントが未認証で公開される。
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: ${HOMEFINDER_SQLSERVER_CONNECTION_STRING:-Server=host.docker.internal,1433;Database=HomeFinderDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True}
-      ConnectionStrings__AzureBlobStorage: ${AZURE_BLOB_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountKey=AccountKey;AccountName=devstoreaccount1;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;}      
+      AzureAd__Instance: https://login.microsoftonline.com/
+      AzureAd__TenantId: f18df8fb-4d1b-4fc0-ae51-f0e456feb644
+      AzureAd__ClientId: 070950c9-77dc-4d94-8895-83bd6db0ae50
+      AzureAd__Audience: 070950c9-77dc-4d94-8895-83bd6db0ae50
+      ConnectionStrings__DefaultConnection: ${HOMEFINDER_SQLSERVER_CONNECTION_STRING:-Server=host.docker.internal,1433;Database=HomeFinderDb;User Id=MovieCollector;Password=MovieCollectorPassword;TrustServerCertificate=True}
+      ConnectionStrings__AzureBlobStorage: ${AZURE_BLOB_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;AccountName=devstoreaccount1;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;QueueEndpoint=http://host.docker.internal:10001/devstoreaccount1;TableEndpoint=http://host.docker.internal:10002/devstoreaccount1;}      
       AzureBlobStorage__ContainerName: ${AZURE_BLOB_CONTAINER_NAME:-homefinder}
-      Cors__AllowedOrigins: ${HOMEFINDER_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://host.docker.internal:5173}
+      # シークレットはコミットしない。実行時に環境変数 JANSEARCH_API_KEY で渡すこと。
+      JanSearch__ExternalApi__ApiKey: ${JANSEARCH_API_KEY:-}
+      JanSearch__ExternalApi__ApplicationId: ${JANSEARCH_APPLICATION_ID:-}
+      JanSearch__ExternalApi__ApiKeyHeaderName: accessKey
+      Cors__AllowedOrigins: ${HOMEFINDER_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://host.docker.internal:5173,http://localhost:3000,http://127.0.0.1:3000,http://localhost,http://127.0.0.1,http://homefinder-frontend,http://homefinder-frontend:80}
     ports:
       - "5000:8080"
 
@@ -32,5 +42,12 @@ services:
     container_name: homefinder-frontend
     depends_on:
       - backend
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5000}
+      VITE_AZURE_CLIENT_ID: ${VITE_AZURE_CLIENT_ID:-070950c9-77dc-4d94-8895-83bd6db0ae50}
+      VITE_AZURE_TENANT_ID: ${VITE_AZURE_TENANT_ID:-f18df8fb-4d1b-4fc0-ae51-f0e456feb644}
+      VITE_AZURE_REDIRECT_URI: ${VITE_AZURE_REDIRECT_URI:-http://localhost:5173/login}
+      VITE_AZURE_SCOPES: ${VITE_AZURE_SCOPES:-openid,profile,email}
+      VITE_AZURE_API_SCOPE: ${VITE_AZURE_API_SCOPE:-api://070950c9-77dc-4d94-8895-83bd6db0ae50/access_as_user}
     ports:
       - "5173:80"
