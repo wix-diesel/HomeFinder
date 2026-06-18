@@ -200,7 +200,10 @@ namespace HomeFinder.Infrastructure.Data.Migrations
 
                     b.HasIndex("ShelfId");
 
-                    b.ToTable("Items", (string)null);
+                    b.ToTable("Items", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Items_Quantity_Positive", "[Quantity] >= 0");
+                        });
                 });
 
             modelBuilder.Entity("HomeFinder.Core.Entities.ItemHistory", b =>

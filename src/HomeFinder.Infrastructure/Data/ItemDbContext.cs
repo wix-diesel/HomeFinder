@@ -42,7 +42,10 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
         // Item エンティティ設定
         modelBuilder.Entity<Item>(entity =>
         {
-            entity.ToTable("Items");
+            entity.ToTable("Items", table =>
+            {
+                table.HasCheckConstraint("CK_Items_Quantity_Positive", "[Quantity] >= 0");
+            });
             entity.HasKey(x => x.Id);
 
             entity.Property(x => x.Id).IsRequired();
