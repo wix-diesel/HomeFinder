@@ -12,7 +12,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@azure/msal-browser": "^5.13.0",
+    "@azure/msal-browser": "^5.14.0",
     "@zxing/browser": "0.2.0",
     "@zxing/library": "0.23.0",
     "pinia": "^3.0.4",
