@@ -11,6 +11,7 @@ export const uiText = {
     searchLabel: '検索',
     searchPlaceholder: '名称で検索',
     categoryLabel: 'カテゴリ',
+    stockOnlyLabel: '在庫ありのみ',
     viewModeLabel: '表示切替',
     emptyTitle: '表示できる物品がありません',
     emptyDescription: '検索条件またはカテゴリを見直してください。',

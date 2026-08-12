@@ -14,6 +14,7 @@ const loading = ref(true);
 const errorMessage = ref('');
 const searchKeyword = ref('');
 const selectedCategory = ref<'all' | string>('all');
+const stockOnly = ref(false);
 const desktopViewMode = ref<'card' | 'table'>('card');
 const route = useRoute();
 const router = useRouter();
@@ -38,7 +39,8 @@ const filteredItems = computed(() => {
     const keywordMatch = item.name.toLowerCase().includes(searchKeyword.value.trim().toLowerCase());
     const itemCategoryId = item.categoryId ?? UNCLASSIFIED_ID;
     const categoryMatch = selectedCategory.value === 'all' || itemCategoryId === selectedCategory.value;
-    return keywordMatch && categoryMatch;
+    const stockMatch = !stockOnly.value || item.quantity > 0;
+    return keywordMatch && categoryMatch && stockMatch;
   });
 });
 
@@ -65,6 +67,7 @@ async function loadItems() {
 function clearFilters() {
   searchKeyword.value = '';
   selectedCategory.value = 'all';
+  stockOnly.value = false;
 }
 
 function navigateToCreate() {
@@ -93,6 +96,11 @@ onMounted(async () => {
           {{ category.name }}
         </option>
       </select>
+    </label>
+
+    <label class="stock-filter">
+      <input v-model="stockOnly" type="checkbox" data-testid="stock-only-checkbox" />
+      <span>{{ uiText.list.stockOnlyLabel }}</span>
     </label>
 
     <div class="toolbar">
@@ -208,6 +216,14 @@ onMounted(async () => {
   background: #fff;
   padding: 9px 12px;
   font-size: 0.95rem;
+}
+
+.stock-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #475569;
 }
 
 .toolbar {
