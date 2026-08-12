@@ -135,7 +135,7 @@ describe('ItemListPage', () => {
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
-    await wrapper.find('input[type="checkbox"]').setValue(true);
+    await wrapper.find('[data-testid="stock-only-checkbox"]').setValue(true);
 
     expect(wrapper.text()).toContain('卓上ライト');
     expect(wrapper.text()).not.toContain('歯ブラシ');
@@ -176,7 +176,7 @@ describe('ItemListPage', () => {
     await flushPromises();
     await wrapper.find('input[type="search"]').setValue('ライト');
     await wrapper.find('select').setValue('cat-kaiden');
-    await wrapper.find('input[type="checkbox"]').setValue(true);
+    await wrapper.find('[data-testid="stock-only-checkbox"]').setValue(true);
 
     expect(wrapper.text()).toContain('卓上ライト');
     expect(wrapper.text()).not.toContain('予備ライト');

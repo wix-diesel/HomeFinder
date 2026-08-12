@@ -99,7 +99,7 @@ onMounted(async () => {
     </label>
 
     <label class="stock-filter">
-      <input v-model="stockOnly" type="checkbox" />
+      <input v-model="stockOnly" type="checkbox" data-testid="stock-only-checkbox" />
       <span>{{ uiText.list.stockOnlyLabel }}</span>
     </label>
 
