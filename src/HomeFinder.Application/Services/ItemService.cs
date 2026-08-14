@@ -46,12 +46,6 @@ public class ItemService(
     {
         try
         {
-            if (page < 1 || pageSize < 1 || pageSize > 20)
-            {
-                return new Result<PagedItemsResponse>(
-                    new ArgumentException("page は 1 以上、pageSize は 1〜20 の範囲で指定してください。"));
-            }
-
             var totalCount = await itemRepository.CountAsync(cancellationToken);
             var totalPages = totalCount == 0 ? 1 : (int)Math.Ceiling((double)totalCount / pageSize);
             var currentPage = Math.Min(page, totalPages);

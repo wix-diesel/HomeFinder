@@ -70,7 +70,7 @@ async function loadItems(page = currentPage.value) {
     pagedResult.value = await getItems(page, PAGE_SIZE);
     currentPage.value = pagedResult.value.page;
 
-    if (route.query.page !== String(currentPage.value)) {
+    if (route.query.page != null && route.query.page !== String(currentPage.value)) {
       await router.replace({ query: { ...route.query, page: String(currentPage.value) } });
     }
   } catch {
