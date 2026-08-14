@@ -38,6 +38,10 @@ public class UserThemePreferenceIntegrationTests : IClassFixture<TestApplication
             new { themePreference = "system" });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var apiError = await response.Content.ReadFromJsonAsync<HomeFinder.Api.Errors.ApiError>();
+        Assert.NotNull(apiError);
+        Assert.Equal("VALIDATION_ERROR", apiError!.Code);
     }
 
     private sealed record UserProfileResponse(string ThemePreference);
