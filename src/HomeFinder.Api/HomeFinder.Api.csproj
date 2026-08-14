@@ -3,6 +3,7 @@
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.Identity.Web" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" />
     <PackageReference Include="NSwag.AspNetCore" />
   </ItemGroup>
   <ItemGroup>
