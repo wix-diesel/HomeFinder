@@ -5,6 +5,12 @@
         "source": "github",
         "repo": "dotnet/skills"
       }
+    },
+    "vue-development-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "alexanderop/claude-skill-vue-development"
+      }
     }
   },
   "enabledPlugins": {
@@ -12,6 +18,7 @@
     "dotnet-aspnet@dotnet-agent-skills": true,
     "dotnet-data@dotnet-agent-skills": true,
     "dotnet-test@dotnet-agent-skills": true,
-    "dotnet-diag@dotnet-agent-skills": true
+    "dotnet-diag@dotnet-agent-skills": true,
+    "vue-development@vue-development-marketplace": true
   }
 }

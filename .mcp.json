@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "vue": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-vue",
+        "--cwd",
+        "src/HomeFinder.UI"
+      ]
+    }
+  }
+}
