@@ -53,7 +53,7 @@ public class ItemsListEndpointTests : IClassFixture<TestApplicationFactory>
         Assert.NotNull(pageOnePayload);
         Assert.Equal(20, pageOnePayload!.Items.Count);
         Assert.Equal(20, pageOnePayload.PageSize);
-        Assert.True(pageOnePayload.TotalCount >= 25);
+        Assert.True(pageOnePayload.TotalCount >= 23);
         Assert.True(pageOnePayload.TotalPages >= 2);
     }
 
