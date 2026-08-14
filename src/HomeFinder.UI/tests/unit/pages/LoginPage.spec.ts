@@ -1,6 +1,7 @@
 import { mount, type VueWrapper } from '@vue/test-utils';
 import { nextTick, reactive } from 'vue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import LoginPage from '../../../src/pages/LoginPage.vue';
 
 const mockReplace = vi.fn();
 const authState = reactive({
@@ -53,7 +54,6 @@ vi.mock('../../../src/services/msalService', () => ({
 
 describe('LoginPage', () => {
   beforeEach(() => {
-    vi.resetModules();
     mockReplace.mockReset();
     authState.isAuthenticated = true;
     authState.isLoading = false;
@@ -67,7 +67,7 @@ describe('LoginPage', () => {
   });
 
   async function mountLoginPage() {
-    wrapper = mount(await import('../../../src/pages/LoginPage.vue').then((mod) => mod.default));
+    wrapper = mount(LoginPage);
     return wrapper;
   }
 
