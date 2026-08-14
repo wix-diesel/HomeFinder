@@ -111,6 +111,43 @@ describe('ItemListPage', () => {
     expect(wrapper.text()).not.toContain('歯ブラシ');
   });
 
+  it('在庫ありのみチェックは表示切替の右側に配置する', async () => {
+    vi.mocked(getItems).mockResolvedValue([
+      {
+        id: '1',
+        name: '歯ブラシ',
+        categoryId: 'cat-nichiyohin',
+        categoryName: '日用品',
+        quantity: 0,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      },
+      {
+        id: '2',
+        name: '卓上ライト',
+        categoryId: 'cat-kaiden',
+        categoryName: '家電',
+        quantity: 1,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      },
+    ]);
+
+    const wrapper = mount(ItemListPage);
+    await flushPromises();
+
+    const toolbarActions = wrapper.find('.toolbar-actions');
+    const viewModeToggle = toolbarActions.find('.view-mode-toggle');
+    const stockFilter = toolbarActions.find('.stock-filter');
+    const createButton = toolbarActions.find('.create-button');
+
+    expect(viewModeToggle.exists()).toBe(true);
+    expect(stockFilter.exists()).toBe(true);
+    expect(createButton.exists()).toBe(true);
+    expect(stockFilter.element.previousElementSibling).toBe(viewModeToggle.element);
+    expect(stockFilter.element.nextElementSibling).toBe(createButton.element);
+  });
+
   it('在庫ありのみチェックで数量1以上のアイテムだけ表示する', async () => {
     vi.mocked(getItems).mockResolvedValue([
       {

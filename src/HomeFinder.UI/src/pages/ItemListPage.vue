@@ -98,11 +98,6 @@ onMounted(async () => {
       </select>
     </label>
 
-    <label class="stock-filter">
-      <input v-model="stockOnly" type="checkbox" data-testid="stock-only-checkbox" />
-      <span>{{ uiText.list.stockOnlyLabel }}</span>
-    </label>
-
     <div class="toolbar">
       <div class="toolbar-actions">
         <ViewModeToggle
@@ -111,6 +106,11 @@ onMounted(async () => {
           :model-value="desktopViewMode"
           @update:model-value="(value) => (desktopViewMode = value)"
         />
+
+        <label class="stock-filter">
+          <input v-model="stockOnly" type="checkbox" data-testid="stock-only-checkbox" />
+          <span>{{ uiText.list.stockOnlyLabel }}</span>
+        </label>
 
         <button type="button" class="create-button" @click="navigateToCreate">{{ uiText.list.createCta }}</button>
       </div>
@@ -218,14 +218,6 @@ onMounted(async () => {
   font-size: 0.95rem;
 }
 
-.stock-filter {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-  color: #475569;
-}
-
 .toolbar {
   display: grid;
   gap: 10px;
@@ -234,8 +226,26 @@ onMounted(async () => {
 .toolbar-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
+}
+
+.stock-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 8px 10px;
+  border: 1px solid #d2dae5;
+  border-radius: 10px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stock-filter input {
+  accent-color: #2563eb;
 }
 
 .create-button {
