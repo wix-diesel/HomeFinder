@@ -44,6 +44,7 @@ public class UserProfilesController(
                 entraObjectId = v.EntraObjectId,
                 email = v.Email,
                 displayName = v.DisplayName,
+                themePreference = v.ThemePreference,
             });
         }
 
@@ -157,6 +158,7 @@ public class UserProfilesController(
                 entraObjectId = v.EntraObjectId,
                 email = v.Email,
                 displayName = v.DisplayName,
+                themePreference = v.ThemePreference,
             });
         }
 
@@ -180,6 +182,52 @@ public class UserProfilesController(
                 new ApiErrorDetail("request", argumentException.Message),
             };
             return BadRequest(ApiError.ValidationError(details));
+        }
+
+        return StatusCode(StatusCodes.Status500InternalServerError, new ApiError(
+            "INTERNAL_SERVER_ERROR",
+            "予期しないエラーが発生しました。"));
+    }
+
+    [HttpPut("theme")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<object>> UpdateThemePreference(
+        [FromBody] UpdateThemePreferenceRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetCurrentUser(out var oid, out var email))
+        {
+            return Unauthorized(new ApiError("UNAUTHORIZED", "認証情報を確認できませんでした。"));
+        }
+
+        var result = await userProfileService.UpdateThemePreferenceAsync(oid, email, request, cancellationToken);
+        if (result.IsSuccessful)
+        {
+            var v = result.Value;
+            return Ok(new
+            {
+                entraObjectId = v.EntraObjectId,
+                email = v.Email,
+                displayName = v.DisplayName,
+                themePreference = v.ThemePreference,
+            });
+        }
+
+        if (result.Error is UserProfileValidationException validationEx)
+        {
+            var details = validationEx.Details
+                .Select(x => new ApiErrorDetail(x.Key, x.Value))
+                .ToArray();
+            return BadRequest(ApiError.ValidationError(details));
+        }
+
+        if (result.Error is ArgumentException argumentException)
+        {
+            return BadRequest(ApiError.ValidationError([
+                new ApiErrorDetail("request", argumentException.Message),
+            ]));
         }
 
         return StatusCode(StatusCodes.Status500InternalServerError, new ApiError(

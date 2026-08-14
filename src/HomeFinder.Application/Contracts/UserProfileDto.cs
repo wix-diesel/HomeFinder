@@ -1,7 +1,10 @@
+using HomeFinder.Core.Entities;
+
 namespace HomeFinder.Application.Contracts;
 
 public record UserProfileDto(
     string EntraObjectId,
     string Email,
     string DisplayName,
-    string AvatarImagePath);
+    string AvatarImagePath,
+    ThemeMode ThemePreference);

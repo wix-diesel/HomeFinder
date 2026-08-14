@@ -3,6 +3,7 @@
 - `POST /api/users/me/profile/avatar` は 2026-05-10 に設計変更され、アップロード後は画像の保存のみ行い `204 No Content` を返すようになりました。バックエンドは画像の保存先パスをクライアントに渡しません。
 - クライアントは画像表示・プレビューのために常に `GET /api/users/me/profile/avatar` を使用して最新の画像データ（バイナリ）を取得します。フロントエンドでファイルパスを保持・操作しないでください。
 - `PUT /api/users/me/profile` のリクエストボディは `displayName` のみを含むものとします（`avatarImagePath` は送らないでください）。
+- 表示テーマは `PUT /api/users/me/profile/theme` でユーザーごとに保存します。ブラウザのローカル設定には依存しません。
 
 ---
 
@@ -41,7 +42,8 @@
   "entraObjectId": "00000000-0000-0000-0000-000000000000",
   "email": "user@example.com",
   "displayName": "user@example.com",
-  "avatarImagePath": "/images/user-avatar-default.svg"
+  "avatarImagePath": "/images/user-avatar-default.svg",
+  "themePreference": "light"
 }
 ```
 
@@ -126,3 +128,37 @@
 - 保存失敗時: 失敗トースト表示
 - バリデーションエラー時: 該当フィールドにエラーメッセージを表示
 - 設定画面とヘッダーのプロフィール表示は同一データソース（`GET /api/users/me/profile`）を利用
+
+---
+
+### `PUT /api/users/me/profile/theme`
+
+表示テーマを更新します。テーマはユーザープロフィールとともにサーバー側へ保存されるため、別のブラウザでログインしても維持されます。
+
+#### Request
+
+```json
+{
+  "themePreference": "dark"
+}
+```
+
+`themePreference` には `light` または `dark` を指定します。
+
+#### Response `200 OK`
+
+```json
+{
+  "entraObjectId": "00000000-0000-0000-0000-000000000000",
+  "email": "user@example.com",
+  "displayName": "user@example.com",
+  "themePreference": "dark"
+}
+```
+
+#### Error
+
+| Status | Code | 条件 |
+|---|---|---|
+| 400 | `VALIDATION_ERROR` | `themePreference` が `light` / `dark` 以外 |
+| 401 | `UNAUTHORIZED` | 認証なし/トークン無効 |

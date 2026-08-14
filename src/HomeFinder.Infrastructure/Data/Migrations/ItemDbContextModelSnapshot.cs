@@ -345,6 +345,12 @@ namespace HomeFinder.Infrastructure.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("ThemePreference")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -356,6 +362,7 @@ namespace HomeFinder.Infrastructure.Data.Migrations
                     b.ToTable("UserProfiles", null, t =>
                         {
                             t.HasCheckConstraint("CK_UserProfiles_DisplayName_Length", "LEN([DisplayName]) BETWEEN 1 AND 30");
+                            t.HasCheckConstraint("CK_UserProfiles_ThemePreference", "[ThemePreference] IN (0, 1)");
                         });
                 });
 

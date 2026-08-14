@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using HomeFinder.Api.Errors;
@@ -32,6 +33,7 @@ builder.Services
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     });
 
 builder.Services.AddDbContext<ItemDbContext>(options =>

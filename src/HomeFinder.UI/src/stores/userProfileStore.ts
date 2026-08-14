@@ -6,8 +6,10 @@ import {
   getMyProfile,
   updateMyProfile,
   uploadMyAvatar,
+  updateMyThemePreference,
   UserProfileServiceError,
   type UserProfile,
+  ThemePreference,
 } from '../services/userProfileService';
 
 const DEFAULT_AVATAR_PATH = '/images/user-avatar-default.svg';
@@ -18,6 +20,7 @@ export const useUserProfileStore = defineStore('user-profile', () => {
   const isSaving = ref(false);
   const errorMessage = ref('');
   const validationErrors = ref<Record<string, string>>({});
+  const isSavingTheme = ref(false);
 
   const displayName = computed(() => profile.value?.displayName ?? '');
   const email = computed(() => profile.value?.email ?? '');
@@ -26,6 +29,14 @@ export const useUserProfileStore = defineStore('user-profile', () => {
     return profile.value?.avatarImagePath ?? DEFAULT_AVATAR_PATH;
   });
   const avatarObjectUrl = ref<string | null>(null);
+  const themePreference = computed<ThemePreference>(() => profile.value?.themePreference ?? ThemePreference.Light);
+
+  function applyThemePreference(theme: ThemePreference) {
+    if (typeof document === 'undefined') return;
+
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  }
 
   async function ensureAvatarObjectUrl() {
     const path = profile.value?.avatarImagePath ?? DEFAULT_AVATAR_PATH;
@@ -56,6 +67,7 @@ export const useUserProfileStore = defineStore('user-profile', () => {
 
     try {
       profile.value = await getMyProfile();
+      applyThemePreference(profile.value.themePreference);
       const src = await ensureAvatarObjectUrl();
       if (profile.value) profile.value.avatarImagePath = src;
     } catch (error) {
@@ -81,6 +93,7 @@ export const useUserProfileStore = defineStore('user-profile', () => {
         email: '',
         displayName: '',
         avatarImagePath: DEFAULT_AVATAR_PATH,
+        themePreference: ThemePreference.Light,
       };
     }
 
@@ -116,10 +129,41 @@ export const useUserProfileStore = defineStore('user-profile', () => {
     }
   }
 
+  async function saveThemePreference(nextTheme: ThemePreference) {
+    const previousProfile = profile.value;
+    const previousTheme = themePreference.value;
+    isSavingTheme.value = true;
+    errorMessage.value = '';
+    const snackbar = useSnackbarStore();
+
+    applyThemePreference(nextTheme);
+    if (profile.value) {
+      profile.value = { ...profile.value, themePreference: nextTheme };
+    }
+
+    try {
+      profile.value = await updateMyThemePreference(nextTheme);
+      applyThemePreference(profile.value.themePreference);
+      snackbar.show(`表示を${nextTheme === ThemePreference.Dark ? 'ダーク' : 'ライト'}モードに変更しました。`, false);
+      return true;
+    } catch (error) {
+      profile.value = previousProfile;
+      applyThemePreference(previousTheme);
+      errorMessage.value = error instanceof UserProfileServiceError
+        ? error.message
+        : '外観設定の保存に失敗しました。';
+      snackbar.show(errorMessage.value, true);
+      return false;
+    } finally {
+      isSavingTheme.value = false;
+    }
+  }
+
   function clearProfile() {
     profile.value = null;
     errorMessage.value = '';
     validationErrors.value = {};
+    applyThemePreference(ThemePreference.Light);
     if (avatarObjectUrl.value) {
       URL.revokeObjectURL(avatarObjectUrl.value);
       avatarObjectUrl.value = null;
@@ -130,15 +174,18 @@ export const useUserProfileStore = defineStore('user-profile', () => {
     profile,
     isLoading,
     isSaving,
+    isSavingTheme,
     errorMessage,
     validationErrors,
     displayName,
     email,
     avatarImagePath,
     avatarObjectUrl,
+    themePreference,
     loadProfile,
     uploadAvatar,
     saveProfile,
+    saveThemePreference,
     clearProfile,
   };
 });

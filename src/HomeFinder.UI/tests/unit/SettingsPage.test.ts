@@ -13,7 +13,10 @@ const userProfileStoreMock = {
   },
   displayName: '最新表示名',
   avatarImagePath: '/images/users/u/avatar.jpg',
+  themePreference: 'light',
+  isSavingTheme: false,
   loadProfile: loadProfileMock,
+  saveThemePreference: vi.fn(),
 };
 
 vi.mock('vue-router', () => ({
@@ -32,6 +35,7 @@ describe('SettingsPage', () => {
       email: 'user@example.com',
       displayName: '最新表示名',
       avatarImagePath: '/images/users/u/avatar.jpg',
+      themePreference: 'light',
     };
   });
 
@@ -48,5 +52,13 @@ describe('SettingsPage', () => {
     await wrapper.get('[data-testid="settings-profile-card"]').trigger('click');
 
     expect(routerPushMock).toHaveBeenCalledWith({ name: 'user-settings' });
+  });
+
+  it('外観設定からダークモードへ切り替えられる', async () => {
+    const wrapper = mount(SettingsPage);
+
+    await wrapper.get('[data-testid="theme-preference-switch"]').setValue(true);
+
+    expect(userProfileStoreMock.saveThemePreference).toHaveBeenCalledWith('dark');
   });
 });

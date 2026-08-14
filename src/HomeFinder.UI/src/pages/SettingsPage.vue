@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { uiText } from '../constants/uiText';
 import type { SettingsPageViewModel } from '../models/settingsPageViewModel';
 import { useUserProfileStore } from '../stores/userProfileStore';
+import { ThemePreference } from '../services/userProfileService';
 
 const router = useRouter();
 let userProfileStore: any;
@@ -21,6 +22,11 @@ try {
 
 const profileName = computed(() => userProfileStore.displayName || uiText.settings.profileName);
 const profileAvatarImagePath = computed(() => userProfileStore.avatarImagePath || '/images/user-avatar-default.svg');
+const isDarkMode = computed(() => userProfileStore.themePreference === ThemePreference.Dark);
+const isThemeSaving = computed(() => Boolean(userProfileStore.isSavingTheme));
+const appearanceDescription = computed(() => isDarkMode.value
+  ? uiText.settings.items.appearance.darkDescription
+  : uiText.settings.items.appearance.lightDescription);
 
 onMounted(async () => {
   if (!userProfileStore.profile) {
@@ -115,6 +121,13 @@ function handleLocationNavigation() {
 function goToUserSettings() {
   router.push({ name: 'user-settings' });
 }
+
+async function toggleTheme(event: Event) {
+  const input = event.target as HTMLInputElement;
+  await userProfileStore.saveThemePreference?.(
+    input.checked ? ThemePreference.Dark : ThemePreference.Light,
+  );
+}
 </script>
 
 <template>
@@ -156,7 +169,7 @@ function goToUserSettings() {
       </div>
     </section>
 
-    <!-- 設定セクション（FR-007: 項目は display_only） -->
+    <!-- 設定セクション -->
     <template v-for="section in viewModel.sections" :key="section.sectionId">
       <section class="settings-section" :aria-labelledby="`section-${section.sectionId}`">
         <h2 :id="`section-${section.sectionId}`" class="settings-section-heading">
@@ -170,8 +183,26 @@ function goToUserSettings() {
             :data-action-type="item.actionType"
             :data-testid="`settings-item-${item.itemId}`"
           >
+            <div v-if="item.itemId === 'appearance'" class="settings-item">
+              <span class="material-symbols-outlined settings-item-icon" aria-hidden="true">dark_mode</span>
+              <div class="settings-item-text">
+                <p class="settings-item-label">{{ item.labelJa }}</p>
+                <p class="settings-item-description">{{ appearanceDescription }}</p>
+              </div>
+              <label class="theme-switch" :aria-label="uiText.settings.items.appearance.switchLabel">
+                <input
+                  type="checkbox"
+                  role="switch"
+                  data-testid="theme-preference-switch"
+                  :checked="isDarkMode"
+                  :disabled="isThemeSaving"
+                  @change="toggleTheme"
+                />
+                <span class="theme-switch-track" aria-hidden="true"></span>
+              </label>
+            </div>
             <button
-              v-if="item.isInteractive"
+              v-else-if="item.isInteractive"
               type="button"
               class="settings-item settings-item-button"
               @click="item.itemId === 'category' ? handleCategoryNavigation() : item.itemId === 'location' ? handleLocationNavigation() : undefined"
@@ -383,6 +414,62 @@ function goToUserSettings() {
   font-size: 20px;
   color: #c3c6d7;
   flex-shrink: 0;
+}
+
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.theme-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+
+.theme-switch-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background 0.2s ease;
+}
+
+.theme-switch-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 25%);
+  transition: transform 0.2s ease;
+}
+
+.theme-switch input:checked + .theme-switch-track {
+  background: #2563eb;
+}
+
+.theme-switch input:checked + .theme-switch-track::after {
+  transform: translateX(20px);
+}
+
+.theme-switch input:focus-visible + .theme-switch-track {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.theme-switch input:disabled + .theme-switch-track {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 /* フッター */
