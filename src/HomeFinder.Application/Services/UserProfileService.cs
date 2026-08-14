@@ -9,6 +9,7 @@ namespace HomeFinder.Application.Services;
 public class UserProfileService(IUserProfileRepository userProfileRepository) : IUserProfileService
 {
     public const string DefaultAvatarPath = "/images/user-avatar-default.svg";
+    public const ThemeMode DefaultThemePreference = ThemeMode.Light;
 
     private static readonly HashSet<string> AllowedAvatarExtensions =
     [
@@ -44,6 +45,7 @@ public class UserProfileService(IUserProfileRepository userProfileRepository) : 
                 Email = email.Trim(),
                 DisplayName = email.Trim(),
                 AvatarImagePath = DefaultAvatarPath,
+                ThemePreference = DefaultThemePreference,
                 CreatedAtUtc = now,
                 UpdatedAtUtc = now,
             }, cancellationToken);
@@ -104,6 +106,58 @@ public class UserProfileService(IUserProfileRepository userProfileRepository) : 
         }
     }
 
+    public async Task<Result<UserProfileDto>> UpdateThemePreferenceAsync(
+        string entraObjectId,
+        string email,
+        UpdateThemePreferenceRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(entraObjectId) || string.IsNullOrWhiteSpace(email))
+            {
+                return new Result<UserProfileDto>(new ArgumentException("ユーザー識別情報が不足しています。"));
+            }
+
+            var themePreference = request.ThemePreference;
+            if (themePreference is null || !Enum.IsDefined<ThemeMode>(themePreference.Value))
+            {
+                return new Result<UserProfileDto>(new UserProfileValidationException(
+                    "入力内容に誤りがあります。",
+                    new Dictionary<string, string>
+                    {
+                        ["themePreference"] = "テーマは light または dark を指定してください。",
+                    }));
+            }
+
+            var profile = await userProfileRepository.GetByEntraObjectIdAsync(entraObjectId, cancellationToken);
+            if (profile is null)
+            {
+                var initial = await GetOrCreateProfileAsync(entraObjectId, email, cancellationToken);
+                if (!initial.IsSuccessful)
+                {
+                    return new Result<UserProfileDto>(initial.Error!);
+                }
+
+                profile = await userProfileRepository.GetByEntraObjectIdAsync(entraObjectId, cancellationToken);
+                if (profile is null)
+                {
+                    return new Result<UserProfileDto>(new InvalidOperationException("プロフィールの初期化に失敗しました。"));
+                }
+            }
+
+            profile.ThemePreference = themePreference.Value;
+            profile.UpdatedAtUtc = DateTime.UtcNow;
+
+            var updated = await userProfileRepository.UpdateAsync(profile, cancellationToken);
+            return MapToDto(updated);
+        }
+        catch (Exception ex)
+        {
+            return new Result<UserProfileDto>(ex);
+        }
+    }
+
     private static Dictionary<string, string> ValidateRequest(UpdateUserProfileRequest request)
     {
         var details = new Dictionary<string, string>();
@@ -120,5 +174,5 @@ public class UserProfileService(IUserProfileRepository userProfileRepository) : 
     }
 
     private static UserProfileDto MapToDto(UserProfile profile) =>
-        new(profile.EntraObjectId, profile.Email, profile.DisplayName, profile.AvatarImagePath);
+        new(profile.EntraObjectId, profile.Email, profile.DisplayName, profile.AvatarImagePath, profile.ThemePreference);
 }

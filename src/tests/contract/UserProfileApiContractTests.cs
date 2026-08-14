@@ -51,6 +51,18 @@ public class UserProfileApiContractTests
         Assert.Contains("/images/user-avatar-default.svg", text);
     }
 
+    [Fact]
+    public void ThemePreference_MustDefineServerSideUpdateEndpoint()
+    {
+        var text = LoadContract();
+
+        Assert.Contains("PUT /api/users/me/profile/theme", text);
+        Assert.Contains("themePreference", text);
+        Assert.Contains("light", text);
+        Assert.Contains("dark", text);
+        Assert.Contains("別のブラウザ", text);
+    }
+
     private static string LoadContract()
     {
         var path = Path.GetFullPath(Path.Combine(

@@ -15,4 +15,10 @@ public interface IUserProfileService
         string email,
         UpdateUserProfileRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<Result<UserProfileDto>> UpdateThemePreferenceAsync(
+        string entraObjectId,
+        string email,
+        UpdateThemePreferenceRequest request,
+        CancellationToken cancellationToken = default);
 }

@@ -25,10 +25,20 @@ export interface UserProfile {
   email: string;
   displayName: string;
   avatarImagePath: string;
+  themePreference: ThemePreference;
+}
+
+export enum ThemePreference {
+  Light = 'light',
+  Dark = 'dark',
 }
 
 export interface UpdateUserProfilePayload {
   displayName: string;
+}
+
+function normalizeThemePreference(value: unknown): ThemePreference {
+  return value === ThemePreference.Dark ? ThemePreference.Dark : ThemePreference.Light;
 }
 
 export class UserProfileServiceError extends Error
@@ -80,11 +90,17 @@ export async function getMyProfile(): Promise<UserProfile> {
     throw await parseError(response);
   }
 
-  const profile = await response.json() as { entraObjectId: string; email: string; displayName: string };
+  const profile = await response.json() as {
+    entraObjectId: string;
+    email: string;
+    displayName: string;
+    themePreference?: string;
+  };
   return {
     ...profile,
     // バックエンドは avatarImagePath を返さないため、フロント側で常に API の avatar エンドポイントを参照する
     avatarImagePath: normalizeAvatarPath('/api/users/me/profile/avatar'),
+    themePreference: normalizeThemePreference(profile.themePreference),
   };
 }
 
@@ -116,9 +132,41 @@ export async function updateMyProfile(payload: UpdateUserProfilePayload): Promis
     throw await parseError(response);
   }
 
-  const profile = await response.json() as { entraObjectId: string; email: string; displayName: string };
+  const profile = await response.json() as {
+    entraObjectId: string;
+    email: string;
+    displayName: string;
+    themePreference?: string;
+  };
   return {
     ...profile,
     avatarImagePath: normalizeAvatarPath('/api/users/me/profile/avatar'),
+    themePreference: normalizeThemePreference(profile.themePreference),
+  };
+}
+
+export async function updateMyThemePreference(themePreference: ThemePreference): Promise<UserProfile> {
+  const response = await apiClient.apiFetch('/api/users/me/profile/theme', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ themePreference }),
+  });
+
+  if (!response.ok) {
+    throw await parseError(response);
+  }
+
+  const profile = await response.json() as {
+    entraObjectId: string;
+    email: string;
+    displayName: string;
+    themePreference?: string;
+  };
+  return {
+    ...profile,
+    avatarImagePath: normalizeAvatarPath('/api/users/me/profile/avatar'),
+    themePreference: normalizeThemePreference(profile.themePreference),
   };
 }

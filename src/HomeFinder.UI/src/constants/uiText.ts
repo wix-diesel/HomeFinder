@@ -122,7 +122,10 @@ export const uiText = {
       },
       appearance: {
         label: '外観',
-        description: '現在: ライトモード',
+        description: '表示テーマを切り替えます',
+        lightDescription: '現在: ライトモード',
+        darkDescription: '現在: ダークモード',
+        switchLabel: 'ダークモードを使用する',
       },
       language: {
         label: '言語',

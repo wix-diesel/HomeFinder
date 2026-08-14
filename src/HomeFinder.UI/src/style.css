@@ -6,6 +6,22 @@
   font-weight: 500;
 }
 
+html[data-theme='dark'] {
+  background: #0f172a;
+  color-scheme: dark;
+}
+
+/* コンポーネントごとの既存ライト配色を保ったまま、全画面に一貫したダーク配色を適用する。 */
+html[data-theme='dark'] .app-layout {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* 写真・アイコンは二度反転して本来の色を保つ。 */
+html[data-theme='dark'] .app-layout img,
+html[data-theme='dark'] .app-layout video {
+  filter: invert(1) hue-rotate(180deg);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -14,6 +30,10 @@ body {
   margin: 0;
   background: radial-gradient(circle at top, #f8fbff 0%, #edf1f5 48%, #e8edf3 100%);
   color: #1e293b;
+}
+
+html[data-theme='dark'] body {
+  background: #0f172a;
 }
 
 #app {

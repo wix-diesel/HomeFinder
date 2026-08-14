@@ -22,6 +22,9 @@ public class UserProfile
     [MaxLength(512)]
     public string AvatarImagePath { get; set; } = string.Empty;
 
+    [Required]
+    public ThemeMode ThemePreference { get; set; } = ThemeMode.Light;
+
     public DateTime CreatedAtUtc { get; set; }
 
     public DateTime UpdatedAtUtc { get; set; }

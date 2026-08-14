@@ -236,6 +236,7 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
             entity.ToTable("UserProfiles", table =>
             {
                 table.HasCheckConstraint("CK_UserProfiles_DisplayName_Length", "LEN([DisplayName]) BETWEEN 1 AND 30");
+                table.HasCheckConstraint("CK_UserProfiles_ThemePreference", "[ThemePreference] IN (0, 1)");
             });
             entity.HasKey(x => x.Id);
 
@@ -244,6 +245,7 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
             entity.Property(x => x.Email).IsRequired().HasMaxLength(320);
             entity.Property(x => x.DisplayName).IsRequired().HasMaxLength(30);
             entity.Property(x => x.AvatarImagePath).IsRequired().HasMaxLength(512);
+            entity.Property(x => x.ThemePreference).IsRequired().HasDefaultValue(ThemeMode.Light);
             entity.Property(x => x.CreatedAtUtc).IsRequired()
                 .HasConversion(v => v.ToUniversalTime(), v => new DateTime(v.Ticks, DateTimeKind.Utc));
             entity.Property(x => x.UpdatedAtUtc).IsRequired()
