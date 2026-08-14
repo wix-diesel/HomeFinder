@@ -10,7 +10,7 @@ public partial class AddUserThemePreference : Migration
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.AddColumn<string>(
+        migrationBuilder.AddColumn<int>(
             name: "ThemePreference",
             table: "UserProfiles",
             type: "int",
