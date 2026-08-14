@@ -5,6 +5,7 @@ import { getItems } from '../../../src/services/itemService';
 
 const pushMock = vi.fn();
 const replaceMock = vi.fn(async () => {});
+const routeQuery: Record<string, string> = {};
 
 vi.mock('../../../src/services/itemService', () => ({
   getItems: vi.fn(),
@@ -12,7 +13,7 @@ vi.mock('../../../src/services/itemService', () => ({
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: pushMock, replace: replaceMock }),
-  useRoute: () => ({ query: {} }),
+  useRoute: () => ({ query: routeQuery }),
 }));
 
 function toPagedResponse(items: unknown[], page = 1, totalCount = items.length) {
@@ -28,6 +29,7 @@ function toPagedResponse(items: unknown[], page = 1, totalCount = items.length) 
 describe('ItemListPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Object.keys(routeQuery).forEach((key) => delete routeQuery[key]);
   });
 
   it('100件データでも一覧操作の反映が200ms以内に完了する', async () => {
@@ -343,6 +345,35 @@ describe('ItemListPage', () => {
     expect(getItems).toHaveBeenNthCalledWith(1, 1, 20);
     expect(getItems).toHaveBeenNthCalledWith(2, 2, 20);
     expect(wrapper.text()).toContain('アイテム21');
-    expect(replaceMock).toHaveBeenCalled();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it('クエリにpageがある場合だけページ変更時にURLを同期する', async () => {
+    routeQuery.page = '1';
+
+    vi.mocked(getItems)
+      .mockResolvedValueOnce(toPagedResponse(Array.from({ length: 20 }, (_, index) => ({
+        id: String(index + 1),
+        name: `アイテム${index + 1}`,
+        quantity: 1,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      })), 1, 25))
+      .mockResolvedValueOnce(toPagedResponse(Array.from({ length: 5 }, (_, index) => ({
+        id: String(index + 21),
+        name: `アイテム${index + 21}`,
+        quantity: 1,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      })), 2, 25));
+
+    vi.stubGlobal('scrollTo', vi.fn());
+
+    const wrapper = mount(ItemListPage);
+    await flushPromises();
+    await wrapper.findAll('.pagination-button')[1].trigger('click');
+    await flushPromises();
+
+    expect(replaceMock).toHaveBeenCalledWith({ query: { page: '2' } });
   });
 });

@@ -26,8 +26,8 @@ public class Sc002FlowSuccessRateTests : IClassFixture<TestApplicationFactory>
                 continue;
             }
 
-            var listPayload = await listResponse.Content.ReadFromJsonAsync<List<ItemResponse>>();
-            var firstItem = listPayload?.FirstOrDefault();
+            var listPayload = await listResponse.Content.ReadFromJsonAsync<PagedItemsResponse>();
+            var firstItem = listPayload?.Items.FirstOrDefault();
             if (firstItem is null)
             {
                 continue;
@@ -57,5 +57,6 @@ public class Sc002FlowSuccessRateTests : IClassFixture<TestApplicationFactory>
     }
 
     public sealed record ItemResponse(Guid Id, string Name, int Quantity, DateTime CreatedAt, DateTime UpdatedAt);
+    public sealed record PagedItemsResponse(IReadOnlyList<ItemResponse> Items, int TotalCount, int Page, int PageSize, int TotalPages);
     public sealed record CreateItemRequest(string Name, int Quantity);
 }
