@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using HomeFinder.Application.Utils;
 using HomeFinder.Core.Entities;
 
 namespace HomeFinder.Application.Contracts;
@@ -17,7 +19,7 @@ public class AvatarResponse
 
 public class UpdateThemePreferenceRequest
 {
-    [Required]
-    [EnumDataType(typeof(ThemeMode), ErrorMessage = "テーマは Light または Dark を指定してください。")]
+    [Required(ErrorMessage = "テーマは light または dark を指定してください。")]
+    [JsonConverter(typeof(ThemeModeJsonConverter))]
     public ThemeMode? ThemePreference { get; set; }
 }
