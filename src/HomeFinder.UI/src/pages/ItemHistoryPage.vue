@@ -69,7 +69,7 @@ async function changePage(page: number) {
   currentPage.value = page;
   await router.replace({ query: { ...route.query, page: String(page) } });
   await fetchHistories();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo?.({ top: 0, behavior: 'smooth' });
 }
 
 // 変更種別に対応するアイコン名を返す
