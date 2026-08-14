@@ -93,9 +93,6 @@ function navigateToCreate() {
 async function changePage(page: number) {
   if (page < 1 || page > totalPages.value || page === currentPage.value) return;
   currentPage.value = page;
-  if (route.query.page != null) {
-    await router.replace({ query: { ...route.query, page: String(page) } });
-  }
   await loadItems(page);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
