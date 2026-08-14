@@ -1,26 +1,37 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ItemCard from '../components/ItemCard.vue';
 import ItemListTable from '../components/ItemListTable.vue';
 import { StatePanel, ViewModeToggle } from '../components/common';
 import { listStateMessages } from '../constants/stateMessagesJa';
 import { uiText } from '../constants/uiText';
-import type { Item } from '../models/item';
+import type { Item, PagedItemsResponse } from '../models/item';
 import { getItems } from '../services/itemService';
 
-const items = ref<Item[]>([]);
+const PAGE_SIZE = 20;
+const pagedResult = ref<PagedItemsResponse | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
 const searchKeyword = ref('');
 const selectedCategory = ref<'all' | string>('all');
 const stockOnly = ref(false);
 const desktopViewMode = ref<'card' | 'table'>('card');
+const currentPage = ref(1);
 const route = useRoute();
 const router = useRouter();
 
 // カテゴリ未設定アイテムのフォールバック識別子
 const UNCLASSIFIED_ID = 'unclassified';
+
+const items = computed<Item[]>(() => pagedResult.value?.items ?? []);
+const totalPages = computed(() => pagedResult.value?.totalPages ?? 1);
+const paginationPages = computed(() => {
+  const maxButtons = 5;
+  const end = Math.min(totalPages.value, Math.max(maxButtons, currentPage.value + 2));
+  const start = Math.max(1, end - maxButtons + 1);
+  return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+});
 
 const categories = computed(() => {
   const seen = new Map<string, string>();
@@ -52,11 +63,16 @@ const toastMessage = computed(() => {
 
 const visibleCategories = computed(() => categories.value.filter((c) => c.id !== 'all'));
 
-async function loadItems() {
+async function loadItems(page = currentPage.value) {
   loading.value = true;
   errorMessage.value = '';
   try {
-    items.value = await getItems();
+    pagedResult.value = await getItems(page, PAGE_SIZE);
+    currentPage.value = pagedResult.value.page;
+
+    if (route.query.page != null && route.query.page !== String(currentPage.value)) {
+      await router.replace({ query: { ...route.query, page: String(currentPage.value) } });
+    }
   } catch {
     errorMessage.value = uiText.list.failureTitle;
   } finally {
@@ -74,9 +90,31 @@ function navigateToCreate() {
   router.push('/items/new');
 }
 
+async function changePage(page: number) {
+  if (page < 1 || page > totalPages.value || page === currentPage.value) return;
+  currentPage.value = page;
+  await loadItems(page);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 onMounted(async () => {
-  await loadItems();
+  const queryPage = Number(route.query.page);
+  if (queryPage > 0) {
+    currentPage.value = queryPage;
+  }
+  await loadItems(currentPage.value);
 });
+
+watch(
+  () => route.query.page,
+  async (newPage) => {
+    const page = Number(newPage);
+    if (page > 0 && page !== currentPage.value) {
+      currentPage.value = page;
+      await loadItems(page);
+    }
+  },
+);
 </script>
 
 <template>
@@ -155,14 +193,44 @@ onMounted(async () => {
       <ItemCard v-for="item in filteredItems" :key="item.id" :item="item" />
     </div>
 
-    <ItemListTable
-      v-if="filteredItems.length > 0 && desktopViewMode === 'table'"
-      class="desktop-table"
-      :items="filteredItems"
-    />
+    <ItemListTable v-if="filteredItems.length > 0 && desktopViewMode === 'table'" class="desktop-table" :items="filteredItems" />
     <div v-else-if="filteredItems.length > 0" class="desktop-cards">
       <ItemCard v-for="item in filteredItems" :key="`desktop-${item.id}`" :item="item" />
     </div>
+
+    <nav v-if="!loading && !errorMessage && !hasInvalidSearch && totalPages > 1" class="pagination" aria-label="ページ送り">
+      <button
+        type="button"
+        class="pagination-button"
+        :disabled="currentPage <= 1"
+        @click="changePage(currentPage - 1)"
+      >
+        {{ uiText.list.previousPage }}
+      </button>
+
+      <div class="pagination-pages">
+        <button
+          v-for="page in paginationPages"
+          :key="page"
+          type="button"
+          class="pagination-page"
+          :class="{ 'pagination-page--active': page === currentPage }"
+          :aria-current="page === currentPage ? 'page' : undefined"
+          @click="changePage(page)"
+        >
+          {{ page }}
+        </button>
+      </div>
+
+      <button
+        type="button"
+        class="pagination-button"
+        :disabled="currentPage >= totalPages"
+        @click="changePage(currentPage + 1)"
+      >
+        {{ uiText.list.nextPage }}
+      </button>
+    </nav>
 
     <button type="button" class="create-fab" @click="navigateToCreate">+</button>
   </section>
@@ -289,6 +357,43 @@ onMounted(async () => {
 
 .desktop-table {
   display: block;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pagination-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pagination-button,
+.pagination-page {
+  border: 1px solid #d2dae5;
+  border-radius: 10px;
+  background: #fff;
+  color: #1e293b;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pagination-button:disabled,
+.pagination-page:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination-page--active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
 }
 
 @media (min-width: 900px) {

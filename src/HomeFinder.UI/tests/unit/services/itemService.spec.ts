@@ -1,12 +1,33 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiClient } from '../../../src/services/apiClient';
-import { updateItem } from '../../../src/services/itemService';
+import { getItems, updateItem } from '../../../src/services/itemService';
 
 vi.mock('../../../src/services/apiClient', () => ({
   apiClient: {
     apiFetch: vi.fn(),
   },
 }));
+
+describe('itemService.getItems', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('ページ番号と件数をクエリに付与して取得する', async () => {
+    vi.mocked(apiClient.apiFetch).mockResolvedValueOnce(new Response(JSON.stringify({
+      items: [],
+      totalCount: 25,
+      page: 2,
+      pageSize: 20,
+      totalPages: 2,
+    }), { status: 200 }));
+
+    const result = await getItems(2, 20);
+
+    expect(apiClient.apiFetch).toHaveBeenCalledWith('/api/items?page=2&pageSize=20');
+    expect(result.totalPages).toBe(2);
+  });
+});
 
 describe('itemService.updateItem', () => {
   beforeEach(() => {

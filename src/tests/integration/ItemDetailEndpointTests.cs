@@ -21,9 +21,10 @@ public class ItemDetailEndpointTests : IClassFixture<TestApplicationFactory>
     [Fact]
     public async Task GetItemById_Returns200_WhenItemExists()
     {
-        var listResponse = await _client.GetFromJsonAsync<List<ItemResponse>>("/api/items");
+        var listResponse = await _client.GetFromJsonAsync<PagedItemsResponse>("/api/items");
         Assert.NotNull(listResponse);
-        var firstId = listResponse![0].Id;
+        Assert.NotEmpty(listResponse!.Items);
+        var firstId = listResponse.Items[0].Id;
 
         var response = await _client.GetAsync($"/api/items/{firstId}");
 
@@ -63,9 +64,10 @@ public class ItemDetailEndpointTests : IClassFixture<TestApplicationFactory>
     [Fact]
     public async Task GetItemById_ResponseContains_CanEditAndCanDelete()
     {
-        var listResponse = await _client.GetFromJsonAsync<List<ItemResponse>>("/api/items");
+        var listResponse = await _client.GetFromJsonAsync<PagedItemsResponse>("/api/items");
         Assert.NotNull(listResponse);
-        var firstId = listResponse![0].Id;
+        Assert.NotEmpty(listResponse!.Items);
+        var firstId = listResponse.Items[0].Id;
 
         var response = await _client.GetAsync($"/api/items/{firstId}");
         var payload = await response.Content.ReadFromJsonAsync<ItemDetailResponse>();
@@ -151,6 +153,7 @@ public class ItemDetailEndpointTests : IClassFixture<TestApplicationFactory>
     }
 
     public sealed record ItemResponse(Guid Id, string Name, int Quantity, DateTime CreatedAt, DateTime UpdatedAt);
+    public sealed record PagedItemsResponse(IReadOnlyList<ItemResponse> Items, int TotalCount, int Page, int PageSize, int TotalPages);
     public sealed record ItemDetailResponse(Guid Id, string Name, int Quantity, bool CanEdit, bool CanDelete);
     public sealed record RoomResponse(Guid Id, string Name);
     public sealed record ShelfResponse(Guid Id, Guid RoomId, string Name);

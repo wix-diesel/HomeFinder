@@ -42,6 +42,34 @@ public class ItemService(
         }
     }
 
+    public async Task<Result<PagedItemsResponse>> GetItemsPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var totalCount = await itemRepository.CountAsync(cancellationToken);
+            var totalPages = totalCount == 0 ? 1 : (int)Math.Ceiling((double)totalCount / pageSize);
+            var currentPage = Math.Min(page, totalPages);
+            var items = await itemRepository.GetPagedAsync(currentPage, pageSize, cancellationToken);
+            var result = items.Select(item =>
+            {
+                var roomDisplayName = item.RoomId is null
+                    ? "未設定"
+                    : item.Room?.Name;
+                var shelfDisplayName = item.ShelfId is null
+                    ? "未設定"
+                    : item.Shelf?.Name;
+
+                return MapToDto(item, roomDisplayName, shelfDisplayName);
+            }).ToArray();
+
+            return new PagedItemsResponse(result, totalCount, currentPage, pageSize, totalPages);
+        }
+        catch (Exception ex)
+        {
+            return new Result<PagedItemsResponse>(ex);
+        }
+    }
+
     public async Task<Result<ItemDto>> GetItemByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         try

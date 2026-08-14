@@ -18,3 +18,11 @@ export type Item = {
   imageId?: string | null;
   imageUrl?: string | null;
 };
+
+export type PagedItemsResponse = {
+  items: Item[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};

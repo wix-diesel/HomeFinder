@@ -71,11 +71,12 @@ public class ItemDeleteEndpointTests : IClassFixture<TestApplicationFactory>
         await _client.DeleteAsync($"/api/items/{created!.Id}");
 
         // 一覧取得で削除済みアイテムが返らないことを確認する
-        var listResponse = await _client.GetFromJsonAsync<List<ItemResponse>>("/api/items");
+        var listResponse = await _client.GetFromJsonAsync<PagedItemsResponse>("/api/items");
         Assert.NotNull(listResponse);
-        Assert.DoesNotContain(listResponse!, x => x.Id == created.Id);
+        Assert.DoesNotContain(listResponse!.Items, x => x.Id == created.Id);
     }
 
     public sealed record ItemResponse(Guid Id, string Name, int Quantity);
+    public sealed record PagedItemsResponse(IReadOnlyList<ItemResponse> Items, int TotalCount, int Page, int PageSize, int TotalPages);
     public sealed record ErrorResponse(string Code, string Message);
 }
