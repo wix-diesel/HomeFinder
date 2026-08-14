@@ -1,6 +1,6 @@
-import { mount } from '@vue/test-utils';
+import { mount, type VueWrapper } from '@vue/test-utils';
 import { nextTick, reactive } from 'vue';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockReplace = vi.fn();
 const authState = reactive({
@@ -11,6 +11,7 @@ const authState = reactive({
 const routeState = {
   returnUrl: '/items' as unknown,
 };
+let wrapper: VueWrapper | null = null;
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({
@@ -52,6 +53,7 @@ vi.mock('../../../src/services/msalService', () => ({
 
 describe('LoginPage', () => {
   beforeEach(() => {
+    vi.resetModules();
     mockReplace.mockReset();
     authState.isAuthenticated = true;
     authState.isLoading = false;
@@ -59,8 +61,18 @@ describe('LoginPage', () => {
     routeState.returnUrl = '/items';
   });
 
+  afterEach(() => {
+    wrapper?.unmount();
+    wrapper = null;
+  });
+
+  async function mountLoginPage() {
+    wrapper = mount(await import('../../../src/pages/LoginPage.vue').then((mod) => mod.default));
+    return wrapper;
+  }
+
   it('認証済みならログインページから returnUrl の /items へ自動遷移する', async () => {
-    mount(await import('../../../src/pages/LoginPage.vue').then((mod) => mod.default));
+    await mountLoginPage();
     await nextTick();
 
     expect(mockReplace).toHaveBeenCalledWith('/items');
@@ -69,7 +81,7 @@ describe('LoginPage', () => {
   it('認証状態が false から true に変わったときも returnUrl の /items へ自動遷移する', async () => {
     authState.isAuthenticated = false;
 
-    mount(await import('../../../src/pages/LoginPage.vue').then((mod) => mod.default));
+    await mountLoginPage();
     await nextTick();
 
     expect(mockReplace).not.toHaveBeenCalled();
@@ -83,7 +95,7 @@ describe('LoginPage', () => {
   it('危険な returnUrl が指定された場合は / へ自動遷移する', async () => {
     routeState.returnUrl = '//evil.com';
 
-    mount(await import('../../../src/pages/LoginPage.vue').then((mod) => mod.default));
+    await mountLoginPage();
     await nextTick();
 
     expect(mockReplace).toHaveBeenCalledWith('/');
