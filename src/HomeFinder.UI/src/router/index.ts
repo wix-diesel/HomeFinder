@@ -6,6 +6,7 @@ import SettingsPage from '../pages/SettingsPage.vue';
 import UserSettingsPage from '../pages/UserSettingsPage.vue';
 import StorageManagementPage from '../pages/StorageManagement.vue';
 import LoginPage from '../pages/LoginPage.vue';
+import { sanitizeReturnUrl } from '../utils/returnUrl';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -78,21 +79,6 @@ const router = createRouter({
   ],
 });
 
-/**
- * returnUrl が同一オリジンのパスかどうかを検証する（オープンリダイレクト防止）
- */
-function isSafeReturnUrl(url: string): boolean {
-  if (!url || typeof url !== 'string') return false;
-  // 外部ドメインや javascript: スキームを排除し、/で始まるパスのみ許可する
-  try {
-    // 絶対URLが指定された場合は拒否する（同一オリジンパスのみ許可）
-    const parsed = new URL(url, window.location.origin);
-    return parsed.origin === window.location.origin && url.startsWith('/');
-  } catch {
-    return false;
-  }
-}
-
 // ナビゲーションガード（US1・US2: 未認証リダイレクト・認証済みの /login アクセス制御）
 router.beforeEach(async (to, _from) => {
   // Pinia ストアはルーター外から遅延インポートする（循環依存を避けるため）
@@ -107,8 +93,7 @@ router.beforeEach(async (to, _from) => {
   if (requiresAuth && !authStore.isAuthenticated) {
     // (1) 未認証でアクセス → /login?returnUrl=<元パス> へリダイレクト
     // フラグメント (#...) を含めないようにサニタイズする
-    const sanitizedFullPath = String(to.fullPath).split('#')[0];
-    const returnUrl = isSafeReturnUrl(sanitizedFullPath) ? sanitizedFullPath : '/';
+    const returnUrl = sanitizeReturnUrl(to.fullPath);
     return { path: '/login', query: { returnUrl } };
   } else if (to.path === '/login' && authStore.isAuthenticated) {
     // (2) 認証済みで /login にアクセス → / へリダイレクト（T012）

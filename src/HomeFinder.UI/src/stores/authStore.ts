@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { msalService } from '../services/msalService';
 import { useUserProfileStore } from './userProfileStore';
 import type { AuthenticationResult } from '@azure/msal-browser';
+import { sanitizeReturnUrl } from '../utils/returnUrl';
 
 /** 認証済みユーザー情報 */
 export interface AuthUser {
@@ -57,12 +58,6 @@ export const useAuthStore = defineStore('auth', () => {
     if (!userProfileStore.profile && !userProfileStore.isLoading) {
       await userProfileStore.loadProfile();
     }
-  }
-
-  function sanitizeReturnUrl(url: string | null | undefined): string {
-    if (!url || typeof url !== 'string') return '/';
-    if (!url.startsWith('/')) return '/';
-    return url.split('#')[0] || '/';
   }
 
   /**

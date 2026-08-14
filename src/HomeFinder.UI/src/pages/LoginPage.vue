@@ -81,15 +81,14 @@ import { useAuthStore } from '../stores/authStore';
 import { msalService } from '../services/msalService';
 import heroImage from '../assets/living_room_interior.png';
 import appIconPath from '../assets/icon.png';
+import { sanitizeReturnUrl } from '../utils/returnUrl';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
 function getReturnUrl(): string {
-  const rawReturn = route.query.returnUrl as string | undefined;
-  const returnUrl = rawReturn ? rawReturn.split('#')[0] : '/';
-  return returnUrl.startsWith('/') ? returnUrl : '/';
+  return sanitizeReturnUrl(route.query.returnUrl);
 }
 
 function redirectIfAuthenticated(): void {
