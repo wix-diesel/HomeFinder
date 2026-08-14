@@ -111,6 +111,39 @@ describe('ItemListPage', () => {
     expect(wrapper.text()).not.toContain('歯ブラシ');
   });
 
+  it('在庫ありのみチェックは表示切替の右側に配置する', async () => {
+    vi.mocked(getItems).mockResolvedValue([
+      {
+        id: '1',
+        name: '歯ブラシ',
+        categoryId: 'cat-nichiyohin',
+        categoryName: '日用品',
+        quantity: 0,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      },
+      {
+        id: '2',
+        name: '卓上ライト',
+        categoryId: 'cat-kaiden',
+        categoryName: '家電',
+        quantity: 1,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      },
+    ]);
+
+    const wrapper = mount(ItemListPage);
+    await flushPromises();
+
+    const toolbarActions = wrapper.find('.toolbar-actions');
+    const children = Array.from(toolbarActions.element.children);
+
+    expect(children[0]).toBe(toolbarActions.find('.view-mode-toggle').element);
+    expect(children[1]).toBe(toolbarActions.find('.stock-filter').element);
+    expect(children[2]).toBe(toolbarActions.find('.create-button').element);
+  });
+
   it('在庫ありのみチェックで数量1以上のアイテムだけ表示する', async () => {
     vi.mocked(getItems).mockResolvedValue([
       {
