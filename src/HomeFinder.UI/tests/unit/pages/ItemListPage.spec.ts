@@ -137,11 +137,15 @@ describe('ItemListPage', () => {
     await flushPromises();
 
     const toolbarActions = wrapper.find('.toolbar-actions');
-    const children = Array.from(toolbarActions.element.children);
+    const viewModeToggle = toolbarActions.find('.view-mode-toggle');
+    const stockFilter = toolbarActions.find('.stock-filter');
+    const createButton = toolbarActions.find('.create-button');
 
-    expect(children[0]).toBe(toolbarActions.find('.view-mode-toggle').element);
-    expect(children[1]).toBe(toolbarActions.find('.stock-filter').element);
-    expect(children[2]).toBe(toolbarActions.find('.create-button').element);
+    expect(viewModeToggle.exists()).toBe(true);
+    expect(stockFilter.exists()).toBe(true);
+    expect(createButton.exists()).toBe(true);
+    expect(stockFilter.element.previousElementSibling).toBe(viewModeToggle.element);
+    expect(stockFilter.element.nextElementSibling).toBe(createButton.element);
   });
 
   it('在庫ありのみチェックで数量1以上のアイテムだけ表示する', async () => {
