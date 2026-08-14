@@ -26,6 +26,8 @@ export const uiText = {
     createCta: '登録を開始',
     cardView: 'カード',
     tableView: 'テーブル',
+    previousPage: '前へ',
+    nextPage: '次へ',
     headerName: '名称',
     headerCategory: 'カテゴリ',
     headerQuantity: '数量',

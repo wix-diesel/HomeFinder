@@ -19,6 +19,26 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<Item>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Items
+            .AsNoTracking()
+            .Include(x => x.Category)
+            .Include(x => x.Room)
+            .Include(x => x.Shelf)
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<int> CountAsync(CancellationToken cancellationToken = default)
+    {
+        return dbContext.Items
+            .AsNoTracking()
+            .CountAsync(cancellationToken);
+    }
+
     public async Task<Item?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await dbContext.Items

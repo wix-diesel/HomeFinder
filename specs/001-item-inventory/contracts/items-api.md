@@ -14,18 +14,42 @@
 
 - Method: `GET`
 - Path: `/api/items`
+- Query Parameters:
+  - `page` (integer, optional, default: `1`)
+  - `pageSize` (integer, optional, default: `20`, max: `20`)
 - Response `200 OK`:
 
 ```json
-[
-  {
-    "id": "ec95d4e0-2557-4f42-a9d0-d673f0490a4d",
-    "name": "歯ブラシ",
-    "quantity": 2,
-    "createdAt": "2026-04-24T10:30:00Z",
-    "updatedAt": "2026-04-24T10:30:00Z"
-  }
-]
+{
+  "items": [
+    {
+      "id": "ec95d4e0-2557-4f42-a9d0-d673f0490a4d",
+      "name": "歯ブラシ",
+      "quantity": 2,
+      "createdAt": "2026-04-24T10:30:00Z",
+      "updatedAt": "2026-04-24T10:30:00Z"
+    }
+  ],
+  "totalCount": 42,
+  "page": 1,
+  "pageSize": 20,
+  "totalPages": 3
+}
+```
+
+- Response `400 Bad Request`:
+
+```json
+{
+  "code": "VALIDATION_ERROR",
+  "message": "入力内容に誤りがあります。",
+  "details": [
+    {
+      "field": "page/pageSize",
+      "reason": "page は 1 以上、pageSize は 1〜20 の範囲で指定してください。"
+    }
+  ]
+}
 ```
 
 ### 2. 詳細取得

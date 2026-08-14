@@ -5,6 +5,8 @@ namespace HomeFinder.Application.Repositories;
 public interface IItemRepository
 {
     Task<IReadOnlyCollection<Item>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyCollection<Item>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<int> CountAsync(CancellationToken cancellationToken = default);
     Task<Item?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default);
     Task<bool> ExistsByNameExcludingAsync(string name, Guid excludeId, CancellationToken cancellationToken = default);

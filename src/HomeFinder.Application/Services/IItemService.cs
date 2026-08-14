@@ -6,6 +6,7 @@ namespace HomeFinder.Application.Services;
 public interface IItemService
 {
     Task<Result<IReadOnlyCollection<ItemDto>>> GetItemsAsync(CancellationToken cancellationToken = default);
+    Task<Result<PagedItemsResponse>> GetItemsPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
     Task<Result<ItemDto>> GetItemByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result<IReadOnlyCollection<ItemHistoryDto>>> GetItemHistoryAsync(Guid itemId, int limit, CancellationToken cancellationToken = default);
 

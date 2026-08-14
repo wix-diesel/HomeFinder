@@ -4,15 +4,26 @@ import ItemListPage from '../../../src/pages/ItemListPage.vue';
 import { getItems } from '../../../src/services/itemService';
 
 const pushMock = vi.fn();
+const replaceMock = vi.fn(async () => {});
 
 vi.mock('../../../src/services/itemService', () => ({
   getItems: vi.fn(),
 }));
 
 vi.mock('vue-router', () => ({
-  useRouter: () => ({ push: pushMock }),
+  useRouter: () => ({ push: pushMock, replace: replaceMock }),
   useRoute: () => ({ query: {} }),
 }));
+
+function toPagedResponse(items: unknown[], page = 1, totalCount = items.length) {
+  return {
+    items,
+    totalCount,
+    page,
+    pageSize: 20,
+    totalPages: Math.max(1, Math.ceil(totalCount / 20)),
+  };
+}
 
 describe('ItemListPage', () => {
   beforeEach(() => {
@@ -21,15 +32,19 @@ describe('ItemListPage', () => {
 
   it('100件データでも一覧操作の反映が200ms以内に完了する', async () => {
     vi.mocked(getItems).mockResolvedValue(
-      Array.from({ length: 100 }, (_, index) => ({
-        id: String(index + 1),
-        name: index % 10 === 0 ? `計測ライト${index}` : `計測アイテム${index}`,
-        categoryId: index % 2 === 0 ? 'cat-kaiden' : 'cat-nichiyohin',
-        categoryName: index % 2 === 0 ? '家電' : '日用品',
-        quantity: (index % 5) + 1,
-        createdAt: '2026-04-24T10:30:00Z',
-        updatedAt: '2026-04-24T10:30:00Z',
-      })),
+      toPagedResponse(
+        Array.from({ length: 100 }, (_, index) => ({
+          id: String(index + 1),
+          name: index % 10 === 0 ? `計測ライト${index}` : `計測アイテム${index}`,
+          categoryId: index % 2 === 0 ? 'cat-kaiden' : 'cat-nichiyohin',
+          categoryName: index % 2 === 0 ? '家電' : '日用品',
+          quantity: (index % 5) + 1,
+          createdAt: '2026-04-24T10:30:00Z',
+          updatedAt: '2026-04-24T10:30:00Z',
+        })),
+        1,
+        100,
+      ),
     );
 
     const wrapper = mount(ItemListPage);
@@ -51,7 +66,7 @@ describe('ItemListPage', () => {
   });
 
   it('検索語で一覧を絞り込みできる', async () => {
-    vi.mocked(getItems).mockResolvedValue([
+    vi.mocked(getItems).mockResolvedValue(toPagedResponse([
       {
         id: '1',
         name: '歯ブラシ',
@@ -70,7 +85,7 @@ describe('ItemListPage', () => {
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
       },
-    ]);
+    ]));
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
@@ -82,7 +97,7 @@ describe('ItemListPage', () => {
   });
 
   it('カテゴリ選択で絞り込みできる', async () => {
-    vi.mocked(getItems).mockResolvedValue([
+    vi.mocked(getItems).mockResolvedValue(toPagedResponse([
       {
         id: '1',
         name: '歯ブラシ',
@@ -101,7 +116,7 @@ describe('ItemListPage', () => {
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
       },
-    ]);
+    ]));
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
@@ -112,7 +127,7 @@ describe('ItemListPage', () => {
   });
 
   it('在庫ありのみチェックは表示切替の右側に配置する', async () => {
-    vi.mocked(getItems).mockResolvedValue([
+    vi.mocked(getItems).mockResolvedValue(toPagedResponse([
       {
         id: '1',
         name: '歯ブラシ',
@@ -131,7 +146,7 @@ describe('ItemListPage', () => {
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
       },
-    ]);
+    ]));
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
@@ -149,7 +164,7 @@ describe('ItemListPage', () => {
   });
 
   it('在庫ありのみチェックで数量1以上のアイテムだけ表示する', async () => {
-    vi.mocked(getItems).mockResolvedValue([
+    vi.mocked(getItems).mockResolvedValue(toPagedResponse([
       {
         id: '1',
         name: '歯ブラシ',
@@ -168,7 +183,7 @@ describe('ItemListPage', () => {
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
       },
-    ]);
+    ]));
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
@@ -179,7 +194,7 @@ describe('ItemListPage', () => {
   });
 
   it('在庫ありのみチェックは検索・カテゴリと併用できる', async () => {
-    vi.mocked(getItems).mockResolvedValue([
+    vi.mocked(getItems).mockResolvedValue(toPagedResponse([
       {
         id: '1',
         name: '予備ライト',
@@ -207,7 +222,7 @@ describe('ItemListPage', () => {
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
       },
-    ]);
+    ]));
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
@@ -221,7 +236,7 @@ describe('ItemListPage', () => {
   });
 
   it('カテゴリーフィルターをプルダウンで表示する', async () => {
-    vi.mocked(getItems).mockResolvedValue([
+    vi.mocked(getItems).mockResolvedValue(toPagedResponse([
       {
         id: '1',
         name: '歯ブラシ',
@@ -240,7 +255,7 @@ describe('ItemListPage', () => {
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
       },
-    ]);
+    ]));
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
@@ -250,7 +265,7 @@ describe('ItemListPage', () => {
   });
 
   it('デスクトップ表示切替を操作できる', async () => {
-    vi.mocked(getItems).mockResolvedValue([
+    vi.mocked(getItems).mockResolvedValue(toPagedResponse([
       {
         id: '1',
         name: '歯ブラシ',
@@ -258,7 +273,7 @@ describe('ItemListPage', () => {
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
       },
-    ]);
+    ]));
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
@@ -270,7 +285,7 @@ describe('ItemListPage', () => {
   });
 
   it('表示モードをテーブルにするとカード表示が消える', async () => {
-    vi.mocked(getItems).mockResolvedValue([
+    vi.mocked(getItems).mockResolvedValue(toPagedResponse([
       {
         id: '1',
         name: '歯ブラシ',
@@ -278,7 +293,7 @@ describe('ItemListPage', () => {
         createdAt: '2026-04-24T10:30:00Z',
         updatedAt: '2026-04-24T10:30:00Z',
       },
-    ]);
+    ]));
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
@@ -292,12 +307,42 @@ describe('ItemListPage', () => {
   });
 
   it('登録開始ボタンで登録画面へ遷移する', async () => {
-    vi.mocked(getItems).mockResolvedValue([]);
+    vi.mocked(getItems).mockResolvedValue(toPagedResponse([]));
 
     const wrapper = mount(ItemListPage);
     await flushPromises();
     await wrapper.find('.create-button').trigger('click');
 
     expect(pushMock).toHaveBeenCalledWith('/items/new');
+  });
+
+  it('ページングボタンで次のページを取得できる', async () => {
+    vi.mocked(getItems)
+      .mockResolvedValueOnce(toPagedResponse(Array.from({ length: 20 }, (_, index) => ({
+        id: String(index + 1),
+        name: `アイテム${index + 1}`,
+        quantity: 1,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      })), 1, 25))
+      .mockResolvedValueOnce(toPagedResponse(Array.from({ length: 5 }, (_, index) => ({
+        id: String(index + 21),
+        name: `アイテム${index + 21}`,
+        quantity: 1,
+        createdAt: '2026-04-24T10:30:00Z',
+        updatedAt: '2026-04-24T10:30:00Z',
+      })), 2, 25));
+
+    vi.stubGlobal('scrollTo', vi.fn());
+
+    const wrapper = mount(ItemListPage);
+    await flushPromises();
+    await wrapper.findAll('.pagination-button')[1].trigger('click');
+    await flushPromises();
+
+    expect(getItems).toHaveBeenNthCalledWith(1, 1, 20);
+    expect(getItems).toHaveBeenNthCalledWith(2, 2, 20);
+    expect(wrapper.text()).toContain('アイテム21');
+    expect(replaceMock).toHaveBeenCalled();
   });
 });

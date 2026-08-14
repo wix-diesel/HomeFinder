@@ -1,4 +1,4 @@
-import type { Item } from '../models/item';
+import type { Item, PagedItemsResponse } from '../models/item';
 import type { ItemDetail } from '../models/itemDetail';
 import type { CreateItemRequest } from '../models/createItemRequest';
 import type { UpdateItemRequest } from '../models/updateItemRequest';
@@ -15,13 +15,13 @@ export class ItemServiceError extends Error {
   }
 }
 
-export async function getItems(): Promise<Item[]> {
-  const response = await apiClient.apiFetch('/api/items');
+export async function getItems(page = 1, pageSize = 20): Promise<PagedItemsResponse> {
+  const response = await apiClient.apiFetch(`/api/items?page=${page}&pageSize=${pageSize}`);
   if (!response.ok) {
     throw new Error('物品一覧の取得に失敗しました。');
   }
 
-  return (await response.json()) as Item[];
+  return (await response.json()) as PagedItemsResponse;
 }
 
 export async function getItemById(id: string): Promise<ItemDetail> {

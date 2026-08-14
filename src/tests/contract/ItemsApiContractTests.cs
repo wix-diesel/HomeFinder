@@ -15,6 +15,9 @@ public class ItemsApiContractTests
         Assert.Contains("Path: `/api/items/{id}`", text);
         Assert.Contains("Method: `POST`", text);
         Assert.Contains("Response `200 OK`", text);
+        Assert.Contains("\"items\"", text);
+        Assert.Contains("\"pageSize\": 20", text);
+        Assert.Contains("\"totalPages\"", text);
         Assert.Contains("Response `201 Created`", text);
         Assert.Contains("Response `400 Bad Request`", text);
         Assert.Contains("Response `404 Not Found`", text);

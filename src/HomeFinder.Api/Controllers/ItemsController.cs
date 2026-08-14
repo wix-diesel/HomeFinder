@@ -13,10 +13,22 @@ public class ItemsController(IItemService itemService) : ControllerBase
 {
     [HttpGet]
     [Authorize(Roles = "Items.Read")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<ItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyCollection<ItemDto>>> GetItems(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(PagedItemsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedItemsResponse>> GetItems(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
     {
-        var result = await itemService.GetItemsAsync(cancellationToken);
+        if (page < 1 || pageSize < 1 || pageSize > 20)
+        {
+            return BadRequest(ApiError.ValidationError(new[]
+            {
+                new ApiErrorDetail("page/pageSize", "page は 1 以上、pageSize は 1〜20 の範囲で指定してください。"),
+            }));
+        }
+
+        var result = await itemService.GetItemsPagedAsync(page, pageSize, cancellationToken);
         if (result.IsSuccessful)
         {
             return Ok(result.Value);
