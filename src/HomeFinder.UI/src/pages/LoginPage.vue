@@ -75,18 +75,46 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
+import { onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import { msalService } from '../services/msalService';
 import heroImage from '../assets/living_room_interior.png';
 import appIconPath from '../assets/icon.png';
 
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 
-async function handleLogin() {
+function getReturnUrl(): string {
   const rawReturn = route.query.returnUrl as string | undefined;
   const returnUrl = rawReturn ? rawReturn.split('#')[0] : '/';
+  return returnUrl.startsWith('/') ? returnUrl : '/';
+}
+
+function redirectIfAuthenticated(): void {
+  if (!authStore.isAuthenticated) {
+    return;
+  }
+
+  void router.replace(getReturnUrl());
+}
+
+onMounted(() => {
+  redirectIfAuthenticated();
+});
+
+watch(
+  () => authStore.isAuthenticated,
+  (isAuthenticated) => {
+    if (isAuthenticated) {
+      redirectIfAuthenticated();
+    }
+  }
+);
+
+async function handleLogin() {
+  const returnUrl = getReturnUrl();
 
   authStore.isLoading = true;
   authStore.error = null;
