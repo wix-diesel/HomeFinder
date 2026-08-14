@@ -55,7 +55,7 @@ vi.mock('../../../src/services/msalService', () => ({
 describe('LoginPage', () => {
   beforeEach(() => {
     mockReplace.mockReset();
-    authState.isAuthenticated = true;
+    authState.isAuthenticated = false;
     authState.isLoading = false;
     authState.error = null;
     routeState.returnUrl = '/items';
@@ -72,6 +72,8 @@ describe('LoginPage', () => {
   }
 
   it('認証済みならログインページから returnUrl の /items へ自動遷移する', async () => {
+    authState.isAuthenticated = true;
+
     await mountLoginPage();
     await nextTick();
 
@@ -93,6 +95,7 @@ describe('LoginPage', () => {
   });
 
   it('危険な returnUrl が指定された場合は / へ自動遷移する', async () => {
+    authState.isAuthenticated = true;
     routeState.returnUrl = '//evil.com';
 
     await mountLoginPage();
