@@ -15,7 +15,7 @@
     "@azure/msal-browser": "^5.18.0",
     "@zxing/browser": "0.2.1",
     "@zxing/library": "0.23.0",
-    "pinia": "^4.0.2",
+    "pinia": "^4.0.3",
     "vue": "^3.5.41",
     "vue-router": "^5.2.0"
   },
