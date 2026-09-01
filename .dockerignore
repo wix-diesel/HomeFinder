@@ -5,9 +5,12 @@
 
 **/bin
 **/obj
-**/node_modules
 **/dist
+**/node_modules
 **/coverage
+
+!src/HomeFinder.UI/dist
+!src/HomeFinder.UI/dist/**
 
 **/.env*
 **/*.log

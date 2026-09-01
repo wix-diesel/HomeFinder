@@ -57,7 +57,7 @@ jobs:
       - name: pnpm セットアップ
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.8.1
 
       - name: Node.js セットアップ
         uses: actions/setup-node@v4
