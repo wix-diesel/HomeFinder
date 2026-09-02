@@ -1,4 +1,5 @@
 using HomeFinder.Infrastructure.Data;
+using HomeFinder.Application.Contracts;
 using HomeFinder.Core.Entities;
 using HomeFinder.Core.Errors;
 using HomeFinder.Application.Repositories;
@@ -19,10 +20,10 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyCollection<Item>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyCollection<Item>> GetPagedAsync(int page, int pageSize, ItemQueryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Items
-            .AsNoTracking()
+        // 絞り込みは Skip/Take の前に適用し、現在ページではなく全件を対象にする
+        return await ApplyFilter(dbContext.Items.AsNoTracking(), filter)
             .Include(x => x.Category)
             .Include(x => x.Room)
             .Include(x => x.Shelf)
@@ -32,10 +33,9 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
             .ToListAsync(cancellationToken);
     }
 
-    public Task<int> CountAsync(CancellationToken cancellationToken = default)
+    public Task<int> CountAsync(ItemQueryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        return dbContext.Items
-            .AsNoTracking()
+        return ApplyFilter(dbContext.Items.AsNoTracking(), filter)
             .CountAsync(cancellationToken);
     }
 
@@ -131,5 +131,45 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         await operation();
         await transaction.CommitAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// 検索キーワード・カテゴリ・在庫有無の絞り込みをクエリへ適用する。
+    /// 一覧取得と件数取得で同じ条件を共有するため、単一のメソッドにまとめている。
+    /// </summary>
+    private static IQueryable<Item> ApplyFilter(IQueryable<Item> query, ItemQueryFilter? filter)
+    {
+        if (filter is null)
+        {
+            return query;
+        }
+
+        var keyword = filter.Keyword?.Trim();
+        if (!string.IsNullOrEmpty(keyword))
+        {
+            // 検索値の正規化はカルチャ非依存にする（トルコ語 i 問題などを避ける）
+            var normalizedKeyword = keyword.ToLowerInvariant();
+
+            // 列側は ToLower() のみ使用する。ToLowerInvariant() は SQL へ変換できず
+            // InvalidOperationException になるため、ここを Invariant にしてはいけない
+            query = query.Where(x => x.Name.ToLower().Contains(normalizedKeyword));
+        }
+
+        if (filter.UnclassifiedOnly)
+        {
+            // カテゴリー未設定と予約カテゴリー「未分類」は UI 上どちらも「未分類」として扱う
+            query = query.Where(x => x.CategoryId == null || x.CategoryId == Category.Reserved.UnclassifiedId);
+        }
+        else if (filter.CategoryId is { } categoryId)
+        {
+            query = query.Where(x => x.CategoryId == categoryId);
+        }
+
+        if (filter.StockOnly)
+        {
+            query = query.Where(x => x.Quantity > 0);
+        }
+
+        return query;
     }
 }

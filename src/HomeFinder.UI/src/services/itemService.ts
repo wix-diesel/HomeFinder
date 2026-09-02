@@ -15,8 +15,36 @@ export class ItemServiceError extends Error {
   }
 }
 
-export async function getItems(page = 1, pageSize = 20): Promise<PagedItemsResponse> {
-  const response = await apiClient.apiFetch(`/api/items?page=${page}&pageSize=${pageSize}`);
+/** 物品一覧の検索・絞り込み条件 */
+export type ItemListFilters = {
+  /** 名称の部分一致検索キーワード */
+  keyword?: string | null;
+  /** カテゴリー ID。未分類で絞り込む場合は 'unclassified' */
+  categoryId?: string | null;
+  /** 数量 1 以上のみに絞り込むか */
+  stockOnly?: boolean;
+};
+
+export async function getItems(
+  page = 1,
+  pageSize = 20,
+  filters: ItemListFilters = {},
+): Promise<PagedItemsResponse> {
+  // 絞り込みはサーバー側で全件に適用するため、条件をクエリパラメータで渡す
+  const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+
+  const keyword = filters.keyword?.trim();
+  if (keyword) {
+    params.set('keyword', keyword);
+  }
+  if (filters.categoryId) {
+    params.set('categoryId', filters.categoryId);
+  }
+  if (filters.stockOnly) {
+    params.set('stockOnly', 'true');
+  }
+
+  const response = await apiClient.apiFetch(`/api/items?${params.toString()}`);
   if (!response.ok) {
     throw new Error('物品一覧の取得に失敗しました。');
   }

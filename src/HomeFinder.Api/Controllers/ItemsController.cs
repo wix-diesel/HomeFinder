@@ -11,6 +11,12 @@ namespace HomeFinder.Api.Controllers;
 [Route("api/items")]
 public class ItemsController(IItemService itemService) : ControllerBase
 {
+    /// <summary>カテゴリー未設定の物品を絞り込むための categoryId 指定値</summary>
+    private const string UnclassifiedCategoryFilter = "unclassified";
+
+    /// <summary>検索キーワードの最大長（物品名の最大長に合わせる）</summary>
+    private const int MaxKeywordLength = 200;
+
     [HttpGet]
     [Authorize(Roles = "Items.Read")]
     [ProducesResponseType(typeof(PagedItemsResponse), StatusCodes.Status200OK)]
@@ -18,6 +24,9 @@ public class ItemsController(IItemService itemService) : ControllerBase
     public async Task<ActionResult<PagedItemsResponse>> GetItems(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
+        [FromQuery] string? keyword = null,
+        [FromQuery] string? categoryId = null,
+        [FromQuery] bool stockOnly = false,
         CancellationToken cancellationToken = default)
     {
         if (page < 1 || pageSize < 1 || pageSize > 20)
@@ -28,7 +37,46 @@ public class ItemsController(IItemService itemService) : ControllerBase
             }));
         }
 
-        var result = await itemService.GetItemsPagedAsync(page, pageSize, cancellationToken);
+        var normalizedKeyword = keyword?.Trim();
+        if (normalizedKeyword is { Length: > MaxKeywordLength })
+        {
+            return BadRequest(ApiError.ValidationError(new[]
+            {
+                new ApiErrorDetail("keyword", $"keyword は {MaxKeywordLength} 文字以内で指定してください。"),
+            }));
+        }
+
+        // categoryId は GUID のほか、カテゴリー未設定を表す "unclassified" を受け付ける
+        var normalizedCategoryId = categoryId?.Trim();
+        Guid? filterCategoryId = null;
+        var unclassifiedOnly = false;
+
+        if (!string.IsNullOrEmpty(normalizedCategoryId))
+        {
+            if (string.Equals(normalizedCategoryId, UnclassifiedCategoryFilter, StringComparison.OrdinalIgnoreCase))
+            {
+                unclassifiedOnly = true;
+            }
+            else if (Guid.TryParse(normalizedCategoryId, out var parsedCategoryId))
+            {
+                filterCategoryId = parsedCategoryId;
+            }
+            else
+            {
+                return BadRequest(ApiError.ValidationError(new[]
+                {
+                    new ApiErrorDetail("categoryId", "categoryId は有効な UUID 形式または \"unclassified\" である必要があります。"),
+                }));
+            }
+        }
+
+        var filter = new ItemQueryFilter(
+            string.IsNullOrEmpty(normalizedKeyword) ? null : normalizedKeyword,
+            filterCategoryId,
+            unclassifiedOnly,
+            stockOnly);
+
+        var result = await itemService.GetItemsPagedAsync(page, pageSize, filter, cancellationToken);
         if (result.IsSuccessful)
         {
             return Ok(result.Value);

@@ -10,6 +10,12 @@ vi.mock('../../../src/services/itemService', () => ({
   getItems: vi.fn(),
 }));
 
+vi.mock('../../../src/services/categoryService', () => ({
+  categoryService: {
+    getCategories: vi.fn(async () => []),
+  },
+}));
+
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: pushMock, replace: replaceMock }),
   useRoute: () => ({ query: {} }),
