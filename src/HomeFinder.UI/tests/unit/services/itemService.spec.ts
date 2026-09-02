@@ -27,6 +27,36 @@ describe('itemService.getItems', () => {
     expect(apiClient.apiFetch).toHaveBeenCalledWith('/api/items?page=2&pageSize=20');
     expect(result.totalPages).toBe(2);
   });
+
+  it('検索・カテゴリ・在庫条件をクエリに付与して取得する', async () => {
+    vi.mocked(apiClient.apiFetch).mockResolvedValueOnce(new Response(JSON.stringify({
+      items: [],
+      totalCount: 0,
+      page: 1,
+      pageSize: 20,
+      totalPages: 1,
+    }), { status: 200 }));
+
+    await getItems(1, 20, { keyword: ' ライト ', categoryId: 'cat-kaiden', stockOnly: true });
+
+    expect(apiClient.apiFetch).toHaveBeenCalledWith(
+      `/api/items?page=1&pageSize=20&keyword=${encodeURIComponent('ライト')}&categoryId=cat-kaiden&stockOnly=true`,
+    );
+  });
+
+  it('空の絞り込み条件はクエリに含めない', async () => {
+    vi.mocked(apiClient.apiFetch).mockResolvedValueOnce(new Response(JSON.stringify({
+      items: [],
+      totalCount: 0,
+      page: 1,
+      pageSize: 20,
+      totalPages: 1,
+    }), { status: 200 }));
+
+    await getItems(1, 20, { keyword: '   ', categoryId: null, stockOnly: false });
+
+    expect(apiClient.apiFetch).toHaveBeenCalledWith('/api/items?page=1&pageSize=20');
+  });
 });
 
 describe('itemService.updateItem', () => {

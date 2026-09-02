@@ -42,14 +42,15 @@ public class ItemService(
         }
     }
 
-    public async Task<Result<PagedItemsResponse>> GetItemsPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<Result<PagedItemsResponse>> GetItemsPagedAsync(int page, int pageSize, ItemQueryFilter? filter = null, CancellationToken cancellationToken = default)
     {
         try
         {
-            var totalCount = await itemRepository.CountAsync(cancellationToken);
+            // 件数・一覧のどちらにも同じ絞り込みを渡し、全件に対して検索・フィルターを効かせる
+            var totalCount = await itemRepository.CountAsync(filter, cancellationToken);
             var totalPages = totalCount == 0 ? 1 : (int)Math.Ceiling((double)totalCount / pageSize);
             var currentPage = Math.Min(page, totalPages);
-            var items = await itemRepository.GetPagedAsync(currentPage, pageSize, cancellationToken);
+            var items = await itemRepository.GetPagedAsync(currentPage, pageSize, filter, cancellationToken);
             var result = items.Select(item =>
             {
                 var roomDisplayName = item.RoomId is null

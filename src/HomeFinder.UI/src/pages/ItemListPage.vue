@@ -1,28 +1,41 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ItemCard from '../components/ItemCard.vue';
 import ItemListTable from '../components/ItemListTable.vue';
 import { StatePanel, ViewModeToggle } from '../components/common';
 import { listStateMessages } from '../constants/stateMessagesJa';
 import { uiText } from '../constants/uiText';
+import { UNCLASSIFIED_CATEGORY_ID, sortCategoriesByName } from '../models/category';
 import type { Item, PagedItemsResponse } from '../models/item';
-import { getItems } from '../services/itemService';
+import { categoryService } from '../services/categoryService';
+import { getItems, type ItemListFilters } from '../services/itemService';
 
 const PAGE_SIZE = 20;
+
+// 検索入力のたびに API を呼ばないよう、入力が落ち着いてから検索する
+const SEARCH_DEBOUNCE_MS = 300;
+
+// カテゴリ未設定アイテムを絞り込むための API 指定値
+const UNCLASSIFIED_ID = 'unclassified';
+
 const pagedResult = ref<PagedItemsResponse | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
 const searchKeyword = ref('');
+const appliedKeyword = ref('');
 const selectedCategory = ref<'all' | string>('all');
 const stockOnly = ref(false);
 const desktopViewMode = ref<'card' | 'table'>('card');
 const currentPage = ref(1);
+const categoryOptions = ref<{ id: string; name: string }[]>([]);
 const route = useRoute();
 const router = useRouter();
 
-// カテゴリ未設定アイテムのフォールバック識別子
-const UNCLASSIFIED_ID = 'unclassified';
+let searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+
+// 応答の到着順が入れ替わっても、最後に発行したリクエストの結果だけを反映する
+let latestRequestId = 0;
 
 const items = computed<Item[]>(() => pagedResult.value?.items ?? []);
 const totalPages = computed(() => pagedResult.value?.totalPages ?? 1);
@@ -33,27 +46,13 @@ const paginationPages = computed(() => {
   return Array.from({ length: end - start + 1 }, (_, index) => start + index);
 });
 
-const categories = computed(() => {
-  const seen = new Map<string, string>();
-  for (const item of items.value) {
-    const id = item.categoryId ?? UNCLASSIFIED_ID;
-    const name = item.categoryName ?? '未分類';
-    if (!seen.has(id)) seen.set(id, name);
-  }
-  return [{ id: 'all', name: 'すべて' }, ...Array.from(seen.entries()).map(([id, name]) => ({ id, name }))];
-});
-
 const hasInvalidSearch = computed(() => searchKeyword.value.length > 0 && searchKeyword.value.trim().length === 0);
 
-const filteredItems = computed(() => {
-  return items.value.filter((item) => {
-    const keywordMatch = item.name.toLowerCase().includes(searchKeyword.value.trim().toLowerCase());
-    const itemCategoryId = item.categoryId ?? UNCLASSIFIED_ID;
-    const categoryMatch = selectedCategory.value === 'all' || itemCategoryId === selectedCategory.value;
-    const stockMatch = !stockOnly.value || item.quantity > 0;
-    return keywordMatch && categoryMatch && stockMatch;
-  });
-});
+const activeFilters = computed<ItemListFilters>(() => ({
+  keyword: appliedKeyword.value,
+  categoryId: selectedCategory.value === 'all' ? null : selectedCategory.value,
+  stockOnly: stockOnly.value,
+}));
 
 const toastMessage = computed(() => {
   if (route.query.created === '1') return uiText.create.successToast;
@@ -61,27 +60,48 @@ const toastMessage = computed(() => {
   return '';
 });
 
-const visibleCategories = computed(() => categories.value.filter((c) => c.id !== 'all'));
+async function loadCategories() {
+  try {
+    const categories = await categoryService.getCategories();
+    categoryOptions.value = sortCategoriesByName(categories).map((category) => ({
+      // 予約カテゴリ「未分類」は、カテゴリ未設定のアイテムもまとめて絞り込む
+      id: category.id === UNCLASSIFIED_CATEGORY_ID ? UNCLASSIFIED_ID : category.id,
+      name: category.name,
+    }));
+  } catch {
+    // カテゴリ取得に失敗しても一覧表示は継続する
+    categoryOptions.value = [];
+  }
+}
 
 async function loadItems(page = currentPage.value) {
+  const requestId = ++latestRequestId;
   loading.value = true;
   errorMessage.value = '';
   try {
-    pagedResult.value = await getItems(page, PAGE_SIZE);
-    currentPage.value = pagedResult.value.page;
+    const result = await getItems(page, PAGE_SIZE, activeFilters.value);
+    if (requestId !== latestRequestId) return;
+
+    pagedResult.value = result;
+    currentPage.value = result.page;
 
     if (route.query.page != null && route.query.page !== String(currentPage.value)) {
       await router.replace({ query: { ...route.query, page: String(currentPage.value) } });
     }
   } catch {
+    if (requestId !== latestRequestId) return;
     errorMessage.value = uiText.list.failureTitle;
   } finally {
-    loading.value = false;
+    if (requestId === latestRequestId) {
+      loading.value = false;
+    }
   }
 }
 
 function clearFilters() {
+  clearTimeout(searchDebounceTimer);
   searchKeyword.value = '';
+  appliedKeyword.value = '';
   selectedCategory.value = 'all';
   stockOnly.value = false;
 }
@@ -102,7 +122,24 @@ onMounted(async () => {
   if (queryPage > 0) {
     currentPage.value = queryPage;
   }
-  await loadItems(currentPage.value);
+  await Promise.all([loadCategories(), loadItems(currentPage.value)]);
+});
+
+onUnmounted(() => {
+  clearTimeout(searchDebounceTimer);
+});
+
+watch(searchKeyword, (keyword) => {
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    appliedKeyword.value = keyword.trim();
+  }, SEARCH_DEBOUNCE_MS);
+});
+
+// 絞り込み条件が変わったら全件を対象に再検索し、先頭ページへ戻す
+watch([appliedKeyword, selectedCategory, stockOnly], async () => {
+  currentPage.value = 1;
+  await loadItems(1);
 });
 
 watch(
@@ -130,7 +167,7 @@ watch(
       <span>{{ uiText.list.categoryLabel }}</span>
       <select v-model="selectedCategory">
         <option value="all">すべて</option>
-        <option v-for="category in visibleCategories" :key="category.id" :value="category.id">
+        <option v-for="category in categoryOptions" :key="category.id" :value="category.id">
           {{ category.name }}
         </option>
       </select>
@@ -181,7 +218,7 @@ watch(
     />
 
     <StatePanel
-      v-else-if="filteredItems.length === 0"
+      v-else-if="items.length === 0"
       :state-type="listStateMessages.empty.stateType"
       :title-ja="listStateMessages.empty.titleJa"
       :description-ja="listStateMessages.empty.descriptionJa"
@@ -189,13 +226,13 @@ watch(
       @primary-action="clearFilters"
     />
 
-    <div v-else-if="filteredItems.length > 0 && desktopViewMode === 'card'" class="mobile-list">
-      <ItemCard v-for="item in filteredItems" :key="item.id" :item="item" />
+    <div v-else-if="items.length > 0 && desktopViewMode === 'card'" class="mobile-list">
+      <ItemCard v-for="item in items" :key="item.id" :item="item" />
     </div>
 
-    <ItemListTable v-if="filteredItems.length > 0 && desktopViewMode === 'table'" class="desktop-table" :items="filteredItems" />
-    <div v-else-if="filteredItems.length > 0" class="desktop-cards">
-      <ItemCard v-for="item in filteredItems" :key="`desktop-${item.id}`" :item="item" />
+    <ItemListTable v-if="items.length > 0 && desktopViewMode === 'table'" class="desktop-table" :items="items" />
+    <div v-else-if="items.length > 0" class="desktop-cards">
+      <ItemCard v-for="item in items" :key="`desktop-${item.id}`" :item="item" />
     </div>
 
     <nav v-if="!loading && !errorMessage && !hasInvalidSearch && totalPages > 1" class="pagination" aria-label="ページ送り">

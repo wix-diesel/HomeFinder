@@ -17,6 +17,10 @@
 - Query Parameters:
   - `page` (integer, optional, default: `1`)
   - `pageSize` (integer, optional, default: `20`, max: `20`)
+  - `keyword` (string, optional, max: `200`) — 物品名の部分一致検索（大文字小文字を区別しない）
+  - `categoryId` (UUID または `unclassified`, optional) — カテゴリー絞り込み。`unclassified` はカテゴリー未設定と予約カテゴリー「未分類」の両方が対象
+  - `stockOnly` (boolean, optional, default: `false`) — `true` の場合、数量 1 以上のみを返す
+- 検索・絞り込みはページング前の全件に対して適用され、`totalCount` / `totalPages` も絞り込み後の件数を返します。
 - Response `200 OK`:
 
 ```json
@@ -51,6 +55,8 @@
   ]
 }
 ```
+
+`categoryId` が UUID でも `unclassified` でもない場合も `VALIDATION_ERROR` を返します。
 
 ### 2. 詳細取得
 
