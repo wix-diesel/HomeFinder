@@ -37,10 +37,11 @@ describe('itemService.getItems', () => {
       totalPages: 1,
     }), { status: 200 }));
 
-    await getItems(1, 20, { keyword: ' ライト ', categoryId: 'cat-kaiden', stockOnly: true });
+    const categoryId = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
+    await getItems(1, 20, { keyword: ' ライト ', categoryId, stockOnly: true });
 
     expect(apiClient.apiFetch).toHaveBeenCalledWith(
-      `/api/items?page=1&pageSize=20&keyword=${encodeURIComponent('ライト')}&categoryId=cat-kaiden&stockOnly=true`,
+      `/api/items?page=1&pageSize=20&keyword=${encodeURIComponent('ライト')}&categoryId=${categoryId}&stockOnly=true`,
     );
   });
 

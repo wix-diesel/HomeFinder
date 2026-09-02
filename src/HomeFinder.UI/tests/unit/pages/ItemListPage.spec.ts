@@ -94,12 +94,16 @@ describe('ItemListPage', () => {
       .mockResolvedValueOnce(page('計測アイテム', 20, 100))
       .mockResolvedValue(page('計測ライト', 10, 10));
 
+    // setTimeout だけを差し替える。既定の useFakeTimers() は performance.now() も
+    // 仮想時間にするため、描画時間を計測できなくなる
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+
     const wrapper = mount(ItemListPage);
     await flushPromises();
 
     await wrapper.find('input[type="search"]').setValue('ライト');
     // デバウンスは意図的な待機のため、描画反映の計測には含めない
-    await new Promise((resolve) => setTimeout(resolve, SEARCH_DEBOUNCE_MS));
+    await vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS);
 
     const startedAt = performance.now();
     await flushPromises();

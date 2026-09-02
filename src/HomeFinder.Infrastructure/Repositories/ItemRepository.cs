@@ -147,8 +147,11 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
         var keyword = filter.Keyword?.Trim();
         if (!string.IsNullOrEmpty(keyword))
         {
-            // 大文字小文字を区別せずに部分一致させる（プロバイダー非依存のため ToLower を使用）
-            var normalizedKeyword = keyword.ToLower();
+            // 検索値の正規化はカルチャ非依存にする（トルコ語 i 問題などを避ける）
+            var normalizedKeyword = keyword.ToLowerInvariant();
+
+            // 列側は ToLower() のみ使用する。ToLowerInvariant() は SQL へ変換できず
+            // InvalidOperationException になるため、ここを Invariant にしてはいけない
             query = query.Where(x => x.Name.ToLower().Contains(normalizedKeyword));
         }
 
