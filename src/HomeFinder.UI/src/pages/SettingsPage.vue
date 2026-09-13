@@ -66,6 +66,15 @@ const viewModel: SettingsPageViewModel = {
           actionType: 'display_only',
           isInteractive: false,
         },
+        {
+          itemId: 'licenses',
+          labelJa: uiText.settings.items.licenses.label,
+          descriptionJa: uiText.settings.items.licenses.description,
+          iconName: 'description',
+          actionType: 'navigation',
+          isInteractive: true,
+          navigationRoute: { name: 'licenses' },
+        },
       ],
     },
     {
@@ -79,7 +88,7 @@ const viewModel: SettingsPageViewModel = {
           iconName: 'category',
           actionType: 'navigation',
           isInteractive: true,
-          navigationRoute: '/categories',
+          navigationRoute: { name: 'category-management' },
         },
         {
           itemId: 'location',
@@ -88,7 +97,7 @@ const viewModel: SettingsPageViewModel = {
           iconName: 'location_on',
           actionType: 'navigation',
           isInteractive: true,
-          navigationRoute: '/storage-locations',
+          navigationRoute: { name: 'storage-management' },
         },
         {
           itemId: 'export',
@@ -109,13 +118,10 @@ function goBackToList() {
   router.push({ name: 'item-list' });
 }
 
-// 004-item-category-management: カテゴリー管理へ遷移
-function handleCategoryNavigation() {
-  router.push({ name: 'category-management' });
-}
-
-function handleLocationNavigation() {
-  router.push({ name: 'storage-management' });
+function handleNavigation(route?: SettingsPageViewModel['sections'][number]['items'][number]['navigationRoute']) {
+  if (route) {
+    router.push(route);
+  }
 }
 
 function goToUserSettings() {
@@ -176,7 +182,7 @@ async function toggleTheme(event: Event) {
           {{ section.headingJa }}
         </h2>
         <div class="settings-items-list">
-          <!-- カテゴリー項目のみ遷移可能。他項目は表示のみ。 -->
+          <!-- 遷移可能な設定項目は navigationRoute で定義した遷移先へ移動する。 -->
           <div
             v-for="item in section.items"
             :key="item.itemId"
@@ -205,7 +211,7 @@ async function toggleTheme(event: Event) {
               v-else-if="item.isInteractive"
               type="button"
               class="settings-item settings-item-button"
-              @click="item.itemId === 'category' ? handleCategoryNavigation() : item.itemId === 'location' ? handleLocationNavigation() : undefined"
+              @click="handleNavigation(item.navigationRoute)"
             >
               <span class="material-symbols-outlined settings-item-icon" aria-hidden="true">{{ item.iconName }}</span>
               <div class="settings-item-text">
