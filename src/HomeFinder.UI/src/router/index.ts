@@ -4,6 +4,7 @@ import ItemDetailPage from '../pages/ItemDetailPage.vue';
 import ItemCreatePage from '../pages/ItemCreatePage.vue';
 import SettingsPage from '../pages/SettingsPage.vue';
 import UserSettingsPage from '../pages/UserSettingsPage.vue';
+import LicensesPage from '../pages/LicensesPage.vue';
 import StorageManagementPage from '../pages/StorageManagement.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import { sanitizeReturnUrl } from '../utils/returnUrl';
@@ -56,6 +57,12 @@ const router = createRouter({
       path: '/user-settings',
       name: 'user-settings',
       component: UserSettingsPage,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/licenses',
+      name: 'licenses',
+      component: LicensesPage,
       meta: { requiresAuth: true },
     },
     {

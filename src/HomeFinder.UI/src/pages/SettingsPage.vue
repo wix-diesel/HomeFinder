@@ -66,6 +66,15 @@ const viewModel: SettingsPageViewModel = {
           actionType: 'display_only',
           isInteractive: false,
         },
+        {
+          itemId: 'licenses',
+          labelJa: uiText.settings.items.licenses.label,
+          descriptionJa: uiText.settings.items.licenses.description,
+          iconName: 'description',
+          actionType: 'navigation',
+          isInteractive: true,
+          navigationRoute: '/licenses',
+        },
       ],
     },
     {
@@ -110,12 +119,18 @@ function goBackToList() {
 }
 
 // 004-item-category-management: カテゴリー管理へ遷移
-function handleCategoryNavigation() {
-  router.push({ name: 'category-management' });
-}
-
-function handleLocationNavigation() {
-  router.push({ name: 'storage-management' });
+function handleNavigation(itemId: string) {
+  switch (itemId) {
+    case 'category':
+      router.push({ name: 'category-management' });
+      break;
+    case 'location':
+      router.push({ name: 'storage-management' });
+      break;
+    case 'licenses':
+      router.push({ name: 'licenses' });
+      break;
+  }
 }
 
 function goToUserSettings() {
@@ -205,7 +220,7 @@ async function toggleTheme(event: Event) {
               v-else-if="item.isInteractive"
               type="button"
               class="settings-item settings-item-button"
-              @click="item.itemId === 'category' ? handleCategoryNavigation() : item.itemId === 'location' ? handleLocationNavigation() : undefined"
+              @click="handleNavigation(item.itemId)"
             >
               <span class="material-symbols-outlined settings-item-icon" aria-hidden="true">{{ item.iconName }}</span>
               <div class="settings-item-text">

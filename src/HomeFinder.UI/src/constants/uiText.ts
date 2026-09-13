@@ -131,6 +131,10 @@ export const uiText = {
         label: '言語',
         description: '日本語',
       },
+      licenses: {
+        label: 'ライセンス',
+        description: '使用しているオープンソースソフトウェアのライセンスを確認する',
+      },
     },
     dataSectionHeading: 'データ管理',
     dataItems: {
