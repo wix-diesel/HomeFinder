@@ -1,4 +1,6 @@
-// 設定画面の項目アクション種別（本機能では表示のみ）
+import type { RouteLocationRaw } from 'vue-router';
+
+// 設定画面の項目アクション種別
 export type SettingsItemActionType = 'display_only' | 'navigation';
 
 // 設定画面の個別項目表示モデル
@@ -9,7 +11,7 @@ export interface SettingsItemViewModel {
   iconName: string;
   actionType: SettingsItemActionType;
   isInteractive: boolean;
-  navigationRoute?: string; // actionType が 'navigation' の場合、遷移先ルート
+  navigationRoute?: RouteLocationRaw; // actionType が 'navigation' の場合、遷移先ルート
 }
 
 // 設定画面のセクション表示モデル

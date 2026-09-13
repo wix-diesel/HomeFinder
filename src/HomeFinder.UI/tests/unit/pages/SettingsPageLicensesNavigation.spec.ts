@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import SettingsPage from '../../../src/pages/SettingsPage.vue';
 
 const pushMock = vi.fn();
@@ -19,6 +19,10 @@ vi.mock('../../../src/stores/userProfileStore', () => ({
 }));
 
 describe('SettingsPageLicensesNavigation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('ライセンス項目をクリックすると licenses へ遷移する', async () => {
     const wrapper = mount(SettingsPage);
 
