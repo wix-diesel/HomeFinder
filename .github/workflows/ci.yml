@@ -1,10 +1,17 @@
 name: CI
 
-# mainブランチへのPR発行時に自動でビルドとテストを実行する
+# main への PR と push でビルド・テストを実行し、push 成功時に公開・デプロイする
 on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 # デフォルトの権限を最小限に制限する
 permissions:
@@ -105,3 +112,14 @@ jobs:
 
       - name: フロントエンドコンテナイメージのビルド
         run: docker build -t homefinder-ui:ci -f src/HomeFinder.UI/Dockerfile .
+
+  publish-and-deploy:
+    name: Publish & Deploy
+    needs: [backend, frontend, container-backend, container-frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/publish-ghcr.yml
+    permissions:
+      contents: read
+      packages: write
+    secrets:
+      IAC_DISPATCH_TOKEN: ${{ secrets.IAC_DISPATCH_TOKEN }}

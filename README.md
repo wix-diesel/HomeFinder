@@ -1,5 +1,11 @@
 # HomeFinder
 
+## 自動デプロイ
+
+`main` への push で CI (ビルド・テスト・コンテナビルド) を実行し、すべて成功した場合に API / UI イメージを GHCR に公開します。その後、公開したイメージの digest を [HomeFinderIaC](https://github.com/wix-diesel/HomeFinderIaC) に渡し、Azure Container Apps へデプロイします。
+
+初回のみ、HomeFinder の Actions Secret `IAC_DISPATCH_TOKEN` の設定が必要です。設定・反映順序・結果確認は [自動デプロイの手順](docs/deployment.md) を参照してください。
+
 ## ローカル起動手順
 
 ### 前提
