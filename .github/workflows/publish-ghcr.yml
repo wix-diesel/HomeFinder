@@ -1,9 +1,11 @@
 name: Publish Containers to GHCR
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    secrets:
+      IAC_DISPATCH_TOKEN:
+        description: 'HomeFinderIaC の repository_dispatch を送信するトークン (Contents: write)'
+        required: true
 
 concurrency:
   # main ブランチの publish 実行を直列化し、古い実行を打ち切る
@@ -18,6 +20,8 @@ jobs:
   publish-api:
     name: Publish API Container
     runs-on: ubuntu-latest
+    outputs:
+      image: ghcr.io/${{ github.repository_owner }}/homefinder-api@${{ steps.publish.outputs.digest }}
 
     steps:
       - name: リポジトリをチェックアウト
@@ -37,9 +41,10 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/homefinder-api
           tags: |
             type=raw,value=latest
-            type=sha
+            type=sha,format=long
 
       - name: API イメージをビルドしてプッシュ
+        id: publish
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -51,6 +56,8 @@ jobs:
   publish-ui:
     name: Publish UI Container
     runs-on: ubuntu-latest
+    outputs:
+      image: ghcr.io/${{ github.repository_owner }}/homefinder-ui@${{ steps.publish.outputs.digest }}
 
     steps:
       - name: リポジトリをチェックアウト
@@ -70,9 +77,10 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/homefinder-ui
           tags: |
             type=raw,value=latest
-            type=sha
+            type=sha,format=long
 
       - name: UI イメージをビルドしてプッシュ
+        id: publish
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -80,3 +88,47 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  trigger-deploy:
+    name: Trigger IaC Deployment
+    needs: [publish-api, publish-ui]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: デプロイ通知用トークンを確認
+        env:
+          IAC_DISPATCH_TOKEN: ${{ secrets.IAC_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$IAC_DISPATCH_TOKEN" ]; then
+            echo '::error::HomeFinder の Actions Secret IAC_DISPATCH_TOKEN を設定してください (HomeFinderIaC の Contents: write が必要です)。'
+            exit 1
+          fi
+
+      - name: HomeFinderIaC のデプロイを起動
+        uses: actions/github-script@v7
+        env:
+          API_IMAGE: ${{ needs.publish-api.outputs.image }}
+          UI_IMAGE: ${{ needs.publish-ui.outputs.image }}
+        with:
+          github-token: ${{ secrets.IAC_DISPATCH_TOKEN }}
+          script: |
+            await github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: 'HomeFinderIaC',
+              event_type: 'homefinder-image-published',
+              client_payload: {
+                apiImage: process.env.API_IMAGE,
+                uiImage: process.env.UI_IMAGE,
+                sha: context.sha
+              }
+            });
+            await core.summary
+              .addHeading('IaC deployment requested')
+              .addTable([
+                [{data: 'Component', header: true}, {data: 'Image', header: true}],
+                ['API', process.env.API_IMAGE],
+                ['UI', process.env.UI_IMAGE]
+              ])
+              .addLink('デプロイ結果を HomeFinderIaC で確認', `https://github.com/${context.repo.owner}/HomeFinderIaC/actions/workflows/deploy.yml`)
+              .write();
