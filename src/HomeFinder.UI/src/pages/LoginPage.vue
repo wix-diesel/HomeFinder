@@ -78,7 +78,7 @@
 import { onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
-import { msalService } from '../services/msalService';
+import { authProvider } from '@auth-provider';
 import heroImage from '../assets/living_room_interior.png';
 import appIconPath from '../assets/icon.png';
 import { sanitizeReturnUrl } from '../utils/returnUrl';
@@ -120,7 +120,7 @@ async function handleLogin() {
   try {
     // Docker/一部ブラウザ環境では popup がタブ化して戻りが不安定なため、
     // loginRedirect を標準フローとして使用する。
-    await msalService.loginRedirect(returnUrl || '/');
+    await authProvider.loginRedirect(returnUrl || '/');
     return;
   } catch (err) {
     authStore.error = 'サインインに失敗しました。もう一度お試しください。';

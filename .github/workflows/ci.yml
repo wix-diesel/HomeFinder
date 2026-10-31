@@ -81,6 +81,10 @@ jobs:
         working-directory: src/HomeFinder.UI
         run: pnpm run build
 
+      - name: 本番ビルドにテスト認証が含まれないことを確認
+        working-directory: src/HomeFinder.UI
+        run: pnpm run check:production-auth
+
       - name: テスト実行
         working-directory: src/HomeFinder.UI
         run: pnpm run test:run
@@ -113,9 +117,57 @@ jobs:
       - name: フロントエンドコンテナイメージのビルド
         run: docker build -t homefinder-ui:ci -f src/HomeFinder.UI/Dockerfile .
 
+  e2e:
+    name: E2E (Entra 不要)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: src/HomeFinder.UI/pnpm-lock.yaml
+      - name: 依存パッケージのインストール
+        working-directory: src/HomeFinder.UI
+        run: pnpm install --frozen-lockfile
+      - name: E2E コードの型チェック
+        working-directory: src/HomeFinder.UI
+        run: pnpm exec vue-tsc --project tsconfig.e2e.json --noEmit
+      - name: Chromium のインストール
+        working-directory: src/HomeFinder.UI
+        run: pnpm exec playwright install --with-deps chromium
+      - name: 専用 SQL Server と Azurite の起動
+        run: docker compose -f docker-compose.e2e.yml -p homefinder-e2e up -d --wait --wait-timeout 180
+      - name: E2E テスト
+        working-directory: src/HomeFinder.UI
+        run: pnpm run test:e2e
+      - name: Playwright レポートの保存
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            src/HomeFinder.UI/playwright-report/
+            src/HomeFinder.UI/test-results/
+          retention-days: 7
+      - name: コンテナログ
+        if: failure()
+        run: docker compose -f docker-compose.e2e.yml -p homefinder-e2e logs
+      - name: テスト環境の終了
+        if: always()
+        run: docker compose -f docker-compose.e2e.yml -p homefinder-e2e down -v
+
   publish-and-deploy:
     name: Publish & Deploy
-    needs: [backend, frontend, container-backend, container-frontend]
+    needs: [backend, frontend, container-backend, container-frontend, e2e]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     uses: ./.github/workflows/publish-ghcr.yml
     permissions:

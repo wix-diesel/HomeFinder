@@ -1,5 +1,4 @@
-import { InteractionRequiredAuthError } from '@azure/msal-browser';
-import { msalService } from './msalService';
+import { authProvider } from '@auth-provider';
 import { useSnackbarStore } from '../stores/snackbarStore';
 import { getRuntimeConfig } from './runtimeConfig';
 
@@ -24,7 +23,7 @@ const API_BASE_URL = runtimeConfig.VITE_API_BASE_URL ?? 'http://localhost:5000';
  * @throws 401 のサイレント更新失敗時、または 403 以外のエラー時
  */
 async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  const token = await msalService.acquireTokenForApi();
+  const token = await authProvider.acquireTokenForApi();
 
   const headers = new Headers(init.headers);
   headers.set('Authorization', `Bearer ${token}`);
@@ -49,7 +48,7 @@ async function apiFetch(path: string, init: RequestInit = {}): Promise<Response>
   if (response.status === 401) {
     // トークン期限切れの可能性があるため、サイレント更新を試みる
     try {
-      const newToken = await msalService.acquireTokenForApi();
+      const newToken = await authProvider.acquireTokenForApi();
       const retryHeaders = new Headers(init.headers);
       retryHeaders.set('Authorization', `Bearer ${newToken}`);
       
@@ -63,7 +62,7 @@ async function apiFetch(path: string, init: RequestInit = {}): Promise<Response>
         headers: retryHeaders,
       });
     } catch (error) {
-      if (error instanceof InteractionRequiredAuthError) {
+      if (authProvider.isInteractionRequired(error)) {
         // インタラクションが必要（セッション切れ等）→ ログインページへリダイレクトする
         window.location.href = '/login';
       }

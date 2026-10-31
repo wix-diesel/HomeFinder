@@ -18,12 +18,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "integration", "tests\integr
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "HomeFinder.UI", "HomeFinder.UI\HomeFinder.UI.esproj", "{31EE84F4-258D-3BC9-E397-52C58FD83F1D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeFinder.E2eHost", "tests\e2e-host\HomeFinder.E2eHost.csproj", "{4E87DB87-CD35-48B7-BD9F-C3C7DB0A1F93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4E87DB87-CD35-48B7-BD9F-C3C7DB0A1F93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E87DB87-CD35-48B7-BD9F-C3C7DB0A1F93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E87DB87-CD35-48B7-BD9F-C3C7DB0A1F93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E87DB87-CD35-48B7-BD9F-C3C7DB0A1F93}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -59,6 +65,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{4E87DB87-CD35-48B7-BD9F-C3C7DB0A1F93} = {21B492A6-2B6E-F631-9A2D-FB5DBF2E7C86}
 		{8FB414B7-8D36-16C3-3556-AECC4A39F3A2} = {21B492A6-2B6E-F631-9A2D-FB5DBF2E7C86}
 		{2A8B09F0-DFC4-1491-1A52-32DB029C0446} = {21B492A6-2B6E-F631-9A2D-FB5DBF2E7C86}
 	EndGlobalSection
