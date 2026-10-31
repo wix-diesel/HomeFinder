@@ -433,3 +433,8 @@ src/HomeFinder.UI/package-lock.json
 # フロントエンドのビルド成果物を除外（Windowsでのgit pull失敗防止）
 src/HomeFinder.UI/obj/
 *.g.props
+# E2E 実行結果と専用ビルド
+**/dist-e2e/
+**/playwright-report/
+**/test-results/
+**/playwright/.auth/

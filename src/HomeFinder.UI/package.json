@@ -9,7 +9,11 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "build:e2e": "vite build --config vite.e2e.config.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "check:production-auth": "node scripts/check-production-auth.mjs"
   },
   "dependencies": {
     "@azure/msal-browser": "^5.26.0",
@@ -20,6 +24,7 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@types/node": "^26.6.5",
     "@vitejs/plugin-vue": "^6.0.10",
     "@vue/test-utils": "^2.5.1",

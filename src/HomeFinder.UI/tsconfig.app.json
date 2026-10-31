@@ -3,6 +3,9 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "types": ["vite/client"],
+    "paths": {
+      "@auth-provider": ["./src/services/auth/msalAuthProvider.ts"]
+    },
 
     /* Linting */
     "noUnusedLocals": true,

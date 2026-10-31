@@ -1,40 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { msalService } from '../services/msalService';
+import { authProvider } from '@auth-provider';
 import { useUserProfileStore } from './userProfileStore';
-import type { AuthenticationResult } from '@azure/msal-browser';
+import type { AuthSession, AuthUser } from '../services/auth/AuthProvider';
 import { sanitizeReturnUrl } from '../utils/returnUrl';
 
-/** 認証済みユーザー情報 */
-export interface AuthUser {
-  /** Azure Entra オブジェクト ID */
-  oid: string;
-  /** 表示名 */
-  name: string;
-  /** メールアドレス */
-  email: string;
-}
-
-/**
- * 認証結果からユーザー情報を抽出するヘルパー
- */
-function extractUser(result: AuthenticationResult): AuthUser | null {
-  const claims = result.idTokenClaims as Record<string, unknown> | undefined;
-  if (!claims) return null;
-
-  const oid = (claims['oid'] as string) || result.account?.homeAccountId || '';
-  const name = (claims['name'] as string) || result.account?.name || '';
-  // preferred_username または upn からメールアドレスを取得する
-  const email =
-    (claims['preferred_username'] as string) ||
-    (claims['upn'] as string) ||
-    result.account?.username ||
-    '';
-
-  if (!oid) return null;
-  return { oid, name, email };
-}
+export type { AuthUser } from '../services/auth/AuthProvider';
 
 /**
  * 認証状態を管理する Pinia ストア
@@ -61,7 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * MSAL loginPopup() でログインフローを開始する。
+   * 認証プロバイダーでログインフローを開始する。
    * 成功時: user をセット、error を null に。
    * 失敗時: error に汎用メッセージをセット（FR-010）。
    */
@@ -69,8 +41,8 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const result = await msalService.loginPopup();
-      user.value = extractUser(result);
+      const result = await authProvider.loginPopup();
+      user.value = result?.user ?? null;
       // 認証イベントログ（最小限、T018）
       console.info('[Auth] ログイン成功');
     } catch (err) {
@@ -83,13 +55,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * AuthenticationResult を受け取り store を更新するユーティリティ。
+   * 認証プロバイダーの結果を受け取り store を更新するユーティリティ。
    * Login を UI から直接開く際に、ポップアップがユーザーイベントに紐づくよう
-   * `msalService.loginPopup()` をコンポーネント側で直接呼ぶケースの補助として使用します。
+   * `authProvider.loginPopup()` をコンポーネント側で直接呼ぶケースの補助として使用します。
    */
-  function applyLoginResult(result: AuthenticationResult): void {
+  function applyLoginResult(result: AuthSession): void {
     try {
-      user.value = extractUser(result);
+      user.value = result?.user ?? null;
       error.value = null;
       console.info('[Auth] applyLoginResult: ユーザー設定完了');
     } catch (err) {
@@ -99,7 +71,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * MSAL logoutRedirect() でサインアウトし Azure Entra に通知する。
+   * 認証プロバイダーでサインアウトする。
    * リダイレクト後は postLogoutRedirectUri (/login) に戻るため、
    * ローカル状態のリセットはリダイレクト前に行う。
    */
@@ -109,8 +81,9 @@ export const useAuthStore = defineStore('auth', () => {
       // リダイレクト前にローカル状態をリセットする
       user.value = null;
       error.value = null;
+      useUserProfileStore().clearProfile();
       console.info('[Auth] ログアウト開始（リダイレクト）');
-      await msalService.logoutRedirect();
+      await authProvider.logoutRedirect();
       // logoutRedirect() はページ遷移するため、以降のコードは実行されない
     } catch (err) {
       console.warn('[Auth] ログアウト失敗', err);
@@ -133,9 +106,9 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true;
       try {
         // loginRedirect() 復帰時の結果を先に処理する
-        const redirectResult = await msalService.handleRedirectPromise();
+        const redirectResult = await authProvider.handleRedirectPromise();
         if (redirectResult) {
-          user.value = extractUser(redirectResult);
+          user.value = redirectResult.user;
           await loadUserProfileIfNeeded();
           const returnUrl = sanitizeReturnUrl(redirectResult.state);
           console.info('[Auth] リダイレクトログイン成功');
@@ -143,9 +116,9 @@ export const useAuthStore = defineStore('auth', () => {
           return;
         }
 
-        const result = await msalService.acquireTokenSilent();
+        const result = await authProvider.acquireTokenSilent();
         if (result) {
-          user.value = extractUser(result);
+          user.value = result.user;
           await loadUserProfileIfNeeded();
           console.info('[Auth] セッション復元成功');
         }

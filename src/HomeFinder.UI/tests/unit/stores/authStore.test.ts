@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 
 const mockLoadProfile = vi.fn();
+const mockClearProfile = vi.fn();
 const mockProfileState = { profile: null as object | null, isLoading: false };
 
 // msalService をモック
@@ -25,6 +26,7 @@ vi.mock('../../../src/stores/userProfileStore', () => ({
     profile: mockProfileState.profile,
     isLoading: mockProfileState.isLoading,
     loadProfile: mockLoadProfile,
+    clearProfile: mockClearProfile,
   })),
 }));
 
@@ -100,6 +102,8 @@ describe('authStore', () => {
 
       expect(store.user).toBeNull();
       expect(store.isAuthenticated).toBe(false);
+      expect(mockClearProfile).toHaveBeenCalledTimes(1);
+      expect(msalService.logoutRedirect).toHaveBeenCalledTimes(1);
     });
   });
 

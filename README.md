@@ -115,6 +115,11 @@ curl -X GET http://localhost:5000/api/items/{itemId}/image --output image.jpg
 curl -X DELETE http://localhost:5000/api/items/{itemId}/image
 ```
 
+## E2E テスト
+
+Entra へのログインを不要にした専用環境で Playwright テストを実行できます。
+準備・実行方法と認証方式の分離については [E2E テスト手順](docs/e2e-testing.md) を参照してください。
+
 ## エラー確認
 
 - 空名称または数量0以下: 400 Bad Request
