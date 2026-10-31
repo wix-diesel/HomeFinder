@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -5,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HomeFinder.Infrastructure.Data.Migrations;
 
 /// <inheritdoc />
+[DbContext(typeof(ItemDbContext))]
+[Migration("20260814120000_AddUserThemePreference")]
 public partial class AddUserThemePreference : Migration
 {
     /// <inheritdoc />

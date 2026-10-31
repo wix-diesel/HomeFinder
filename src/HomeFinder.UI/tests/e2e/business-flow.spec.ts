@@ -10,7 +10,12 @@ test('物品を画面から登録・検索・編集・削除できる', async ({
   expect(created.status()).toBe(201);
   const { id } = await created.json();
   await expect(page).toHaveURL(/\/items\?created=1$/);
+  const searchResponse = page.waitForResponse(response => {
+    const url = new URL(response.url());
+    return url.pathname === '/api/items' && url.searchParams.get('keyword') === '卓上ライト';
+  });
   await page.getByPlaceholder('名称で検索').fill('卓上ライト');
+  expect((await searchResponse).status()).toBe(200);
   await page.getByRole('heading', { name: 'E2E 卓上ライト', exact: true }).click();
   await expect(page).toHaveURL(`/items/${id}`);
   await page.getByRole('button', { name: '編集', exact: true }).click();

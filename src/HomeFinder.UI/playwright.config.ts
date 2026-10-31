@@ -21,6 +21,7 @@ export default defineConfig({
       env: { DOTNET_ENVIRONMENT: 'E2E', ASPNETCORE_ENVIRONMENT: 'E2E' },
       timeout: 180_000,
       reuseExistingServer: false,
+      stdout: 'pipe',
     },
     {
       command: 'pnpm run build:e2e && pnpm exec vite preview --config vite.e2e.config.ts --host 127.0.0.1 --port 5187 --strictPort',
