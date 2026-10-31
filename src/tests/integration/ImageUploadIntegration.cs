@@ -5,6 +5,9 @@ using HomeFinder.Infrastructure.Data;
 using HomeFinder.Core.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using HomeFinder.Application.Services;
+using HomeFinder.Infrastructure.Services;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace IntegrationTests;
 
@@ -37,6 +40,38 @@ public class ImageUploadIntegration : IClassFixture<TestApplicationFactory>
 
         var getAfterDelete = await _client.GetAsync($"/api/items/{itemId}/image");
         Assert.Equal(HttpStatusCode.NotFound, getAfterDelete.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("sample.jpg", "image/jpeg")]
+    [InlineData("sample.png", "image/png")]
+    [InlineData("sample.webp", "image/webp")]
+    [InlineData("sample.bmp", "image/bmp")]
+    public async Task Upload_WithRealImageProcessor_PreservesImage(string fileName, string contentType)
+    {
+        // 通常の統合テストで使うスタブを外し、実際のデコーダーでアップロードを検証する。
+        using var factory = _factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<IImageProcessor>();
+            services.AddSingleton<IImageProcessor, SkiaSharpImageProcessor>();
+        }));
+        using var client = factory.CreateClient();
+        using var created = await client.PostAsJsonAsync("/api/items", new { name = $"実画像項目-{fileName}", quantity = 1 });
+        created.EnsureSuccessStatusCode();
+        var item = await created.Content.ReadFromJsonAsync<ItemCreateResponse>();
+        var bytes = await File.ReadAllBytesAsync(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Images", fileName));
+        using var form = new MultipartFormDataContent();
+        using var image = new ByteArrayContent(bytes);
+        image.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+        form.Add(image, "image", fileName);
+
+        using var upload = await client.PostAsync($"/api/items/{item!.Id}/image", form);
+
+        Assert.Equal(HttpStatusCode.OK, upload.StatusCode);
+        using var get = await client.GetAsync($"/api/items/{item.Id}/image");
+        Assert.Equal(HttpStatusCode.OK, get.StatusCode);
+        Assert.Equal(contentType, get.Content.Headers.ContentType?.MediaType);
+        Assert.Equal(bytes, await get.Content.ReadAsByteArrayAsync());
     }
 
     [Fact]

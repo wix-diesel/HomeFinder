@@ -92,6 +92,13 @@ curl -X POST http://localhost:5000/api/items \
 
 ## 画像機能（007-item-image-upload）
 
+画像の解像度取得・リサイズには SkiaSharp を使用します。Linux 用のネイティブライブラリは
+`SkiaSharp.NativeAssets.Linux.NoDependencies` を API / E2E ホストに同梱するため、
+画像処理のためにコンテナへ追加のシステムパッケージをインストールする必要はありません。
+
+`IImageProcessor.ResizeAsync` は縦横比を保って指定サイズ内に収め、JPEG を返します。
+アップロード時の解像度制限（1000x1000 以内）は従来どおりです。
+
 ### 画像アップロード
 
 ```bash

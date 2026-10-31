@@ -20,6 +20,6 @@ public interface IImageProcessor
     /// <param name="maxWidth">最大幅（ピクセル）</param>
     /// <param name="maxHeight">最大高さ（ピクセル）</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
-    /// <returns>リサイズ済みの画像ストリーム</returns>
+    /// <returns>リサイズ済みの JPEG ストリーム（読み取り位置は先頭）。元のストリームの破棄は呼び出し元が行う。</returns>
     Task<Stream> ResizeAsync(Stream imageStream, int maxWidth, int maxHeight, CancellationToken cancellationToken = default);
 }
