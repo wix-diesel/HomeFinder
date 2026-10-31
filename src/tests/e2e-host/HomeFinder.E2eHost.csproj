@@ -3,6 +3,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
     <ProjectReference Include="../../HomeFinder.Api/HomeFinder.Api.csproj" />
     <None Include="../../HomeFinder.UI/public/images/user-avatar-default.svg" Link="wwwroot/images/user-avatar-default.svg" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

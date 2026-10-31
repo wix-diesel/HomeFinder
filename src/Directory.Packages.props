@@ -8,7 +8,8 @@
          型フォワードで衝突を回避する新しい Azure.Identity に固定する。 -->
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="DotNext" Version="6.8.0" />
-    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageVersion Include="SkiaSharp" Version="4.154.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.154.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.29.2" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />

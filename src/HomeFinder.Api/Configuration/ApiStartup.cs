@@ -106,7 +106,7 @@ public static class ApiStartup
         });
         builder.Services.AddSingleton<IBlobStorageService, AzureBlobStorageService>();
         builder.Services.AddScoped<IAvatarService, AvatarService>();
-        builder.Services.AddSingleton<IImageProcessor, ImageSharpImageProcessor>();
+        builder.Services.AddSingleton<IImageProcessor, SkiaSharpImageProcessor>();
 
         builder.Services.Configure<ApiBehaviorOptions>(options =>
         {
