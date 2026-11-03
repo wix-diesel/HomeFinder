@@ -14,7 +14,7 @@ public class Image
     /// <summary>Azure Blob Storage のファイル URI（最大 2048 文字）</summary>
     public string BlobUri { get; set; } = string.Empty;
 
-    /// <summary>ユーザーがアップロードした元のファイル名（最大 500 文字）</summary>
+    /// <summary>保存形式に対応した拡張子を持つダウンロード用ファイル名（最大 500 文字）。</summary>
     public string FileName { get; set; } = string.Empty;
 
     /// <summary>

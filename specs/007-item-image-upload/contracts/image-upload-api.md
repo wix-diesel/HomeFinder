@@ -46,7 +46,7 @@ Content-Type: image/jpeg
 
 | ルール | エラーコード | HTTP Status |
 |--------|-----------|----------|
-| ファイル形式が jpg\|bmp\|png\|webp\|svg のいずれか | INVALID_FORMAT | 400 |
+| ファイル形式が jpg\|jpeg\|bmp\|png\|webp のいずれか | INVALID_FORMAT | 400 |
 | ファイルサイズ <= 10MB | FILE_TOO_LARGE | 413 |
 | 画像解像度 <= 1000x1000 | INVALID_RESOLUTION | 400 |
 | itemId が UUID 形式 | INVALID_ITEM_ID | 400 |
@@ -80,7 +80,7 @@ Content-Type: image/jpeg
 ```json
 {
   "code": "INVALID_FORMAT",
-  "message": "ファイル形式が無効です。jpg、bmp、png、webp、svg のいずれかを指定してください。"
+  "message": "ファイル形式が無効です。jpg、jpeg、bmp、png、webp のいずれかを指定してください。"
 }
 ```
 

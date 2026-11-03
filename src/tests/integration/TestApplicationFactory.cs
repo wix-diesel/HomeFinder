@@ -180,6 +180,7 @@ internal sealed class InMemoryBlobStorageService : IBlobStorageService
         if (_failUploadAttempts > 0)
         {
             Interlocked.Decrement(ref _failUploadAttempts);
+            content.CopyTo(Stream.Null);
             throw new InvalidOperationException("Simulated upload failure");
         }
 
@@ -214,6 +215,14 @@ internal sealed class InMemoryBlobStorageService : IBlobStorageService
 
 internal sealed class InMemoryImageProcessor : IImageProcessor
 {
+    public Task<Stream> ConvertToWebPAsync(Stream imageStream, CancellationToken cancellationToken = default)
+    {
+        var ms = new MemoryStream();
+        imageStream.CopyTo(ms);
+        ms.Position = 0;
+        return Task.FromResult<Stream>(ms);
+    }
+
     public Task<(int Width, int Height)> GetDimensionsAsync(Stream imageStream, CancellationToken cancellationToken = default)
     {
         return Task.FromResult((100, 100));

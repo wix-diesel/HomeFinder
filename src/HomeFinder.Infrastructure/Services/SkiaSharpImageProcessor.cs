@@ -10,6 +10,60 @@ namespace HomeFinder.Infrastructure.Services;
 public sealed class SkiaSharpImageProcessor(ILogger<SkiaSharpImageProcessor> logger) : IImageProcessor
 {
     private const int JpegQuality = 75;
+    private const int WebPQuality = 80;
+
+    /// <inheritdoc />
+    public Task<Stream> ConvertToWebPAsync(
+        Stream imageStream,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(imageStream);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using var managedStream = new SKManagedStream(imageStream, disposeManagedStream: false);
+        using var codec = SKCodec.Create(managedStream)
+            ?? throw new InvalidOperationException("画像を読み込めませんでした。");
+        using var image = SKBitmap.Decode(codec)
+            ?? throw new InvalidOperationException("画像を読み込めませんでした。");
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // 元のメタデータを除去する前に、EXIF の向きをピクセルへ反映する。
+        using var oriented = ApplyOrientation(image, codec.EncodedOrigin);
+        using var encoded = oriented.Encode(SKEncodedImageFormat.Webp, WebPQuality)
+            ?? throw new InvalidOperationException("画像を WebP 形式で保存できませんでした。");
+        cancellationToken.ThrowIfCancellationRequested();
+
+        logger.LogDebug("WebP conversion completed: {Width}x{Height}, {Size} bytes",
+            oriented.Width, oriented.Height, encoded.Size);
+        return Task.FromResult<Stream>(new MemoryStream(encoded.ToArray(), writable: false));
+    }
+
+    private static SKBitmap ApplyOrientation(SKBitmap image, SKEncodedOrigin origin)
+    {
+        var swapDimensions = origin is SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightTop
+            or SKEncodedOrigin.RightBottom or SKEncodedOrigin.LeftBottom;
+        var output = new SKBitmap(image.Info.WithSize(
+            swapDimensions ? image.Height : image.Width,
+            swapDimensions ? image.Width : image.Height));
+
+        var matrix = origin switch
+        {
+            SKEncodedOrigin.TopRight => new SKMatrix(-1, 0, image.Width, 0, 1, 0, 0, 0, 1),
+            SKEncodedOrigin.BottomRight => new SKMatrix(-1, 0, image.Width, 0, -1, image.Height, 0, 0, 1),
+            SKEncodedOrigin.BottomLeft => new SKMatrix(1, 0, 0, 0, -1, image.Height, 0, 0, 1),
+            SKEncodedOrigin.LeftTop => new SKMatrix(0, 1, 0, 1, 0, 0, 0, 0, 1),
+            SKEncodedOrigin.RightTop => new SKMatrix(0, -1, image.Height, 1, 0, 0, 0, 0, 1),
+            SKEncodedOrigin.RightBottom => new SKMatrix(0, -1, image.Height, -1, 0, image.Width, 0, 0, 1),
+            SKEncodedOrigin.LeftBottom => new SKMatrix(0, 1, 0, -1, 0, image.Width, 0, 0, 1),
+            _ => SKMatrix.Identity,
+        };
+
+        using var canvas = new SKCanvas(output);
+        canvas.Clear(SKColors.Transparent);
+        canvas.SetMatrix(matrix);
+        canvas.DrawBitmap(image, 0, 0);
+        return output;
+    }
 
     /// <inheritdoc />
     public Task<(int Width, int Height)> GetDimensionsAsync(

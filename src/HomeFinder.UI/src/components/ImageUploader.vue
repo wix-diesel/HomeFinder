@@ -12,11 +12,11 @@ const emit = defineEmits<{
 }>();
 
 // 許可されるファイル形式
-const ACCEPT = '.jpg,.jpeg,.png,.webp,.bmp,.svg';
+const ACCEPT = '.jpg,.jpeg,.png,.webp,.bmp';
 // 最大ファイルサイズ: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 // 許可される MIME Type
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp', 'image/svg+xml'];
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp'];
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const isUploading = ref(false);
@@ -62,7 +62,7 @@ async function processFile(file: File) {
 
   // クライアント側ファイル形式検証
   if (!ALLOWED_TYPES.includes(file.type)) {
-    validationError.value = 'ファイル形式が無効です。jpg、bmp、png、webp、svg のいずれかを指定してください。';
+    validationError.value = 'ファイル形式が無効です。jpg、jpeg、bmp、png、webp のいずれかを指定してください。';
     return;
   }
 
@@ -98,7 +98,7 @@ async function processFile(file: File) {
   } catch (err) {
     if (err instanceof ImageServiceError) {
       if (err.code === 'INVALID_FORMAT') {
-        showError('ファイル形式が無効です。jpg、bmp、png、webp、svg のいずれかを指定してください。');
+        showError('ファイル形式が無効です。jpg、jpeg、bmp、png、webp のいずれかを指定してください。');
       } else if (err.code === 'FILE_TOO_LARGE') {
         showError('ファイルサイズが 10MB を超えています。');
       } else if (err.code === 'INVALID_RESOLUTION') {

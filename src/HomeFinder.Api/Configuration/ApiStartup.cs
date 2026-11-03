@@ -153,7 +153,7 @@ public static class ApiStartup
                     - 削除: `DELETE /api/items/{itemId}/image`
 
                     ## 画像制限
-                    - 許容形式: jpg, jpeg, png, webp, bmp, svg
+                    - 許容形式: jpg, jpeg, png, webp, bmp
                     - 最大サイズ: 10MB
                     - 解像度制限: 1000x1000 以内
                     """;

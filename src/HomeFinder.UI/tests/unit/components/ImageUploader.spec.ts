@@ -26,13 +26,17 @@ describe('ImageUploader', () => {
 
     expect(input.exists()).toBe(true);
     expect(input.attributes('accept')).toContain('.jpg');
+    expect(input.attributes('accept')).not.toContain('.svg');
   });
 
-  it('不正な形式はクライアント側でエラー表示する', async () => {
+  it.each([
+    ['dummy.txt', 'text/plain'],
+    ['dummy.svg', 'image/svg+xml'],
+  ])('未対応形式 %s はクライアント側でエラー表示する', async (fileName, contentType) => {
     const wrapper = mount(ImageUploader, { props: { itemId: 'item-1' } });
     const input = wrapper.find('input[type="file"]');
 
-    const file = new File(['dummy'], 'dummy.txt', { type: 'text/plain' });
+    const file = new File(['dummy'], fileName, { type: contentType });
     Object.defineProperty(input.element, 'files', { value: [file] });
     await input.trigger('change');
 

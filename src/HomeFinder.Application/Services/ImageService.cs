@@ -1,6 +1,5 @@
 using DotNext;
 using HomeFinder.Application.Contracts;
-using HomeFinder.Application.Helper;
 using HomeFinder.Application.Repositories;
 using HomeFinder.Core.Entities;
 using HomeFinder.Core.Errors;
@@ -24,15 +23,10 @@ public class ImageService(
     /// <summary>画像取得時は1日間キャッシュを許可する</summary>
     private const string RetrievalCacheControl = "max-age=86400";
 
-    /// <summary>許容されるファイル形式（拡張子 → MIME サブタイプ）</summary>
-    private static readonly Dictionary<string, string> AllowedFormats = new(StringComparer.OrdinalIgnoreCase)
+    /// <summary>アップロードを許可するファイル拡張子。</summary>
+    private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
-        { ".jpg",  "jpeg" },
-        { ".jpeg", "jpeg" },
-        { ".png",  "png" },
-        { ".webp", "webp" },
-        { ".bmp",  "bmp" },
-        { ".svg",  "svg+xml" },
+        ".jpg", ".jpeg", ".png", ".webp", ".bmp",
     };
 
     /// <summary>最大ファイルサイズ（10MB）</summary>
@@ -72,7 +66,7 @@ public class ImageService(
 
             // --- ファイル形式検証 ---
             var extension = Path.GetExtension(fileName);
-            if (string.IsNullOrEmpty(extension) || !AllowedFormats.TryGetValue(extension, out var fileFormat))
+            if (string.IsNullOrEmpty(extension) || !AllowedExtensions.Contains(extension))
             {
                 logger.LogWarning("画像アップロード検証失敗(形式不正): ItemId={ItemId}, Extension={Extension}", itemId, extension);
                 return new Result<ImageUploadResponse>(
@@ -97,36 +91,21 @@ public class ImageService(
                     new ImageInvalidResolutionException(width, height, MaxResolution));
             }
 
-            // --- 画像リサイズ（必要な場合）---
-            var (uploadStream, finalWidth, finalHeight) = await ImageHelper.ResizeImageAsync(imageStream, imageProcessor, width, height, MaxResolution, cancellationToken);    
-
-            // --- 既存画像を論理削除 ---
-            if (item.ImageId.HasValue)
-            {
-                var existingImage = await imageRepository.GetByItemIdAsync(itemId, cancellationToken);
-                if (existingImage is not null)
-                {
-                    // Blob 物理削除
-                    var existingBlobName = Path.GetFileName(existingImage.BlobUri);
-                    await ExecuteBlobWithRetryAsync(
-                        ct => blobStorageService.DeleteAsync(existingBlobName, ct),
-                        "Delete",
-                        cancellationToken);
-
-                    // 論理削除
-                    await imageRepository.SoftDeleteAsync(existingImage.Id, cancellationToken);
-
-                    // Item の ImageId をクリア
-                    item.ImageId = null;
-                    await itemRepository.UpdateAsync(item, cancellationToken);
-                }
-            }
+            // リサイズが不要な場合も、既存画像の置き換え前に WebP へ変換する。
+            imageStream.Position = 0;
+            await using var uploadStream = await imageProcessor.ConvertToWebPAsync(imageStream, cancellationToken);
+            var (finalWidth, finalHeight) = await imageProcessor.GetDimensionsAsync(uploadStream, cancellationToken);
+            var storedFileSize = checked((int)uploadStream.Length);
 
             // --- Blob アップロード ---
-            var contentType = $"image/{fileFormat}";
-            var blobName = $"{Guid.NewGuid()}{extension.ToLowerInvariant()}";
+            const string contentType = "image/webp";
+            var blobName = $"{Guid.NewGuid()}.webp";
             var blobUri = await Helper.AzureBlobHelper.ExecuteBlobWithRetryAsync(
-                ct => blobStorageService.UploadAsync(blobName, uploadStream, contentType, ct),
+                ct =>
+                {
+                    uploadStream.Position = 0;
+                    return blobStorageService.UploadAsync(blobName, uploadStream, contentType, ct);
+                },
                 "Upload",
                 BlobRetryCount,
                 cancellationToken);
@@ -138,18 +117,45 @@ public class ImageService(
                 Id = Guid.NewGuid(),
                 ItemId = itemId,
                 BlobUri = blobUri,
-                FileName = fileName,
-                FileFormat = fileFormat,
-                FileSizeBytes = (int)fileSizeBytes,
+                FileName = Path.ChangeExtension(fileName, ".webp"),
+                FileFormat = "webp",
+                FileSizeBytes = storedFileSize,
                 OriginalWidth = finalWidth,
                 OriginalHeight = finalHeight,
                 UploadedAtUtc = now,
             };
-            await imageRepository.AddAsync(image, cancellationToken);
+            Image? previous;
+            try
+            {
+                previous = await imageRepository.ReplaceForItemAsync(image, cancellationToken);
+            }
+            catch (Exception dbEx)
+            {
+                // コミット結果が不明な場合は両方の Blob を保持し、参照中の画像を削除しない。
+                logger.LogCritical(dbEx,
+                    "Image replacement failed during persistence: ItemId={ItemId}, NewBlobName={BlobName}. Check for an orphaned blob.",
+                    itemId, blobName);
+                throw;
+            }
 
-            // --- Item.ImageId を更新 ---
-            item.ImageId = image.Id;
-            await itemRepository.UpdateAsync(item, cancellationToken);
+            // 画像の切り替えが正常にコミットされた後でのみ、旧 Blob を削除する。
+            if (previous is not null)
+            {
+                var previousBlobName = Path.GetFileName(previous.BlobUri);
+                try
+                {
+                    await ExecuteBlobWithRetryAsync(
+                        ct => blobStorageService.DeleteAsync(previousBlobName, ct),
+                        "Delete",
+                        cancellationToken);
+                }
+                catch (Exception blobEx)
+                {
+                    logger.LogCritical(blobEx,
+                        "Previous image blob cleanup failed after replacement: ItemId={ItemId}, BlobName={BlobName}",
+                        itemId, previousBlobName);
+                }
+            }
 
             logger.LogInformation("画像アップロード完了: ItemId={ItemId}, ImageId={ImageId}", itemId, image.Id);
 
