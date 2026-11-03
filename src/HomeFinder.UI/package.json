@@ -16,7 +16,7 @@
     "check:production-auth": "node scripts/check-production-auth.mjs"
   },
   "dependencies": {
-    "@azure/msal-browser": "^5.26.0",
+    "@azure/msal-browser": "^5.27.0",
     "@zxing/browser": "0.2.1",
     "@zxing/library": "0.23.0",
     "pinia": "^4.1.0",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "@vitejs/plugin-vue": "^6.0.10",
     "@vue/test-utils": "^2.5.1",
     "@vue/tsconfig": "^0.9.1",
@@ -33,6 +33,6 @@
     "typescript": "~6.0.2",
     "vite": "^8.3.5",
     "vitest": "^5.0.5",
-    "vue-tsc": "^3.3.13"
+    "vue-tsc": "^3.3.14"
   }
 }
