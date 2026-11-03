@@ -97,7 +97,10 @@ curl -X POST http://localhost:5000/api/items \
 画像処理のためにコンテナへ追加のシステムパッケージをインストールする必要はありません。
 
 `IImageProcessor.ResizeAsync` は縦横比を保って指定サイズ内に収め、JPEG を返します。
+商品画像のアップロード時には `ConvertToWebPAsync` で WebP（非可逆圧縮、品質80）へ変換し、
+`.webp` / `image/webp` として保存します。透過と EXIF の向きを保持し、保存サイズも変換後の値を記録します。
 アップロード時の解像度制限（1000x1000 以内）は従来どおりです。
+既存の保存画像は元の形式のまま取得でき、再アップロードすると WebP に変換されます。
 
 ### 画像アップロード
 
@@ -113,7 +116,7 @@ curl -X POST http://localhost:5000/api/items/{itemId}/image \
 ### 画像取得
 
 ```bash
-curl -X GET http://localhost:5000/api/items/{itemId}/image --output image.jpg
+curl -X GET http://localhost:5000/api/items/{itemId}/image --output image.webp
 ```
 
 ### 画像削除

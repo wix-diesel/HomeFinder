@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using HomeFinder.Application.Services;
 using HomeFinder.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SkiaSharp;
 
 namespace IntegrationTests;
 
@@ -44,10 +45,11 @@ public class ImageUploadIntegration : IClassFixture<TestApplicationFactory>
 
     [Theory]
     [InlineData("sample.jpg", "image/jpeg")]
+    [InlineData("sample.JPEG", "image/jpeg")]
     [InlineData("sample.png", "image/png")]
     [InlineData("sample.webp", "image/webp")]
     [InlineData("sample.bmp", "image/bmp")]
-    public async Task Upload_WithRealImageProcessor_PreservesImage(string fileName, string contentType)
+    public async Task Upload_WithRealImageProcessor_StoresAndReturnsWebP(string fileName, string contentType)
     {
         // 通常の統合テストで使うスタブを外し、実際のデコーダーでアップロードを検証する。
         using var factory = _factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
@@ -59,7 +61,8 @@ public class ImageUploadIntegration : IClassFixture<TestApplicationFactory>
         using var created = await client.PostAsJsonAsync("/api/items", new { name = $"実画像項目-{fileName}", quantity = 1 });
         created.EnsureSuccessStatusCode();
         var item = await created.Content.ReadFromJsonAsync<ItemCreateResponse>();
-        var bytes = await File.ReadAllBytesAsync(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Images", fileName));
+        var fixtureName = fileName == "sample.JPEG" ? "sample.jpg" : fileName;
+        var bytes = await File.ReadAllBytesAsync(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Images", fixtureName));
         using var form = new MultipartFormDataContent();
         using var image = new ByteArrayContent(bytes);
         image.Headers.ContentType = new MediaTypeHeaderValue(contentType);
@@ -70,7 +73,58 @@ public class ImageUploadIntegration : IClassFixture<TestApplicationFactory>
         Assert.Equal(HttpStatusCode.OK, upload.StatusCode);
         using var get = await client.GetAsync($"/api/items/{item.Id}/image");
         Assert.Equal(HttpStatusCode.OK, get.StatusCode);
-        Assert.Equal(contentType, get.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("image/webp", get.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("sample.webp", get.Content.Headers.ContentDisposition?.FileNameStar);
+        var storedBytes = await get.Content.ReadAsByteArrayAsync();
+        using var codec = SKCodec.Create(new MemoryStream(storedBytes));
+        Assert.NotNull(codec);
+        Assert.Equal(SKEncodedImageFormat.Webp, codec.EncodedFormat);
+        Assert.Equal(80, codec.Info.Width);
+        Assert.Equal(40, codec.Info.Height);
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
+        var stored = await db.Images.SingleAsync(x => x.ItemId == item.Id && x.DeletedAtUtc == null);
+        Assert.EndsWith(".webp", stored.BlobUri);
+        Assert.Equal("sample.webp", stored.FileName);
+        Assert.Equal("webp", stored.FileFormat);
+        Assert.Equal(storedBytes.Length, stored.FileSizeBytes);
+        Assert.Equal(80, stored.OriginalWidth);
+        Assert.Equal(40, stored.OriginalHeight);
+        if (contentType == "image/jpeg")
+        {
+            Assert.True(storedBytes.Length < bytes.Length);
+        }
+    }
+
+    [Fact]
+    public async Task Get_ExistingJpeg_RemainsReadable()
+    {
+        var itemId = await CreateItemAsync("既存JPEG項目");
+        var bytes = await File.ReadAllBytesAsync(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Images", "sample.jpg"));
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
+            var blobStorage = scope.ServiceProvider.GetRequiredService<IBlobStorageService>();
+            using var stream = new MemoryStream(bytes);
+            var blobUri = await blobStorage.UploadAsync($"{Guid.NewGuid()}.jpg", stream, "image/jpeg");
+            var image = new Image
+            {
+                Id = Guid.NewGuid(), ItemId = itemId, BlobUri = blobUri,
+                FileName = "legacy.jpg", FileFormat = "jpeg", FileSizeBytes = bytes.Length,
+                OriginalWidth = 80, OriginalHeight = 40, UploadedAtUtc = DateTime.UtcNow,
+            };
+            db.Images.Add(image);
+            var item = await db.Items.SingleAsync(x => x.Id == itemId);
+            item.ImageId = image.Id;
+            await db.SaveChangesAsync();
+        }
+
+        using var get = await _client.GetAsync($"/api/items/{itemId}/image");
+
+        Assert.Equal(HttpStatusCode.OK, get.StatusCode);
+        Assert.Equal("image/jpeg", get.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("legacy.jpg", get.Content.Headers.ContentDisposition?.FileNameStar);
         Assert.Equal(bytes, await get.Content.ReadAsByteArrayAsync());
     }
 
@@ -83,6 +137,39 @@ public class ImageUploadIntegration : IClassFixture<TestApplicationFactory>
         var upload = await UploadImageAsync(itemId, "retry.jpg");
 
         Assert.Equal(HttpStatusCode.OK, upload.StatusCode);
+        using var get = await _client.GetAsync($"/api/items/{itemId}/image");
+        Assert.Equal(new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 }, await get.Content.ReadAsByteArrayAsync());
+    }
+
+    [Fact]
+    public async Task Upload_InvalidReplacement_PreservesExistingImage()
+    {
+        using var factory = _factory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<IImageProcessor>();
+            services.AddSingleton<IImageProcessor, SkiaSharpImageProcessor>();
+        }));
+        using var client = factory.CreateClient();
+        using var created = await client.PostAsJsonAsync("/api/items", new { name = "画像変換失敗項目", quantity = 1 });
+        created.EnsureSuccessStatusCode();
+        var item = await created.Content.ReadFromJsonAsync<ItemCreateResponse>();
+        var bytes = await File.ReadAllBytesAsync(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Images", "sample.jpg"));
+        using var validForm = new MultipartFormDataContent();
+        validForm.Add(new ByteArrayContent(bytes), "image", "first.jpg");
+        using var first = await client.PostAsync($"/api/items/{item!.Id}/image", validForm);
+        first.EnsureSuccessStatusCode();
+        var originalBytes = await client.GetByteArrayAsync($"/api/items/{item.Id}/image");
+        using var invalidForm = new MultipartFormDataContent();
+        invalidForm.Add(new ByteArrayContent([1, 2, 3, 4]), "image", "broken.jpg");
+
+        using var replacement = await client.PostAsync($"/api/items/{item.Id}/image", invalidForm);
+
+        Assert.False(replacement.IsSuccessStatusCode);
+        Assert.Equal(originalBytes, await client.GetByteArrayAsync($"/api/items/{item.Id}/image"));
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
+        var stored = await db.Images.SingleAsync(x => x.ItemId == item.Id);
+        Assert.Null(stored.DeletedAtUtc);
     }
 
     [Fact]

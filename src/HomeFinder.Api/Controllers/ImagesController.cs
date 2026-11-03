@@ -22,6 +22,7 @@ public class ImagesController(IImageService imageService) : ControllerBase
     /// </summary>
     /// <remarks>
     /// 指定アイテムに画像をアップロードする。既存画像がある場合は論理削除して置き換える。
+    /// 商品画像は WebP 形式に変換して保存する。
     ///
     /// **制限:**
     /// - 許容形式: jpg, jpeg, png, webp, bmp, svg

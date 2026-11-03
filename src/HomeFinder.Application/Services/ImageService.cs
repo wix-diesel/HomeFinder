@@ -1,6 +1,5 @@
 using DotNext;
 using HomeFinder.Application.Contracts;
-using HomeFinder.Application.Helper;
 using HomeFinder.Application.Repositories;
 using HomeFinder.Core.Entities;
 using HomeFinder.Core.Errors;
@@ -24,15 +23,10 @@ public class ImageService(
     /// <summary>画像取得時は1日間キャッシュを許可する</summary>
     private const string RetrievalCacheControl = "max-age=86400";
 
-    /// <summary>許容されるファイル形式（拡張子 → MIME サブタイプ）</summary>
-    private static readonly Dictionary<string, string> AllowedFormats = new(StringComparer.OrdinalIgnoreCase)
+    /// <summary>Allowed input file extensions.</summary>
+    private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
-        { ".jpg",  "jpeg" },
-        { ".jpeg", "jpeg" },
-        { ".png",  "png" },
-        { ".webp", "webp" },
-        { ".bmp",  "bmp" },
-        { ".svg",  "svg+xml" },
+        ".jpg", ".jpeg", ".png", ".webp", ".bmp", ".svg",
     };
 
     /// <summary>最大ファイルサイズ（10MB）</summary>
@@ -72,7 +66,7 @@ public class ImageService(
 
             // --- ファイル形式検証 ---
             var extension = Path.GetExtension(fileName);
-            if (string.IsNullOrEmpty(extension) || !AllowedFormats.TryGetValue(extension, out var fileFormat))
+            if (string.IsNullOrEmpty(extension) || !AllowedExtensions.Contains(extension))
             {
                 logger.LogWarning("画像アップロード検証失敗(形式不正): ItemId={ItemId}, Extension={Extension}", itemId, extension);
                 return new Result<ImageUploadResponse>(
@@ -97,8 +91,11 @@ public class ImageService(
                     new ImageInvalidResolutionException(width, height, MaxResolution));
             }
 
-            // --- 画像リサイズ（必要な場合）---
-            var (uploadStream, finalWidth, finalHeight) = await ImageHelper.ResizeImageAsync(imageStream, imageProcessor, width, height, MaxResolution, cancellationToken);    
+            // Convert before replacing the existing image, even when no resize is needed.
+            imageStream.Position = 0;
+            await using var uploadStream = await imageProcessor.ConvertToWebPAsync(imageStream, cancellationToken);
+            var (finalWidth, finalHeight) = await imageProcessor.GetDimensionsAsync(uploadStream, cancellationToken);
+            var storedFileSize = checked((int)uploadStream.Length);
 
             // --- 既存画像を論理削除 ---
             if (item.ImageId.HasValue)
@@ -123,10 +120,14 @@ public class ImageService(
             }
 
             // --- Blob アップロード ---
-            var contentType = $"image/{fileFormat}";
-            var blobName = $"{Guid.NewGuid()}{extension.ToLowerInvariant()}";
+            const string contentType = "image/webp";
+            var blobName = $"{Guid.NewGuid()}.webp";
             var blobUri = await Helper.AzureBlobHelper.ExecuteBlobWithRetryAsync(
-                ct => blobStorageService.UploadAsync(blobName, uploadStream, contentType, ct),
+                ct =>
+                {
+                    uploadStream.Position = 0;
+                    return blobStorageService.UploadAsync(blobName, uploadStream, contentType, ct);
+                },
                 "Upload",
                 BlobRetryCount,
                 cancellationToken);
@@ -138,9 +139,9 @@ public class ImageService(
                 Id = Guid.NewGuid(),
                 ItemId = itemId,
                 BlobUri = blobUri,
-                FileName = fileName,
-                FileFormat = fileFormat,
-                FileSizeBytes = (int)fileSizeBytes,
+                FileName = Path.ChangeExtension(fileName, ".webp"),
+                FileFormat = "webp",
+                FileSizeBytes = storedFileSize,
                 OriginalWidth = finalWidth,
                 OriginalHeight = finalHeight,
                 UploadedAtUtc = now,

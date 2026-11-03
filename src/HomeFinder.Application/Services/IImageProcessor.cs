@@ -14,6 +14,12 @@ public interface IImageProcessor
     Task<(int Width, int Height)> GetDimensionsAsync(Stream imageStream, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Encode an image as WebP, preserving transparency and applying its encoded orientation.
+    /// </summary>
+    /// <returns>A seekable WebP stream positioned at the beginning. The caller owns both streams.</returns>
+    Task<Stream> ConvertToWebPAsync(Stream imageStream, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// 画像を指定の最大サイズにアスペクト比を保ちながらリサイズする
     /// </summary>
     /// <param name="imageStream">元の画像データストリーム</param>
