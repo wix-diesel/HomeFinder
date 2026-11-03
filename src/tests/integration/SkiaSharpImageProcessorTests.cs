@@ -118,7 +118,7 @@ public class SkiaSharpImageProcessorTests
         var jpeg = encoded.ToArray();
         var stream = new MemoryStream();
         stream.Write(jpeg.AsSpan(0, 2));
-        // JPEG APP1: Exif header, little-endian TIFF, one SHORT orientation tag.
+        // JPEG APP1: Exif ヘッダー、リトルエンディアン TIFF、SHORT 型の向きタグ 1 個。
         stream.Write([
             0xFF, 0xE1, 0x00, 0x22, 0x45, 0x78, 0x69, 0x66, 0x00, 0x00,
             0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00,

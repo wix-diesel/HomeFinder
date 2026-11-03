@@ -109,7 +109,7 @@ curl -X POST http://localhost:5000/api/items/{itemId}/image \
   -F "image=@sample.jpg"
 ```
 
-- 許可形式: jpg, jpeg, png, webp, bmp, svg
+- 許可形式: jpg, jpeg, png, webp, bmp（SVG のアップロードは非対応）
 - 最大サイズ: 10MB
 - 解像度制限: 1000x1000 以内
 

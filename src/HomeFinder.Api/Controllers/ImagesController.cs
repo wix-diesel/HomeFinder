@@ -25,7 +25,7 @@ public class ImagesController(IImageService imageService) : ControllerBase
     /// 商品画像は WebP 形式に変換して保存する。
     ///
     /// **制限:**
-    /// - 許容形式: jpg, jpeg, png, webp, bmp, svg
+    /// - 許容形式: jpg, jpeg, png, webp, bmp
     /// - 最大サイズ: 10MB
     /// - 解像度制限: 1000x1000 以内
     ///
@@ -77,7 +77,7 @@ public class ImagesController(IImageService imageService) : ControllerBase
             ItemNotFoundException => NotFound(ApiError.ItemNotFound()),
             ImageInvalidFormatException => BadRequest(ApiError.ImageValidationError(
                 "INVALID_FORMAT",
-                "ファイル形式が無効です。jpg、bmp、png、webp、svg のいずれかを指定してください。")),
+                "ファイル形式が無効です。jpg、jpeg、bmp、png、webp のいずれかを指定してください。")),
             ImageFileTooLargeException => StatusCode(StatusCodes.Status413RequestEntityTooLarge, ApiError.ImageValidationError(
                 "FILE_TOO_LARGE",
                 "ファイルサイズが 10MB を超えています。")),

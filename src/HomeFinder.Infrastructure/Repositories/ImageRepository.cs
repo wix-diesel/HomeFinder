@@ -1,5 +1,6 @@
 using HomeFinder.Application.Repositories;
 using HomeFinder.Core.Entities;
+using HomeFinder.Core.Errors;
 using HomeFinder.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,27 @@ public class ImageRepository(ItemDbContext dbContext) : IImageRepository
     {
         dbContext.Images.Add(image);
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<Image?> ReplaceForItemAsync(Image image, CancellationToken cancellationToken = default)
+    {
+        var item = await dbContext.Items.FirstOrDefaultAsync(x => x.Id == image.ItemId, cancellationToken)
+            ?? throw new ItemNotFoundException(image.ItemId);
+        var previous = item.ImageId is { } previousId
+            ? await dbContext.Images.FindAsync([previousId], cancellationToken)
+            : null;
+
+        dbContext.Images.Add(image);
+        item.ImageId = image.Id;
+        if (previous is not null)
+        {
+            previous.DeletedAtUtc = DateTime.UtcNow;
+        }
+
+        // 1 回の SaveChanges のトランザクションで、新画像・画像参照・旧画像の論理削除を一括コミットする。
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return previous;
     }
 
     /// <inheritdoc />

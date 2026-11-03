@@ -27,7 +27,7 @@ public sealed class SkiaSharpImageProcessor(ILogger<SkiaSharpImageProcessor> log
             ?? throw new InvalidOperationException("画像を読み込めませんでした。");
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Bake EXIF orientation into the pixels before removing the source metadata.
+        // 元のメタデータを除去する前に、EXIF の向きをピクセルへ反映する。
         using var oriented = ApplyOrientation(image, codec.EncodedOrigin);
         using var encoded = oriented.Encode(SKEncodedImageFormat.Webp, WebPQuality)
             ?? throw new InvalidOperationException("画像を WebP 形式で保存できませんでした。");

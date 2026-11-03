@@ -23,10 +23,10 @@ public class ImageService(
     /// <summary>画像取得時は1日間キャッシュを許可する</summary>
     private const string RetrievalCacheControl = "max-age=86400";
 
-    /// <summary>Allowed input file extensions.</summary>
+    /// <summary>アップロードを許可するファイル拡張子。</summary>
     private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
-        ".jpg", ".jpeg", ".png", ".webp", ".bmp", ".svg",
+        ".jpg", ".jpeg", ".png", ".webp", ".bmp",
     };
 
     /// <summary>最大ファイルサイズ（10MB）</summary>
@@ -91,33 +91,11 @@ public class ImageService(
                     new ImageInvalidResolutionException(width, height, MaxResolution));
             }
 
-            // Convert before replacing the existing image, even when no resize is needed.
+            // リサイズが不要な場合も、既存画像の置き換え前に WebP へ変換する。
             imageStream.Position = 0;
             await using var uploadStream = await imageProcessor.ConvertToWebPAsync(imageStream, cancellationToken);
             var (finalWidth, finalHeight) = await imageProcessor.GetDimensionsAsync(uploadStream, cancellationToken);
             var storedFileSize = checked((int)uploadStream.Length);
-
-            // --- 既存画像を論理削除 ---
-            if (item.ImageId.HasValue)
-            {
-                var existingImage = await imageRepository.GetByItemIdAsync(itemId, cancellationToken);
-                if (existingImage is not null)
-                {
-                    // Blob 物理削除
-                    var existingBlobName = Path.GetFileName(existingImage.BlobUri);
-                    await ExecuteBlobWithRetryAsync(
-                        ct => blobStorageService.DeleteAsync(existingBlobName, ct),
-                        "Delete",
-                        cancellationToken);
-
-                    // 論理削除
-                    await imageRepository.SoftDeleteAsync(existingImage.Id, cancellationToken);
-
-                    // Item の ImageId をクリア
-                    item.ImageId = null;
-                    await itemRepository.UpdateAsync(item, cancellationToken);
-                }
-            }
 
             // --- Blob アップロード ---
             const string contentType = "image/webp";
@@ -146,11 +124,38 @@ public class ImageService(
                 OriginalHeight = finalHeight,
                 UploadedAtUtc = now,
             };
-            await imageRepository.AddAsync(image, cancellationToken);
+            Image? previous;
+            try
+            {
+                previous = await imageRepository.ReplaceForItemAsync(image, cancellationToken);
+            }
+            catch (Exception dbEx)
+            {
+                // コミット結果が不明な場合は両方の Blob を保持し、参照中の画像を削除しない。
+                logger.LogCritical(dbEx,
+                    "Image replacement failed during persistence: ItemId={ItemId}, NewBlobName={BlobName}. Check for an orphaned blob.",
+                    itemId, blobName);
+                throw;
+            }
 
-            // --- Item.ImageId を更新 ---
-            item.ImageId = image.Id;
-            await itemRepository.UpdateAsync(item, cancellationToken);
+            // 画像の切り替えが正常にコミットされた後でのみ、旧 Blob を削除する。
+            if (previous is not null)
+            {
+                var previousBlobName = Path.GetFileName(previous.BlobUri);
+                try
+                {
+                    await ExecuteBlobWithRetryAsync(
+                        ct => blobStorageService.DeleteAsync(previousBlobName, ct),
+                        "Delete",
+                        cancellationToken);
+                }
+                catch (Exception blobEx)
+                {
+                    logger.LogCritical(blobEx,
+                        "Previous image blob cleanup failed after replacement: ItemId={ItemId}, BlobName={BlobName}",
+                        itemId, previousBlobName);
+                }
+            }
 
             logger.LogInformation("画像アップロード完了: ItemId={ItemId}, ImageId={ImageId}", itemId, image.Id);
 
