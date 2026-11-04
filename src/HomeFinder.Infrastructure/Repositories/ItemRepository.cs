@@ -11,27 +11,32 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
 {
     public async Task<IReadOnlyCollection<Item>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.Items
-            .AsNoTracking()
-            .Include(x => x.Category)
-            .Include(x => x.Room)
-            .Include(x => x.Shelf)
-            .OrderByDescending(x => x.CreatedAtUtc)
+        return await SelectListFields(dbContext.Items.AsNoTracking()
+            .OrderByDescending(x => x.CreatedAtUtc))
             .ToListAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyCollection<Item>> GetPagedAsync(int page, int pageSize, ItemQueryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        // 絞り込みは Skip/Take の前に適用し、現在ページではなく全件を対象にする
-        return await ApplyFilter(dbContext.Items.AsNoTracking(), filter)
-            .Include(x => x.Category)
-            .Include(x => x.Room)
-            .Include(x => x.Shelf)
+        return await SelectListFields(ApplyFilter(dbContext.Items.AsNoTracking(), filter)
             .OrderByDescending(x => x.CreatedAtUtc)
             .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Take(pageSize))
             .ToListAsync(cancellationToken);
     }
+
+    // Long text is only needed by the detail endpoint. Project before materialization
+    // so legacy oversized values are not read from SQL or serialized in list responses.
+    private static IQueryable<Item> SelectListFields(IQueryable<Item> query) => query.Select(x => new Item
+    {
+        Id = x.Id, Name = x.Name, Quantity = x.Quantity,
+        Manufacturer = x.Manufacturer, Barcode = x.Barcode, Price = x.Price,
+        CreatedAtUtc = x.CreatedAtUtc, UpdatedAtUtc = x.UpdatedAtUtc,
+        CategoryId = x.CategoryId, Category = x.Category,
+        RoomId = x.RoomId, Room = x.Room,
+        ShelfId = x.ShelfId, Shelf = x.Shelf,
+        ImageId = x.ImageId,
+    });
 
     public Task<int> CountAsync(ItemQueryFilter? filter = null, CancellationToken cancellationToken = default)
     {

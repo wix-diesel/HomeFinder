@@ -158,6 +158,7 @@ public class ItemsController(IItemService itemService) : ControllerBase
     }
 
     [HttpPost]
+    [RequestSizeLimit(64 * 1024)]
     [Authorize(Roles = "Items.Create")]
     [ProducesResponseType(typeof(ItemDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
@@ -188,6 +189,7 @@ public class ItemsController(IItemService itemService) : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [RequestSizeLimit(64 * 1024)]
     [Authorize(Roles = "Items.Create")]
     [ProducesResponseType(typeof(ItemDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]

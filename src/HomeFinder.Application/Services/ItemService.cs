@@ -116,7 +116,11 @@ public class ItemService(
         try
         {
             var normalizedName = (request.Name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 0)
+            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 0
+                || request.Name?.Length > ItemTextLimits.Name
+                || request.Description?.Length > ItemTextLimits.LongText
+                || request.Note?.Length > ItemTextLimits.LongText
+                || request.Manufacturer?.Length > 200 || request.Barcode?.Length > 200)
             {
                 return new Result<ItemDto>(new ArgumentException("入力内容に誤りがあります。", nameof(request)));
             }
@@ -205,7 +209,11 @@ public class ItemService(
         try
         {
             var normalizedName = (request.Name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 0)
+            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 0
+                || request.Name?.Length > ItemTextLimits.Name
+                || request.Description?.Length > ItemTextLimits.LongText
+                || request.Note?.Length > ItemTextLimits.LongText
+                || request.Manufacturer?.Length > 200 || request.Barcode?.Length > 200)
             {
                 return new Result<ItemDto>(new ArgumentException("入力内容に誤りがあります。", nameof(request)));
             }

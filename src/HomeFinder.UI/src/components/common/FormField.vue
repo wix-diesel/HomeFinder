@@ -9,6 +9,7 @@ const props = withDefaults(
     errorTextJa?: string;
     type?: 'text' | 'number' | 'textarea';
     name?: string;
+    maxLength?: number;
   }>(),
   {
     required: false,
@@ -38,6 +39,7 @@ function onInput(event: Event) {
     <textarea
       v-if="props.type === 'textarea'"
       :name="props.name"
+      :maxlength="props.maxLength"
       :value="props.modelValue ?? ''"
       :placeholder="props.placeholderJa"
       @input="onInput"
@@ -46,6 +48,7 @@ function onInput(event: Event) {
     <input
       v-else
       :name="props.name"
+      :maxlength="props.maxLength"
       :type="props.type"
       :value="props.modelValue ?? ''"
       :placeholder="props.placeholderJa"
