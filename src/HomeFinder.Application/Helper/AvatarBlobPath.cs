@@ -9,10 +9,12 @@ internal static class AvatarBlobPath
     {
         var prefix = $"avatars/{userId:D}/";
         if (blobName is null || !blobName.StartsWith(prefix, StringComparison.Ordinal))
+        {
             return false;
+        }
 
         var name = blobName[prefix.Length..];
-        // Keep safe legacy filenames readable without accepting URI/path syntax.
+        // 安全な旧形式のファイル名は許可し、URI・パスの構文は拒否する。
         return name.Length > 0 && name is not "." and not ".."
             && !name.Any(c => char.IsControl(c) || "/\\%?#:".Contains(c));
     }
