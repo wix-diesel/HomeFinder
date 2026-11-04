@@ -200,6 +200,92 @@ public class JanSearchCacheTests
         Assert.Equal(1, http.Calls);
     }
 
+    [Fact]
+    public async Task DifferentJansRunInParallel_AndExcessDistinctMissesAreRejectedWithoutQueueing()
+    {
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = 0;
+        var http = new StubHttp(async _ =>
+        {
+            if (Interlocked.Increment(ref entered) == 2) started.TrySetResult();
+            await release.Task;
+            return Product();
+        });
+        using var service = Create(http, new ManualClock(), concurrent: 2);
+        var first = service.SearchByJanAsync("4901234567890");
+        var second = service.SearchByJanAsync("0000000000000");
+        var duplicate = service.SearchByJanAsync("4901234567890");
+        try
+        {
+            await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Equal(2, http.Calls);
+            var rejected = await service.SearchByJanAsync("49012345").WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsType<ExternalProductApiRateLimitException>(rejected.Error);
+            Assert.Equal(2, http.Calls);
+        }
+        finally
+        {
+            release.TrySetResult();
+        }
+        Assert.All(await Task.WhenAll(first, second, duplicate), result => Assert.True(result.IsSuccessful));
+        Assert.True((await service.SearchByJanAsync("49012345")).IsSuccessful);
+        Assert.Equal(3, http.Calls);
+    }
+
+    [Fact]
+    public async Task CancellingOneWaiter_DoesNotCancelSharedLookupOrReleaseItsCapacity()
+    {
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var http = new StubHttp(async _ => { await release.Task; return Product(); });
+        using var service = Create(http, new ManualClock(), concurrent: 1);
+        using var cancelled = new CancellationTokenSource();
+        var first = service.SearchByJanAsync("4901234567890", cancelled.Token);
+        var follower = service.SearchByJanAsync("4901234567890");
+        try
+        {
+            cancelled.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => first);
+            Assert.False(follower.IsCompleted);
+            Assert.IsType<ExternalProductApiRateLimitException>((await service.SearchByJanAsync("0000000000000")).Error);
+            Assert.Equal(1, http.Calls);
+        }
+        finally
+        {
+            release.TrySetResult();
+        }
+        Assert.True((await follower).IsSuccessful);
+        Assert.True((await service.SearchByJanAsync("4901234567890")).IsSuccessful);
+        Assert.Equal(1, http.Calls);
+    }
+
+    [Fact]
+    public async Task Parallel429Responses_CannotShortenAnExistingCooldown_AndCacheHitsRemainAvailable()
+    {
+        var clock = new ManualClock();
+        var http = new StubHttp(_ => Task.FromResult(Product()));
+        using var service = Create(http, clock);
+        await service.SearchByJanAsync("cached");
+        var longer = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var shorter = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        http.Respond = request => request.RequestUri!.Query.Contains("long") ? longer.Task : shorter.Task;
+        var longRequest = service.SearchByJanAsync("long");
+        var shortRequest = service.SearchByJanAsync("short");
+        var longResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+        longResponse.Headers.RetryAfter = new(TimeSpan.FromSeconds(60));
+        longer.SetResult(longResponse);
+        await longRequest;
+        var shortResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+        shortResponse.Headers.RetryAfter = new(TimeSpan.FromSeconds(1));
+        shorter.SetResult(shortResponse);
+        await shortRequest;
+        clock.Advance(TimeSpan.FromSeconds(2));
+        var limited = await service.SearchByJanAsync("uncached");
+        Assert.Equal(TimeSpan.FromSeconds(58), Assert.IsType<ExternalProductApiRateLimitException>(limited.Error).RetryAfter);
+        Assert.True((await service.SearchByJanAsync("cached")).IsSuccessful);
+        Assert.Equal(3, http.Calls);
+    }
+
     [Theory]
     [InlineData(true, 20)]
     [InlineData(false, 60)]
@@ -223,12 +309,13 @@ public class JanSearchCacheTests
         Assert.Equal(2, http.Calls);
     }
 
-    private static CachedJanProductSearchService Create(StubHttp http, TimeProvider clock)
+    private static CachedJanProductSearchService Create(StubHttp http, TimeProvider clock, int concurrent = 4)
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["JanSearch:ExternalApi:BaseUrl"] = "https://unit.test/products",
             ["JanSearch:ExternalApi:ApiKey"] = "test-key",
+            ["JanSearch:Limits:ConcurrentRequests"] = concurrent.ToString(),
         }).Build();
         return new CachedJanProductSearchService(http, config, NullLogger<JanProductSearchService>.Instance, clock);
     }

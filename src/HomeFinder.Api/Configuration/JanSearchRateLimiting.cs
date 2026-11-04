@@ -20,9 +20,9 @@ public static class JanSearchRateLimiting
             var concurrent = configuration.GetValue("JanSearch:Limits:ConcurrentRequests", 4);
             if (perUser is < 1 or > 1000 || maxReplicas is < 1 or > 100
                 || total < maxReplicas || total > 10000 || concurrent is < 1 or > 16)
-                throw new InvalidOperationException("JanSearch:Limits contains invalid request limits.");
+                throw new InvalidOperationException("JanSearch:Limits の要求上限設定が無効です。");
 
-            // Divide the configured budget conservatively across the maximum replica count.
+            // 設定された予算を最大レプリカ数で保守的に分割する。
             var perReplica = total / maxReplicas;
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
@@ -40,7 +40,7 @@ public static class JanSearchRateLimiting
                         PermitLimit = concurrent, QueueLimit = 0,
                     })
                     : RateLimitPartition.GetNoLimiter("other")));
-            // The endpoint policy marks JAN searches; acquisition order is controlled by the chain above.
+            // エンドポイントのポリシーはJAN検索の識別に使用し、取得順序は上記チェーンで制御する。
             options.AddPolicy(PolicyName, _ => RateLimitPartition.GetNoLimiter("jan-marker"));
             options.OnRejected = async (context, ct) =>
             {
