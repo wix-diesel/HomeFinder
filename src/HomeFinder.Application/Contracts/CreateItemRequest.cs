@@ -6,10 +6,20 @@ namespace HomeFinder.Application.Contracts;
 
 public class CreateItemRequest
 {
+    private string name = string.Empty;
+    private string? manufacturer;
+    private string? description;
+    private string? note;
+    private string? barcode;
+
     [Required]
     [MinLength(1)]
     [MaxLength(ItemTextLimits.Name)]
-    public string Name { get; set; } = string.Empty;
+    public string Name
+    {
+        get => name;
+        set => name = value?.Trim() ?? string.Empty;
+    }
 
     [Range(0, int.MaxValue)]
     public int Quantity { get; set; }
@@ -18,25 +28,41 @@ public class CreateItemRequest
     /// メーカー名（任意）
     /// </summary>
     [MaxLength(200)]
-    public string? Manufacturer { get; set; }
+    public string? Manufacturer
+    {
+        get => manufacturer;
+        set => manufacturer = value?.Trim();
+    }
 
     /// <summary>
     /// 説明（任意）
     /// </summary>
     [MaxLength(ItemTextLimits.LongText)]
-    public string? Description { get; set; }
+    public string? Description
+    {
+        get => description;
+        set => description = value?.Trim();
+    }
 
     /// <summary>
     /// メモ（任意）
     /// </summary>
     [MaxLength(ItemTextLimits.LongText)]
-    public string? Note { get; set; }
+    public string? Note
+    {
+        get => note;
+        set => note = value?.Trim();
+    }
 
     /// <summary>
     /// バーコード（任意）
     /// </summary>
     [MaxLength(200)]
-    public string? Barcode { get; set; }
+    public string? Barcode
+    {
+        get => barcode;
+        set => barcode = value?.Trim();
+    }
 
     /// <summary>
     /// 価格（任意）

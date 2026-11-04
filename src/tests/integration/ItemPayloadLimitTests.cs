@@ -63,6 +63,42 @@ public class ItemPayloadLimitTests
         Assert.Equal(HttpStatusCode.OK, updated.StatusCode);
     }
 
+    [Fact]
+    public async Task WhitespacePaddingIsTrimmedBeforeMvcValidationAndPersistence_OnCreateAndUpdate()
+    {
+        using var factory = new TestApplicationFactory();
+        using var client = factory.CreateClient();
+        var name = new string('n', ItemTextLimits.Name);
+        var text = new string('x', ItemTextLimits.LongText);
+        var shortText = new string('m', 200);
+        // 匿名オブジェクトでDTOのsetterを経由せず、生のHTTP入力を検証する。
+        var payload = new { name = "  " + name + "  ", quantity = 1, description = " \t" + text + "\n ",
+            note = "  " + text + "  ", manufacturer = " " + shortText + " ", barcode = " " + shortText + " " };
+        var createdResponse = await client.PostAsJsonAsync("/api/items", payload);
+        Assert.Equal(HttpStatusCode.Created, createdResponse.StatusCode);
+        var created = (await createdResponse.Content.ReadFromJsonAsync<ItemDto>())!;
+        var updatedResponse = await client.PutAsJsonAsync($"/api/items/{created.Id}", payload);
+        Assert.Equal(HttpStatusCode.OK, updatedResponse.StatusCode);
+        var updated = (await updatedResponse.Content.ReadFromJsonAsync<ItemDto>())!;
+        Assert.Equal(name, updated.Name);
+        Assert.Equal(text, updated.Description);
+        Assert.Equal(text, updated.Note);
+        Assert.Equal(shortText, updated.Manufacturer);
+        Assert.Equal(shortText, updated.Barcode);
+        using var scope = factory.Services.CreateScope();
+        var saved = await scope.ServiceProvider.GetRequiredService<ItemDbContext>().Items.SingleAsync(x => x.Id == created.Id);
+        Assert.Equal(text, saved.Description);
+        Assert.Equal(text, saved.Note);
+    }
+
+    [Fact]
+    public async Task WhitespaceOnlyNameStillFailsRequiredValidation()
+    {
+        using var factory = new TestApplicationFactory();
+        using var client = factory.CreateClient();
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/items", new { name = "  \t ", quantity = 1 })).StatusCode);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -112,8 +148,10 @@ public class ItemPayloadLimitTests
         using var db = new ItemDbContext(new DbContextOptionsBuilder<ItemDbContext>()
             .UseSqlServer("Server=127.0.0.1;Database=MigrationDiscovery;User Id=test;Password=test;").Options);
         const string migrationId = "20261104000000_LimitItemTextLengths";
-        Assert.Contains(migrationId, db.Database.GetMigrations());
-        var script = db.GetService<IMigrator>().GenerateScript("20260814120000_AddUserThemePreference", migrationId);
+        var migrations = db.Database.GetMigrations().ToArray();
+        var migrationIndex = Array.IndexOf(migrations, migrationId);
+        Assert.True(migrationIndex > 0);
+        var script = db.GetService<IMigrator>().GenerateScript(migrations[migrationIndex - 1], migrationId);
         Assert.Contains("WITH NOCHECK ADD CONSTRAINT [CK_Items_Description_Length]", script);
         Assert.Contains("DATALENGTH([Description]) <= 8000", script);
         Assert.Contains("DATALENGTH([Note]) <= 8000", script);
@@ -127,7 +165,7 @@ public class ItemPayloadLimitTests
     [InlineData(nameof(ItemsController.UpdateItem))]
     public void JsonMutationEndpoints_HaveSmallRequestBodyLimit(string action)
     {
-        // TestServer does not enforce Kestrel's transport limits; inspect the endpoint contract.
+        // TestServerではKestrelの通信上限を検証できないため、エンドポイントの上限設定を確認する。
         var limit = typeof(ItemsController).GetMethod(action)!.GetCustomAttribute<RequestSizeLimitAttribute>();
         Assert.Equal(64 * 1024, ((IRequestSizeLimitMetadata)limit!).MaxRequestBodySize);
     }

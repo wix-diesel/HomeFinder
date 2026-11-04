@@ -11,7 +11,7 @@ public partial class LimitItemTextLengths : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        // Preserve legacy values without scanning or truncating them, while enforcing new writes.
+        // 既存値の走査や切り捨てを行わず保持し、新しい書き込みには制約を適用する。
         migrationBuilder.Sql("ALTER TABLE [Items] WITH NOCHECK ADD CONSTRAINT [CK_Items_Description_Length] CHECK ([Description] IS NULL OR DATALENGTH([Description]) <= 8000);");
         migrationBuilder.Sql("ALTER TABLE [Items] WITH NOCHECK ADD CONSTRAINT [CK_Items_Note_Length] CHECK ([Note] IS NULL OR DATALENGTH([Note]) <= 8000);");
     }

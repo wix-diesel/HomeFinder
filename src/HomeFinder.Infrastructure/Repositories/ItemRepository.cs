@@ -25,8 +25,8 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
             .ToListAsync(cancellationToken);
     }
 
-    // Long text is only needed by the detail endpoint. Project before materialization
-    // so legacy oversized values are not read from SQL or serialized in list responses.
+    // 長文は詳細APIでのみ必要なため、実体化の前に一覧用の項目を投影し、
+    // 既存の超過値がSQLから取得されたり一覧応答へ展開されたりすることを防ぐ。
     private static IQueryable<Item> SelectListFields(IQueryable<Item> query) => query.Select(x => new Item
     {
         Id = x.Id, Name = x.Name, Quantity = x.Quantity,

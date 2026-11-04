@@ -56,6 +56,22 @@ describe('ItemForm', () => {
     expect(wrapper.emitted('submit')).toBeUndefined();
   });
 
+  it('前後の空白を除いた文字数で上限を判定する', async () => {
+    mockGetCategories.mockResolvedValue([]);
+    mockListRooms.mockResolvedValue([]);
+    mockListShelves.mockResolvedValue([]);
+    const wrapper = mount(ItemForm, {
+      props: { initialValues: {
+        name: `  ${'名'.repeat(200)}  `,
+        description: `  ${'字'.repeat(4000)}  `,
+        note: `  ${'字'.repeat(4000)}  `,
+        quantity: 1,
+      } },
+    });
+    await wrapper.find('form').trigger('submit.prevent');
+    expect(wrapper.emitted('submit')).toHaveLength(1);
+  });
+
   it('送信中は主要ボタンが無効化される', () => {
     mockGetCategories.mockResolvedValue([]);
     mockListRooms.mockResolvedValue([]);

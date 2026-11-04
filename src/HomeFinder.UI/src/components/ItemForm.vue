@@ -400,7 +400,7 @@ function validate(): boolean {
     ['description', 4000, '説明'],
     ['note', 4000, 'メモ'],
   ] as const) {
-    if (formState[field].length > limit) {
+    if (formState[field].trim().length > limit) {
       formState.fieldErrors[field] = `${label}は${limit}文字以内で入力してください。`;
     }
   }
