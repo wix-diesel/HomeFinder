@@ -23,8 +23,9 @@ public interface IImageService
         CancellationToken cancellationToken = default);
 
     /// <summary>指定アイテムの画像バイナリデータを取得する</summary>
-    Task<Result<(Stream Content, string ContentType, string FileName, DateTime UploadedAtUtc)>> GetImageByItemIdAsync(
+    Task<Result<ImageDownloadResponse>> GetImageByItemIdAsync(
         Guid itemId,
+        Func<DateTime, bool>? isNotModified = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>指定アイテムの画像を削除する（論理削除 + Blob 物理削除）</summary>

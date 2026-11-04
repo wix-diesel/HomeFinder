@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Net.Http.Headers;
 
 namespace HomeFinder.Api.Controllers;
 
@@ -121,7 +122,11 @@ public class ImagesController(IImageService imageService) : ControllerBase
             return StatusCode(StatusCodes.Status403Forbidden, ApiError.Forbidden());
         }
 
-        var result = await imageService.GetImageByItemIdAsync(itemId, cancellationToken);
+        EntityTagHeaderValue.TryParseList(Request.Headers.IfNoneMatch.ToArray(), out var requestETags);
+        var result = await imageService.GetImageByItemIdAsync(itemId,
+            uploadedAt => requestETags?.Any(candidate => candidate.Equals(EntityTagHeaderValue.Any)
+                || candidate.Compare(new EntityTagHeaderValue($"\"{ComputeETag(uploadedAt)}\""), useStrongComparison: false)) == true,
+            cancellationToken);
 
         if (!result.IsSuccessful)
         {
@@ -141,14 +146,11 @@ public class ImagesController(IImageService imageService) : ControllerBase
 
         // ETag: uploadedAtUtc の SHA256 ハッシュ（8文字）
         var etag = ComputeETag(uploadedAtUtc);
-        var requestETag = Request.Headers.IfNoneMatch.ToString().Trim('"');
-        if (!string.IsNullOrEmpty(requestETag) && requestETag == etag)
-        {
-            return StatusCode(StatusCodes.Status304NotModified);
-        }
-
         Response.Headers.ETag = $"\"{etag}\"";
         Response.Headers.CacheControl = imageService.GetRetrievalCacheControl();
+
+        if (content is null)
+            return StatusCode(StatusCodes.Status304NotModified);
 
         return File(content, contentType, fileName);
     }
