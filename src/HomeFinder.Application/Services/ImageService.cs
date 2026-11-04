@@ -169,8 +169,9 @@ public class ImageService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<(Stream Content, string ContentType, string FileName, DateTime UploadedAtUtc)>> GetImageByItemIdAsync(
+    public async Task<Result<ImageDownloadResponse>> GetImageByItemIdAsync(
         Guid itemId,
+        Func<DateTime, bool>? isNotModified = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -180,20 +181,24 @@ public class ImageService(
             if (item is null)
             {
                 logger.LogWarning("画像取得失敗(アイテムなし): ItemId={ItemId}", itemId);
-                return new Result<(Stream, string, string, DateTime)>(new ItemNotFoundException(itemId));
+                return new Result<ImageDownloadResponse>(new ItemNotFoundException(itemId));
             }
 
             if (!item.ImageId.HasValue)
             {
-                return new Result<(Stream, string, string, DateTime)>(new ImageNotFoundForItemException(itemId));
+                return new Result<ImageDownloadResponse>(new ImageNotFoundForItemException(itemId));
             }
 
             var image = await imageRepository.GetByItemIdAsync(itemId, cancellationToken);
             if (image is null)
             {
                 logger.LogWarning("画像取得失敗(画像なし): ItemId={ItemId}", itemId);
-                return new Result<(Stream, string, string, DateTime)>(new ImageNotFoundForItemException(itemId));
+                return new Result<ImageDownloadResponse>(new ImageNotFoundForItemException(itemId));
             }
+
+            // Blobストリームを開く前に、ダウンロードに使用するものと同じメタデータでキャッシュ条件を検証する。
+            if (isNotModified?.Invoke(image.UploadedAtUtc) == true)
+                return new ImageDownloadResponse(null, $"image/{image.FileFormat}", image.FileName, image.UploadedAtUtc);
 
             var blobName = Path.GetFileName(image.BlobUri);
             var (content, contentType) = await Helper.AzureBlobHelper.ExecuteBlobWithRetryAsync(
@@ -204,12 +209,12 @@ public class ImageService(
 
             logger.LogInformation("画像取得完了: ItemId={ItemId}, ImageId={ImageId}", itemId, image.Id);
 
-            return (content, contentType, image.FileName, image.UploadedAtUtc);
+            return new ImageDownloadResponse(content, contentType, image.FileName, image.UploadedAtUtc);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "画像取得中に例外発生: ItemId={ItemId}", itemId);
-            return new Result<(Stream, string, string, DateTime)>(ex);
+            return new Result<ImageDownloadResponse>(ex);
         }
     }
 
