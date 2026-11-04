@@ -196,7 +196,7 @@ public class ImageService(
                 return new Result<ImageDownloadResponse>(new ImageNotFoundForItemException(itemId));
             }
 
-            // Validate the same metadata snapshot used by this download, before opening a Blob stream.
+            // Blobストリームを開く前に、ダウンロードに使用するものと同じメタデータでキャッシュ条件を検証する。
             if (isNotModified?.Invoke(image.UploadedAtUtc) == true)
                 return new ImageDownloadResponse(null, $"image/{image.FileFormat}", image.FileName, image.UploadedAtUtc);
 

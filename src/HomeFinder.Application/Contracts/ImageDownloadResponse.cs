@@ -1,6 +1,6 @@
 namespace HomeFinder.Application.Contracts;
 
-/// <summary>A null content stream means the supplied cache validator matched.</summary>
+/// <summary>Contentがnullの場合は、指定されたキャッシュ検証条件に一致したことを示す。</summary>
 public sealed record ImageDownloadResponse(
     Stream? Content,
     string ContentType,

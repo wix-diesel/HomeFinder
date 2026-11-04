@@ -88,9 +88,9 @@ public class ImageConditionalRequestTests
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
-        var image = new Image { Id = Guid.NewGuid(), ItemId = Guid.NewGuid(), BlobUri = "https://storage.invalid/private/fixture.webp", FileName = "fixture.webp", FileFormat = "webp", UploadedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) };
+        var image = new Image { Id = Guid.NewGuid(), ItemId = Guid.NewGuid(), BlobUri = "https://storage.invalid/private/fixture.webp", FileName = "fixture.webp", FileFormat = "webp", FileSizeBytes = 3, OriginalWidth = 1, OriginalHeight = 1, UploadedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) };
         db.Images.Add(image);
-        db.Items.Add(new Item { Id = image.ItemId, Name = "Conditional request", Quantity = 1, ImageId = image.Id });
+        db.Items.Add(new Item { Id = image.ItemId, Name = "Conditional request", Quantity = 1, ImageId = image.Id, CreatedAtUtc = image.UploadedAtUtc, UpdatedAtUtc = image.UploadedAtUtc });
         await db.SaveChangesAsync();
         return image.ItemId;
     }

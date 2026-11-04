@@ -144,7 +144,7 @@ public class ImagesController(IImageService imageService) : ControllerBase
 
         var (content, contentType, fileName, uploadedAtUtc) = result.Value;
 
-        // ETag: uploadedAtUtc の SHA256 ハッシュ（8文字）
+        // ETag: uploadedAtUtc の SHA256 ハッシュの先頭16桁（16進表記）
         var etag = ComputeETag(uploadedAtUtc);
         Response.Headers.ETag = $"\"{etag}\"";
         Response.Headers.CacheControl = imageService.GetRetrievalCacheControl();
