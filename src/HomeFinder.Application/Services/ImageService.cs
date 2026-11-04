@@ -64,6 +64,8 @@ public class ImageService(
                     new ImageFileTooLargeException(fileSizeBytes, MaxFileSizeBytes));
             }
 
+            fileName = Helper.ImageFileNamePolicy.GetBaseName(fileName);
+
             // --- ファイル形式検証 ---
             var extension = Path.GetExtension(fileName);
             if (string.IsNullOrEmpty(extension) || !AllowedExtensions.Contains(extension))
@@ -73,11 +75,14 @@ public class ImageService(
                     new ImageInvalidFormatException(extension ?? string.Empty));
             }
 
-            // --- アイテム存在確認 ---
+            // --- 保存ファイル名検証 ---
             var storedFileName = Path.ChangeExtension(fileName, ".webp");
             if (!Helper.ImageFileNamePolicy.IsValid(storedFileName, Helper.ImageFileNamePolicy.MaxStoredNameLength))
+            {
                 return new Result<ImageUploadResponse>(new ImageInvalidFileNameException(Helper.ImageFileNamePolicy.MaxStoredNameLength));
+            }
 
+            // --- アイテム存在確認 ---
             var item = await itemRepository.GetByIdAsync(itemId, cancellationToken);
             if (item is null)
             {

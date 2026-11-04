@@ -75,8 +75,8 @@ public class ImagesController(IImageService imageService) : ControllerBase
         return result.Error switch
         {
             ItemNotFoundException => NotFound(ApiError.ItemNotFound()),
-            ImageInvalidFileNameException => BadRequest(ApiError.ImageValidationError(
-                "INVALID_FILE_NAME", "保存後の画像ファイル名は500文字以内で、制御文字を含まない必要があります。")),
+            ImageInvalidFileNameException invalidName => BadRequest(ApiError.ImageValidationError(
+                "INVALID_FILE_NAME", $"保存後の画像ファイル名は{invalidName.MaxLength}文字以内で、空白のみの名前や制御文字は使用できません。")),
             ImageInvalidFormatException => BadRequest(ApiError.ImageValidationError(
                 "INVALID_FORMAT",
                 "ファイル形式が無効です。jpg、jpeg、bmp、png、webp のいずれかを指定してください。")),

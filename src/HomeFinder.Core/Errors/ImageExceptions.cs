@@ -32,6 +32,9 @@ public class ImageInvalidFormatException(string format) : Exception($"Invalid im
     public string Format { get; } = format;
 }
 
+/// <summary>
+/// 保存する画像ファイル名が長さ・文字の制約を満たさない場合にスローする。
+/// </summary>
 public class ImageInvalidFileNameException(int maxLength)
     : Exception($"Image file name must contain 1 to {maxLength} characters and no control characters.")
 {

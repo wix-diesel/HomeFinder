@@ -123,6 +123,8 @@ public class AvatarService : IAvatarService
                 new ImageFileTooLargeException(fileSizeBytes, MaxFileSizeBytes));
         }
 
+        fileName = ImageFileNamePolicy.GetBaseName(fileName);
+
         // --- ファイル形式検証 ---
         var extension = Path.GetExtension(fileName);
         if (string.IsNullOrEmpty(extension) || !AllowedFormats.TryGetValue(extension, out var fileFormat))
@@ -132,12 +134,15 @@ public class AvatarService : IAvatarService
                 new ImageInvalidFormatException(extension ?? string.Empty));
         }
 
-        // --- 画像解像度検証 ---
-        // Reject predictable persistence failures before decoding or writing a Blob.
+        // --- 保存ファイル名検証 ---
+        // 画像デコード・Blob保存前に、事前に判定できる永続化エラーを拒否する。
         var maxFileNameLength = ImageFileNamePolicy.MaxAvatarPathLength - $"avatars/{userId:D}/".Length;
         if (!ImageFileNamePolicy.IsValid(fileName, maxFileNameLength))
+        {
             return new Result<bool>(new ImageInvalidFileNameException(maxFileNameLength));
+        }
 
+        // --- 画像解像度検証 ---
         imageStream.Position = 0;
         var (width, height) = await imageProcessor.GetDimensionsAsync(imageStream, cancellationToken);
         if (width > MaxResolution || height > MaxResolution)

@@ -87,6 +87,70 @@ public class ImageFileNameValidationTests
         Assert.Empty(blobs.Uploads);
     }
 
+    [Theory]
+    [InlineData("C:\\fakepath\\photo.jpg")]
+    [InlineData("/tmp/uploads/photo.jpg")]
+    [InlineData("../nested/photo.jpg")]
+    [InlineData("C:\\fakepath/mixed\\photo.jpg")]
+    public async Task PathPartsAreRemovedBeforePersistingProductNamesOrAvatarKeys(string filename)
+    {
+        var blobs = new RecordingBlobs();
+        await using var factory = CreateFactory(blobs);
+        using var client = factory.CreateClient();
+        using (var multipart = new MultipartFormDataContent())
+        {
+            multipart.Add(new ByteArrayContent([1, 2, 3]), "image", filename);
+            Assert.Equal(HttpStatusCode.OK,
+                (await client.PostAsync($"/api/items/{GetItemId(factory)}/image", multipart)).StatusCode);
+        }
+        (await client.GetAsync("/api/users/me/profile")).EnsureSuccessStatusCode();
+        using (var multipart = new MultipartFormDataContent())
+        {
+            multipart.Add(new ByteArrayContent([1, 2, 3]), "file", filename);
+            Assert.Equal(HttpStatusCode.NoContent,
+                (await client.PostAsync("/api/users/me/profile/avatar", multipart)).StatusCode);
+        }
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ItemDbContext>();
+        Assert.Equal("photo.webp", db.Images.Single().FileName);
+        var profile = db.UserProfiles.Single();
+        var key = profile.AvatarImagePath;
+        Assert.StartsWith($"avatars/{profile.Id:D}/", key);
+        var basename = key[$"avatars/{profile.Id:D}/".Length..];
+        Assert.DoesNotContain("/", basename);
+        Assert.DoesNotContain("\\", basename);
+        Assert.EndsWith(".jpg", key);
+        Assert.DoesNotContain("fakepath", key);
+    }
+
+    [Fact]
+    public async Task LongDirectoryPrefixDoesNotCountTowardTheStoredNameLimit()
+    {
+        var blobs = new RecordingBlobs();
+        await using var factory = CreateFactory(blobs);
+        using var scope = factory.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IImageService>();
+        using var input = new MemoryStream([1, 2, 3]);
+        var result = await service.UploadImageAsync(GetItemId(factory), input, new string('d', 600) + "/photo.png", input.Length);
+        Assert.True(result.IsSuccessful);
+        Assert.Single(blobs.Uploads);
+        Assert.Equal("photo.webp", scope.ServiceProvider.GetRequiredService<ItemDbContext>().Images.Single().FileName);
+    }
+
+    [Theory]
+    [InlineData("/tmp/")]
+    [InlineData("C:\\fakepath\\")]
+    public async Task EmptyBasenameIsRejectedBeforeBlobWrites(string filename)
+    {
+        var blobs = new RecordingBlobs();
+        await using var factory = CreateFactory(blobs);
+        using var scope = factory.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IImageService>();
+        using var input = new MemoryStream([1, 2, 3]);
+        Assert.False((await service.UploadImageAsync(GetItemId(factory), input, filename, input.Length)).IsSuccessful);
+        Assert.Empty(blobs.Uploads);
+    }
+
     private static Guid GetItemId(Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program> factory)
     {
         using var scope = factory.Services.CreateScope();
