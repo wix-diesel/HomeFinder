@@ -133,6 +133,11 @@ public class AvatarService : IAvatarService
         }
 
         // --- 画像解像度検証 ---
+        // Reject predictable persistence failures before decoding or writing a Blob.
+        var maxFileNameLength = ImageFileNamePolicy.MaxAvatarPathLength - $"avatars/{userId:D}/".Length;
+        if (!ImageFileNamePolicy.IsValid(fileName, maxFileNameLength))
+            return new Result<bool>(new ImageInvalidFileNameException(maxFileNameLength));
+
         imageStream.Position = 0;
         var (width, height) = await imageProcessor.GetDimensionsAsync(imageStream, cancellationToken);
         if (width > MaxResolution || height > MaxResolution)

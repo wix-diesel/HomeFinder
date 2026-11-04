@@ -74,6 +74,10 @@ public class ImageService(
             }
 
             // --- アイテム存在確認 ---
+            var storedFileName = Path.ChangeExtension(fileName, ".webp");
+            if (!Helper.ImageFileNamePolicy.IsValid(storedFileName, Helper.ImageFileNamePolicy.MaxStoredNameLength))
+                return new Result<ImageUploadResponse>(new ImageInvalidFileNameException(Helper.ImageFileNamePolicy.MaxStoredNameLength));
+
             var item = await itemRepository.GetByIdAsync(itemId, cancellationToken);
             if (item is null)
             {
@@ -117,7 +121,7 @@ public class ImageService(
                 Id = Guid.NewGuid(),
                 ItemId = itemId,
                 BlobUri = blobUri,
-                FileName = Path.ChangeExtension(fileName, ".webp"),
+                FileName = storedFileName,
                 FileFormat = "webp",
                 FileSizeBytes = storedFileSize,
                 OriginalWidth = finalWidth,
