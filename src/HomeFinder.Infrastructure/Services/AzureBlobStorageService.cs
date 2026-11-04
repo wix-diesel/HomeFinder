@@ -27,6 +27,7 @@ public class AzureBlobStorageService : IBlobStorageService
         string contentType,
         CancellationToken cancellationToken = default)
     {
+        BlobNameValidator.Validate(blobName);
         try
         {
             // コンテナが存在しない場合は作成（Private アクセスレベル）
@@ -57,6 +58,7 @@ public class AzureBlobStorageService : IBlobStorageService
         string blobName,
         CancellationToken cancellationToken = default)
     {
+        BlobNameValidator.Validate(blobName);
         try
         {
             var blobClient = _containerClient.GetBlobClient(blobName);
@@ -78,6 +80,7 @@ public class AzureBlobStorageService : IBlobStorageService
         string blobName,
         CancellationToken cancellationToken = default)
     {
+        BlobNameValidator.Validate(blobName);
         try
         {
             var blobClient = _containerClient.GetBlobClient(blobName);

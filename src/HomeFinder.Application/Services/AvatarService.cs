@@ -74,7 +74,8 @@ public class AvatarService : IAvatarService
             return new Result<AvatarDto>(new EntraIdNotFoundException(entraId));
         }
 
-        if (string.IsNullOrEmpty(userProfile.AvatarImagePath))
+        if (string.IsNullOrEmpty(userProfile.AvatarImagePath)
+            || !AvatarBlobPath.IsOwnedBy(userProfile.Id, userProfile.AvatarImagePath))
         {
             var defaultAvatar = new AvatarDto
             {
@@ -147,7 +148,8 @@ public class AvatarService : IAvatarService
 
         // --- Blob アップロード ---
         var contentType = $"image/{fileFormat}";
-        var blobName = $"avatars/{userId}/{fileName}";
+        // URI正規化後も、クライアントのファイル名でBlob保存先を選択できないようにする。
+        var blobName = AvatarBlobPath.Create(userId, extension);
         var blobUri = await AzureBlobHelper.ExecuteBlobWithRetryAsync(
             ct => blobStorageService.UploadAsync(blobName, uploadStream, contentType, ct),
             "Upload",
@@ -160,8 +162,10 @@ public class AvatarService : IAvatarService
         userProfile.UpdatedAtUtc = DateTime.UtcNow;
         await userProfileRepository.UpdateAsync(userProfile, cancellationToken);
 
-        if(!string.IsNullOrEmpty(oldAvatarPath) && oldAvatarPath != blobName)
+        if (AvatarBlobPath.IsOwnedBy(userId, oldAvatarPath) && oldAvatarPath != blobName)
+        {
             await blobStorageService.DeleteAsync(oldAvatarPath, cancellationToken);
+        }
 
         logger.LogInformation("アバターアップロード完了: UserId={UserId}, AvatarUri={blobName}", userId, blobName);
         return new Result<bool>(true);
