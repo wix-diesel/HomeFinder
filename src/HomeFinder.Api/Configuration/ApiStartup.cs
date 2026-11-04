@@ -4,6 +4,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using HomeFinder.Api.Errors;
 using HomeFinder.Api.Middleware;
+using HomeFinder.Api.Services;
 using HomeFinder.Infrastructure.Data;
 using HomeFinder.Infrastructure.Repositories;
 using HomeFinder.Infrastructure.Services;
@@ -72,10 +73,13 @@ public static class ApiStartup
         builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         builder.Services.AddScoped<IUserProfileService, UserProfileService>();
         builder.Services.AddScoped<IItemLookupService, ItemLookupService>();
-        builder.Services.AddHttpClient<IJanProductSearchService, JanProductSearchService>(client =>
+        builder.Services.AddHttpClient("JanSearch", client =>
         {
             client.Timeout = TimeSpan.FromSeconds(10);
         });
+        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<IJanProductSearchService, CachedJanProductSearchService>();
+        builder.Services.AddJanSearchRateLimiting(builder.Configuration);
         // BlobContainerClient を構成設定に基づき生成し、Singleton として DI 登録する。
         // AzureBlobStorage:ServiceVersion が指定されている場合は指定バージョンを使用する（Azurite 対応）。
         // 設定が未指定または無効な値の場合は SDK のデフォルトバージョンにフォールバックする。
@@ -231,6 +235,7 @@ public static class ApiStartup
         // 認証・認可ミドルウェアを有効化する（UseCors の後、MapControllers の前に配置する）
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseRateLimiter();
         app.MapControllers();
         return app;
     }

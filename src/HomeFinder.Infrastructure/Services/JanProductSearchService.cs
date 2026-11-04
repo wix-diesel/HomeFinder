@@ -75,7 +75,10 @@ public class JanProductSearchService : IJanProductSearchService
 
             if (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                return new Result<JanProductDto>(new ExternalProductApiRateLimitException("外部 API のレートリミットに達しました。"));
+                var delay = response.Headers.RetryAfter?.Delta
+                    ?? (response.Headers.RetryAfter?.Date is { } date ? date - DateTimeOffset.UtcNow : TimeSpan.FromMinutes(1));
+                delay = TimeSpan.FromSeconds(Math.Clamp(delay.TotalSeconds, 1, 300));
+                return new Result<JanProductDto>(new ExternalProductApiRateLimitException("外部 API のレートリミットに達しました。", delay));
             }
 
             if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
@@ -127,13 +130,6 @@ public class JanProductSearchService : IJanProductSearchService
                 }
 
                 var response = await _httpClient.SendAsync(request, cancellationToken);
-                if (response.StatusCode == HttpStatusCode.TooManyRequests && attempt < maxAttempts)
-                {
-                    response.Dispose();
-                    await Task.Delay(TimeSpan.FromMilliseconds(200), cancellationToken);
-                    continue;
-                }
-
                 return response;
             }
             catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested && attempt < maxAttempts)
