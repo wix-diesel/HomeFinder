@@ -45,6 +45,8 @@ public class ItemDbContext(DbContextOptions<ItemDbContext> options) : DbContext(
             entity.ToTable("Items", table =>
             {
                 table.HasCheckConstraint("CK_Items_Quantity_Positive", "[Quantity] >= 0");
+                table.HasCheckConstraint("CK_Items_Description_Length", "[Description] IS NULL OR DATALENGTH([Description]) <= 8000");
+                table.HasCheckConstraint("CK_Items_Note_Length", "[Note] IS NULL OR DATALENGTH([Note]) <= 8000");
             });
             entity.HasKey(x => x.Id);
 

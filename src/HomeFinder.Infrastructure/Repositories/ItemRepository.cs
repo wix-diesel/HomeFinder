@@ -11,27 +11,32 @@ public class ItemRepository(ItemDbContext dbContext) : IItemRepository
 {
     public async Task<IReadOnlyCollection<Item>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.Items
-            .AsNoTracking()
-            .Include(x => x.Category)
-            .Include(x => x.Room)
-            .Include(x => x.Shelf)
-            .OrderByDescending(x => x.CreatedAtUtc)
+        return await SelectListFields(dbContext.Items.AsNoTracking()
+            .OrderByDescending(x => x.CreatedAtUtc))
             .ToListAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyCollection<Item>> GetPagedAsync(int page, int pageSize, ItemQueryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        // 絞り込みは Skip/Take の前に適用し、現在ページではなく全件を対象にする
-        return await ApplyFilter(dbContext.Items.AsNoTracking(), filter)
-            .Include(x => x.Category)
-            .Include(x => x.Room)
-            .Include(x => x.Shelf)
+        return await SelectListFields(ApplyFilter(dbContext.Items.AsNoTracking(), filter)
             .OrderByDescending(x => x.CreatedAtUtc)
             .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Take(pageSize))
             .ToListAsync(cancellationToken);
     }
+
+    // 長文は詳細APIでのみ必要なため、実体化の前に一覧用の項目を投影し、
+    // 既存の超過値がSQLから取得されたり一覧応答へ展開されたりすることを防ぐ。
+    private static IQueryable<Item> SelectListFields(IQueryable<Item> query) => query.Select(x => new Item
+    {
+        Id = x.Id, Name = x.Name, Quantity = x.Quantity,
+        Manufacturer = x.Manufacturer, Barcode = x.Barcode, Price = x.Price,
+        CreatedAtUtc = x.CreatedAtUtc, UpdatedAtUtc = x.UpdatedAtUtc,
+        CategoryId = x.CategoryId, Category = x.Category,
+        RoomId = x.RoomId, Room = x.Room,
+        ShelfId = x.ShelfId, Shelf = x.Shelf,
+        ImageId = x.ImageId,
+    });
 
     public Task<int> CountAsync(ItemQueryFilter? filter = null, CancellationToken cancellationToken = default)
     {

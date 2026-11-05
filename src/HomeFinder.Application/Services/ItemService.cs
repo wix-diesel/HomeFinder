@@ -116,7 +116,15 @@ public class ItemService(
         try
         {
             var normalizedName = (request.Name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 0)
+            var normalizedDescription = request.Description?.Trim();
+            var normalizedNote = request.Note?.Trim();
+            var normalizedManufacturer = request.Manufacturer?.Trim();
+            var normalizedBarcode = request.Barcode?.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 0
+                || normalizedName.Length > ItemTextLimits.Name
+                || normalizedDescription?.Length > ItemTextLimits.LongText
+                || normalizedNote?.Length > ItemTextLimits.LongText
+                || normalizedManufacturer?.Length > 200 || normalizedBarcode?.Length > 200)
             {
                 return new Result<ItemDto>(new ArgumentException("入力内容に誤りがあります。", nameof(request)));
             }
@@ -162,10 +170,10 @@ public class ItemService(
                 Id = Guid.NewGuid(),
                 Name = normalizedName,
                 Quantity = request.Quantity,
-                Manufacturer = request.Manufacturer?.Trim(),
-                Description = request.Description?.Trim(),
-                Note = request.Note?.Trim(),
-                Barcode = request.Barcode?.Trim(),
+                Manufacturer = normalizedManufacturer,
+                Description = normalizedDescription,
+                Note = normalizedNote,
+                Barcode = normalizedBarcode,
                 Price = request.Price,
                 CategoryId = request.CategoryId,
                 RoomId = request.RoomId,
@@ -205,7 +213,15 @@ public class ItemService(
         try
         {
             var normalizedName = (request.Name ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 0)
+            var normalizedDescription = request.Description?.Trim();
+            var normalizedNote = request.Note?.Trim();
+            var normalizedManufacturer = request.Manufacturer?.Trim();
+            var normalizedBarcode = request.Barcode?.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedName) || request.Quantity < 0
+                || normalizedName.Length > ItemTextLimits.Name
+                || normalizedDescription?.Length > ItemTextLimits.LongText
+                || normalizedNote?.Length > ItemTextLimits.LongText
+                || normalizedManufacturer?.Length > 200 || normalizedBarcode?.Length > 200)
             {
                 return new Result<ItemDto>(new ArgumentException("入力内容に誤りがあります。", nameof(request)));
             }
@@ -263,10 +279,10 @@ public class ItemService(
 
             item.Name = normalizedName;
             item.Quantity = request.Quantity;
-            item.Manufacturer = request.Manufacturer?.Trim();
-            item.Description = request.Description?.Trim();
-            item.Note = request.Note?.Trim();
-            item.Barcode = request.Barcode?.Trim();
+            item.Manufacturer = normalizedManufacturer;
+            item.Description = normalizedDescription;
+            item.Note = normalizedNote;
+            item.Barcode = normalizedBarcode;
             item.Price = request.Price;
             item.CategoryId = request.CategoryId;
             item.RoomId = request.RoomId;

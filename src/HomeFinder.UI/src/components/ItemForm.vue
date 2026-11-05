@@ -394,6 +394,17 @@ function validate(): boolean {
     formState.fieldErrors.name = uiText.errors.nameRequired;
   }
 
+  for (const [field, limit, label] of [
+    ['name', 200, '物品名称'],
+    ['manufacturer', 200, 'メーカー'],
+    ['description', 4000, '説明'],
+    ['note', 4000, 'メモ'],
+  ] as const) {
+    if (formState[field].trim().length > limit) {
+      formState.fieldErrors[field] = `${label}は${limit}文字以内で入力してください。`;
+    }
+  }
+
   if (formState.quantity === null || !Number.isInteger(formState.quantity) || formState.quantity < 0) {
     formState.fieldErrors.quantity = uiText.errors.quantityInvalid;
   }
@@ -490,6 +501,7 @@ function onRetry(): void {
         <div class="field-two">
           <FormField
             name="name"
+            :max-length="200"
             :label-ja="uiText.create.fields.name.label"
             :helper-text-ja="uiText.create.fields.name.helper"
             :placeholder-ja="uiText.create.fields.name.placeholder"
@@ -501,6 +513,7 @@ function onRetry(): void {
 
           <FormField
             name="manufacturer"
+            :max-length="200"
             :label-ja="uiText.create.fields.manufacturer.label"
             :helper-text-ja="uiText.create.fields.manufacturer.helper"
             :placeholder-ja="uiText.create.fields.manufacturer.placeholder"
@@ -628,6 +641,8 @@ function onRetry(): void {
 
         <FormField
           name="description"
+          :max-length="4000"
+          :error-text-ja="formState.fieldErrors.description"
           type="textarea"
           :label-ja="uiText.create.fields.description.label"
           :helper-text-ja="uiText.create.fields.description.helper"
@@ -638,6 +653,8 @@ function onRetry(): void {
 
         <FormField
           name="note"
+          :max-length="4000"
+          :error-text-ja="formState.fieldErrors.note"
           type="textarea"
           :label-ja="uiText.create.fields.note.label"
           :helper-text-ja="uiText.create.fields.note.helper"

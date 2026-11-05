@@ -36,6 +36,42 @@ describe('ItemForm', () => {
     expect(wrapper.text()).toContain('数量は0以上の整数で入力してください。');
   });
 
+  it.each([
+    ['name', 200, '物品名称'],
+    ['description', 4000, '説明'],
+    ['note', 4000, 'メモ'],
+  ] as const)('%sの超過値は切り捨てず送信を止める', async (field, limit, label) => {
+    mockGetCategories.mockResolvedValue([]);
+    mockListRooms.mockResolvedValue([]);
+    mockListShelves.mockResolvedValue([]);
+    const value = '字'.repeat(limit + 1);
+    const wrapper = mount(ItemForm, {
+      props: { initialValues: { name: 'test', quantity: 1, [field]: value } },
+    });
+    const input = wrapper.find(`[name="${field}"]`);
+    expect(input.attributes('maxlength')).toBe(String(limit));
+    expect((input.element as HTMLInputElement).value).toBe(value);
+    await wrapper.find('form').trigger('submit.prevent');
+    expect(wrapper.text()).toContain(`${label}は${limit}文字以内で入力してください。`);
+    expect(wrapper.emitted('submit')).toBeUndefined();
+  });
+
+  it('前後の空白を除いた文字数で上限を判定する', async () => {
+    mockGetCategories.mockResolvedValue([]);
+    mockListRooms.mockResolvedValue([]);
+    mockListShelves.mockResolvedValue([]);
+    const wrapper = mount(ItemForm, {
+      props: { initialValues: {
+        name: `  ${'名'.repeat(200)}  `,
+        description: `  ${'字'.repeat(4000)}  `,
+        note: `  ${'字'.repeat(4000)}  `,
+        quantity: 1,
+      } },
+    });
+    await wrapper.find('form').trigger('submit.prevent');
+    expect(wrapper.emitted('submit')).toHaveLength(1);
+  });
+
   it('送信中は主要ボタンが無効化される', () => {
     mockGetCategories.mockResolvedValue([]);
     mockListRooms.mockResolvedValue([]);

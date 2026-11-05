@@ -203,6 +203,8 @@ namespace HomeFinder.Infrastructure.Data.Migrations
                     b.ToTable("Items", null, t =>
                         {
                             t.HasCheckConstraint("CK_Items_Quantity_Positive", "[Quantity] >= 0");
+                            t.HasCheckConstraint("CK_Items_Description_Length", "[Description] IS NULL OR DATALENGTH([Description]) <= 8000");
+                            t.HasCheckConstraint("CK_Items_Note_Length", "[Note] IS NULL OR DATALENGTH([Note]) <= 8000");
                         });
                 });
 
