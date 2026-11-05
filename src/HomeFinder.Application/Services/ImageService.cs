@@ -64,6 +64,8 @@ public class ImageService(
                     new ImageFileTooLargeException(fileSizeBytes, MaxFileSizeBytes));
             }
 
+            fileName = Helper.ImageFileNamePolicy.GetBaseName(fileName);
+
             // --- ファイル形式検証 ---
             var extension = Path.GetExtension(fileName);
             if (string.IsNullOrEmpty(extension) || !AllowedExtensions.Contains(extension))
@@ -71,6 +73,13 @@ public class ImageService(
                 logger.LogWarning("画像アップロード検証失敗(形式不正): ItemId={ItemId}, Extension={Extension}", itemId, extension);
                 return new Result<ImageUploadResponse>(
                     new ImageInvalidFormatException(extension ?? string.Empty));
+            }
+
+            // --- 保存ファイル名検証 ---
+            var storedFileName = Path.ChangeExtension(fileName, ".webp");
+            if (!Helper.ImageFileNamePolicy.IsValid(storedFileName, Helper.ImageFileNamePolicy.MaxStoredNameLength))
+            {
+                return new Result<ImageUploadResponse>(new ImageInvalidFileNameException(Helper.ImageFileNamePolicy.MaxStoredNameLength));
             }
 
             // --- アイテム存在確認 ---
@@ -117,7 +126,7 @@ public class ImageService(
                 Id = Guid.NewGuid(),
                 ItemId = itemId,
                 BlobUri = blobUri,
-                FileName = Path.ChangeExtension(fileName, ".webp"),
+                FileName = storedFileName,
                 FileFormat = "webp",
                 FileSizeBytes = storedFileSize,
                 OriginalWidth = finalWidth,
