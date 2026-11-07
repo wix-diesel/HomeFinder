@@ -9,7 +9,10 @@ public class JanProductNotFoundException(string jan) : Exception($"JAN に該当
 
 public class ExternalProductApiAuthenticationException(string message) : Exception(message);
 
-public class ExternalProductApiRateLimitException(string message) : Exception(message);
+public class ExternalProductApiRateLimitException(string message, TimeSpan? retryAfter = null) : Exception(message)
+{
+    public TimeSpan? RetryAfter { get; } = retryAfter;
+}
 
 public class ExternalProductApiTimeoutException(string message) : Exception(message);
 
