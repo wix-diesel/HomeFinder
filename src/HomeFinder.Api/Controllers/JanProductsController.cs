@@ -5,6 +5,9 @@ using HomeFinder.Application.Services;
 using HomeFinder.Core.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using HomeFinder.Api.Configuration;
+using System.Globalization;
 
 namespace HomeFinder.Api.Controllers;
 
@@ -14,6 +17,7 @@ public class JanProductsController(IItemLookupService itemLookupService) : Contr
 {
     [HttpGet("{jan}")]
     [Authorize(Roles = "Items.Read")]
+    [EnableRateLimiting(JanSearchRateLimiting.PolicyName)]
     [ProducesResponseType(typeof(JanProductDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
@@ -47,8 +51,7 @@ public class JanProductsController(IItemLookupService itemLookupService) : Contr
         return result.Error switch
         {
             JanProductNotFoundException => NotFound(new ApiError("PRODUCT_NOT_FOUND", "指定されたJANの商品が見つかりません。")),
-            ExternalProductApiRateLimitException => StatusCode(StatusCodes.Status429TooManyRequests,
-                new ApiError("RATE_LIMITED", "外部APIのレートリミットに達しました。")),
+            ExternalProductApiRateLimitException limited => RateLimited(limited),
             ExternalProductApiTimeoutException => StatusCode(StatusCodes.Status503ServiceUnavailable,
                 new ApiError("UPSTREAM_TIMEOUT", "外部APIの応答がタイムアウトしました。")),
             ExternalProductApiAuthenticationException => StatusCode(StatusCodes.Status500InternalServerError,
@@ -56,5 +59,14 @@ public class JanProductsController(IItemLookupService itemLookupService) : Contr
             _ => StatusCode(StatusCodes.Status500InternalServerError,
                 new ApiError("INTERNAL_SERVER_ERROR", "予期しないエラーが発生しました。")),
         };
+    }
+
+    private ObjectResult RateLimited(ExternalProductApiRateLimitException error)
+    {
+        if (ControllerContext.HttpContext is not null)
+            Response.Headers.RetryAfter = Math.Max(1, (int)Math.Ceiling(
+                (error.RetryAfter ?? TimeSpan.FromMinutes(1)).TotalSeconds)).ToString(CultureInfo.InvariantCulture);
+        return StatusCode(StatusCodes.Status429TooManyRequests,
+            new ApiError("RATE_LIMITED", "外部APIのレートリミットに達しました。"));
     }
 }
